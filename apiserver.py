@@ -142,20 +142,17 @@ class RestHandler(tornado.web.RequestHandler):
             return None
         return cookeiauth.split(':')[0]
 
-    def get_login_url(self):
-        # cookieauth does not support quoted cookies
-        # self.set_cookie('CookieAuth_Redirect', self.request.protocol + '://' + self.request.host + self.request.uri, domain='.itvilla.com')
-        self.set_header('Set-Cookie', 'CookieAuth_Redirect=' + self.request.protocol + '://' + self.request.host + self.request.uri + '; Domain=.itvilla.com; Path=/')
-        return "https://login.itvilla.com/login"
-
-    @tornado.web.authenticated
     @unblock
     def get(self, *args, **kwargs):
+
+        user = self.get_current_user()
+        if user == None:
+            return({ 'status': 200, 'bodydata': {'message': 'Not authenticated', 'login_url': 'https://login.itvilla.com/login'} })
 
         if len(args) != 3:
             return({'message' : 'missing arguments'})
 
-        self.session = Session(self.get_current_user())
+        self.session = Session(user)
 
         filter = None
         if args[2] != '':
@@ -165,11 +162,11 @@ class RestHandler(tornado.web.RequestHandler):
             body = self.session.sql2json(args[0], filter)
 
             headers = [
-                    { 'X-Username': self.get_current_user() }
+                    { 'X-Username': user }
             ]
             return({ 'status': 200, 'headers': headers, 'bodydata': body })
         except SessionAuthenticationError as e:
-            return({ 'status': 401, 'bodydata': {'message' : str(e)} })
+            return({ 'status': 200, 'bodydata': {'message' : str(e)} })
         except SessionException as e:
             return({ 'status': 500, 'bodydata': {'message' : str(e)} })
         except Exception as e:
