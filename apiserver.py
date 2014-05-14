@@ -189,6 +189,7 @@ if __name__ == '__main__':
 
     tornado.options.define("http_port", default = "8888", help = "HTTP port (0 to disable)", type = int)
     tornado.options.define("https_port", default = "4433", help = "HTTPS port (0 to disable)", type = int)
+    tornado.options.define("listen_address", default = "0.0.0.0", help = "Listen this address only", type = str)
 
     args = sys.argv
     args.append("--logging=debug")
@@ -211,12 +212,12 @@ if __name__ == '__main__':
                 "certfile": "receiver.itvilla.com.crt",
                 "keyfile": "receiver.itvilla.com.key"
             })
-        httpsserver.listen(options.https_port)
+        httpsserver.listen(options.https_port, address = options.listen_address)
         print("OK")
 
     if options.http_port != 0:
         print("HTTP server listening on port " + str(options.http_port))
-        app.listen(options.http_port)
+        app.listen(options.http_port, address = options.listen_address)
         print("OK")
 
     import tornado.ioloop
