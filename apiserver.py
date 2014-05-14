@@ -249,6 +249,28 @@ class FileHandler(tornado.web.RequestHandler):
     def get(self, *args, **kwargs):
         self.render(args[0])
 
+class UDPReader(object):
+    def __init__(self, addr, port):
+        import socket
+        import tornado.ioloop
+        import functools
+
+        self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self._sock.setblocking(False)
+        self._sock.bind((addr, port))
+        self._io_loop = tornado.ioloop.IOLoop.instance()
+        self._io_loop.add_handler(self._sock.fileno(), functools.partial(self._callback, self._sock), self._io_loop.READ)
+
+    def _callback(self, sock, fd, events):
+        if events & self._io_loop.READ:
+            self._callback_read(sock, fd)
+        if events & self._io_loop.ERROR:
+            print("IOLoop error")
+            sys.exit(1)
+
+    def _callback_read(self, sock, fd):
+        (data, addr) = sock.recvfrom(4096)
+        pass
 
 
 if __name__ == '__main__':
@@ -257,6 +279,7 @@ if __name__ == '__main__':
     tornado.options.define("http_port", default = "8888", help = "HTTP port (0 to disable)", type = int)
     tornado.options.define("https_port", default = "4433", help = "HTTPS port (0 to disable)", type = int)
     tornado.options.define("listen_address", default = "0.0.0.0", help = "Listen this address only", type = str)
+    tornado.options.define("udp_port", default = "44444", help = "UDP listen port", type = int)
 
     args = sys.argv
     args.append("--logging=debug")
@@ -289,5 +312,6 @@ if __name__ == '__main__':
         app.listen(options.http_port, address = options.listen_address)
         print("OK")
 
+    UDPReader("0.0.0.0", int(options.udp_port))
     import tornado.ioloop
     tornado.ioloop.IOLoop.instance().start()
