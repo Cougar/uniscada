@@ -245,6 +245,11 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         if self in wsclients:
             wsclients.remove(self)
 
+class FileHandler(tornado.web.RequestHandler):
+    def get(self, *args, **kwargs):
+        self.render(args[0])
+
+
 
 if __name__ == '__main__':
     from tornado.options import define, options, parse_command_line
@@ -262,6 +267,7 @@ if __name__ == '__main__':
     }
 
     app = tornado.web.Application([
+        (r'/files/(wstest.html|wstest.js)', FileHandler),
         (r'/api/v1/(servicegroups|hostgroups|services)(/(.*))?', RestHandler),
         (r'/api/v1/ws', WebSocketHandler),
         (r'/api/v1/', RootHandler),
