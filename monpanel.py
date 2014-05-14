@@ -777,10 +777,9 @@ if __name__ == '__main__':
         http_data = result
 
     except SessionAuthenticationError as e:
-        http_status = 'Status: 307 Temporary Redirect'
-        http_status += "\n" + 'Location: https://login.itvilla.com/login'
-        http_status += "\n" + 'Set-Cookie: CookieAuth_Redirect=' + URL + '; Domain=.itvilla.com; Path=/'
+        http_status = 'Status: 503 Service Unavailable'
         http_data['message'] = str(e);
+        http_data['login_url'] = 'https://login.itvilla.com/login'
 
     except SessionException as e:
         http_status = 'Status: 500 Internal Server Error'
