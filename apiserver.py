@@ -63,6 +63,8 @@ from functools import partial, wraps
 
 EXECUTOR = ThreadPoolExecutor(max_workers=50)
 
+wsclients = []
+
 class CookieAuth:
     def __init__(self, handler):
         self.handler = handler
@@ -141,7 +143,8 @@ class RootHandler(tornado.web.RequestHandler):
         self.write(json.dumps({
             'hostgroup_url': base_url + '/api/v1/hostgroups{/name}',
             'servicegroup_url': base_url + '/api/v1/servicegroups{/name}',
-            'service_url': base_url + '/api/v1/services/name'
+            'service_url': base_url + '/api/v1/services/name',
+            'websocket_url': base_url.replace('http', 'ws', 1) + '/api/v1/ws'
         }, indent = 4, sort_keys = True))
         self.finish()
 
@@ -184,6 +187,65 @@ class RestHandler(tornado.web.RequestHandler):
             return({ 'status': 501, 'bodydata': {'message' : str(e)} })
 
 
+class WebSocketHandler(tornado.websocket.WebSocketHandler):
+    def open(self, *args):
+        if self not in wsclients:
+            wsclients.append(self)
+            self.subscriptions = []
+            self.subscriptiontokens = {}
+        cookeiauth = CookieAuth(self)
+        self.user = cookeiauth.get_current_user()
+        if self.user == None:
+            self.write_message(json.dumps({'message': 'Not authenticated', 'login_url': 'https://login.itvilla.com/login'}, indent=4, sort_keys=True))
+            return
+        try:
+            self.session = Session(self.user)
+        except Exception as e:
+            self.write_message(json.dumps({'message': 'error: ' + str(e)}))
+            return
+
+    def on_message(self, message):
+        if self.user  == None:
+            self.write_message(json.dumps({'message': 'Not authenticated', 'login_url': 'https://login.itvilla.com/login'}, indent=4, sort_keys=True))
+            return
+
+        try:
+            jsondata = json.loads(message)
+        except:
+            self.write_message(json.dumps({'message': str(sys.exc_info()[1])}))
+            return
+
+        method = jsondata.get('method', None)
+        token = jsondata.get('token', None)
+        resource = jsondata.get('resource', None)
+        resources = []
+
+        reply = {}
+
+        if resource != None:
+            resources = resource.split('/')
+            reply['resource'] = resource
+
+        if token != None:
+            reply['token'] = token
+
+        if method == 'get':
+            filter = None
+            if len(resources) == 3:
+                filter = resources[2]
+
+            try:
+                reply['body'] = self.session.sql2json(resources[1], filter)
+            except Exception as e:
+                reply['message'] = 'error: ' + str(e)
+
+        self.write_message(json.dumps(reply, indent=4, sort_keys=True))
+
+    def on_close(self):
+        if self in wsclients:
+            wsclients.remove(self)
+
+
 if __name__ == '__main__':
     from tornado.options import define, options, parse_command_line
 
@@ -201,6 +263,7 @@ if __name__ == '__main__':
 
     app = tornado.web.Application([
         (r'/api/v1/(servicegroups|hostgroups|services)(/(.*))?', RestHandler),
+        (r'/api/v1/ws', WebSocketHandler),
         (r'/api/v1/', RootHandler),
         (r'/.*', UnknownHandler)
     ], **app_settings)
