@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <script src="wstest.js"></script>
+    </head>
+    <body>
+        User: <input type="text" name="login" id="login" value="" readonly></input><br />
+        <script type="text/javascript">
+            document.getElementById('login').value = getCookie('itvilla_com').split(':')[0];
+        </script>
+        <button type="button" id="wsopen" onClick="javascript:WebSocketOpen()">Open websocket</button>
+        <button type="button" id="wsclose" onClick="javascript:WebSocketClose()" disabled>Close websocket</button>
+        <button type="button" id="wsclose" onClick="javascript:ClearDisplay()">Clear</button>
+        <br />
+        Token: <input type="text" name="token" id="token"></input>
+        <pre>
+        <div id="messages" style="height:700px;background:black;color:white;"></div>
+        </pre>
+        <a href="javascript:WebSocketSend('klick')">Send something</a><br />
+        <a href="javascript:WebSocketSendJSON('/hostgroups')">/hostgroups</a><br />
+        <a href="javascript:WebSocketSendJSON('/hostgroups/saared')">/hostgroups/saared</a><br />
+        <a href="javascript:WebSocketSendJSON('/services')">/services</a><br />
+        <a href="javascript:WebSocketSendJSON('/services/00204AB80C53')">/services/00204AB80C53</a><br />
+        <a href="javascript:WebSocketSendJSON('/services/00204AA95C56')">/services/00204AA95C56</a><br />
+        <a href="javascript:WebSocketSubscribe('/services/00204AB80C53')">subscribe /services/00204AB80C53</a><br />
+    </body>
+</html>
+
+

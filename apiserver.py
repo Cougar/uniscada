@@ -299,6 +299,11 @@ class UDPReader(object):
         (data, addr) = sock.recvfrom(4096)
         pass
 
+class FileHandler(tornado.web.RequestHandler):
+    def get(self, *args, **kwargs):
+        self.render(args[0])
+
+
 
 if __name__ == '__main__':
     from tornado.options import define, options, parse_command_line
