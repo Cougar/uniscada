@@ -63,6 +63,20 @@ from functools import partial, wraps
 
 EXECUTOR = ThreadPoolExecutor(max_workers=50)
 
+class CookieAuth:
+    def __init__(self, handler):
+        self.handler = handler
+
+    def get_current_user(self):
+        try:
+            cookeiauth = self.handler.get_cookie('itvilla_com', None)
+            if cookeiauth == None:
+                return None
+            return cookeiauth.split(':')[0]
+        except:
+            return None
+
+
 def unblock(f):
     @tornado.web.asynchronous
     @wraps(f)
@@ -137,10 +151,7 @@ class RestHandler(tornado.web.RequestHandler):
         pass
 
     def get_current_user(self):
-        cookeiauth = self.get_cookie('itvilla_com', None)
-        if cookeiauth == None:
-            return None
-        return cookeiauth.split(':')[0]
+        return CookieAuth(self).get_current_user()
 
     @unblock
     def get(self, *args, **kwargs):
