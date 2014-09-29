@@ -3,6 +3,7 @@
 import time
 
 from sdp import SDP
+from controllers import Controllers
 
 import logging
 log = logging.getLogger(__name__)
@@ -14,13 +15,10 @@ class SDPReceiver(object):
     convert it to the SDP structure, find out sender Controller and
     update its internal state. Finally send ACK back to the Controller.
     '''
-    def __init__(self, controllers):
+    def __init__(self):
         ''' SDP receiver instance.
-
-        :param controllers: Controllers instance to group all
-        Controller instances
         '''
-        self._controllers = controllers
+        self._controllers = Controllers.instance()
 
     def datagram_from_controller(self, host, datagram):
         ''' Process incoming datagram

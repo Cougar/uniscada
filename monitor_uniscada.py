@@ -55,15 +55,14 @@ class MonitorUniscada:
         self.port = port
         self.SQLDIR = SQLDIR
         self.tables = tables # tuple
-        self.c = Controllers()
-        self.b = SDPReceiver(self.c)
+        self.b = SDPReceiver()
         self.u = UDPComm(self.addr, self.port, self.b.datagram_from_controller) # incoming data listening
         self.ioloop = tornado.ioloop.IOLoop.instance()
         self.interval = interval
 
     def sync_tasks(self): # regular checks or tasks
         # put here tasks to be executed in regular intervals
-        log.debug(str(self.c))
+        log.debug(str(Controllers.instance()))
 
         if interval > 0:
             #log.info("UPD processing until next sync...")

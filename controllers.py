@@ -1,5 +1,6 @@
 ''' Keep track of all known controllers
 '''
+import threading
 
 from controller import Controller
 
@@ -12,6 +13,20 @@ __all__ = [
 
 class Controllers(object):
     ''' List of all known controllers '''
+
+    # Global lock for creating global Controllers instance
+    _instance_lock = threading.Lock()
+
+    @staticmethod
+    def instance():
+        ''' Returns a global `Controllers` instance.
+        '''
+        if not hasattr(Controllers, '_instance'):
+            with Controllers._instance_lock:
+                if not hasattr(Controllers, '_instance'):
+                    Controllers._instance = Controllers()
+        return Controllers._instance
+
     def __init__(self):
         log.debug('Initialise a new list of controllers')
         self._controllers = {} # id -> Controler instance
