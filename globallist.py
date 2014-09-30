@@ -50,7 +50,7 @@ class GlobalList(object):
         if id in self._members:
             del self._members[id]
         else:
-            log.error('  no such client')
+            raise KeyError()
 
     def __str__(self):
         s = ''

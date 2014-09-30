@@ -47,6 +47,10 @@ class GlobalListTests(unittest.TestCase):
         self.assertNotEqual(id1, id3)
         self.assertTrue(isinstance(id3, MemberClass))
 
+    def test_remove_missing_member(self):
+        ''' Test missing member remove '''
+        self.assertRaises(KeyError, self.globallist.remove_by_id, 'A')
+
     def test_member_list(self):
         ''' Test member list generator '''
         id1 = self.globallist.find_by_id('A')
