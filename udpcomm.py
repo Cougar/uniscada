@@ -3,9 +3,10 @@ from host import *
 import socket
 import tornado.ioloop
 import functools # from functools import partial
-import logging
 
+import logging
 log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 class UDPComm(object): # object on millegiparast vajalik
     '''

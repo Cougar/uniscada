@@ -4,6 +4,7 @@ import threading
 
 import logging
 log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 __all__ = [
     'GlobalList', 'find_by_id', 'remove_by_id', 'get_id_list',
