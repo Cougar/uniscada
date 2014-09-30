@@ -12,9 +12,9 @@ class ControllersTests(unittest.TestCase):
 
     def test_add_controller(self):
         ''' Test controller add and lookup '''
-        id1 = self.controllers.find_controller('A')
-        id2 = self.controllers.find_controller('A')
-        id3 = self.controllers.find_controller('B')
+        id1 = self.controllers.find_by_id('A')
+        id2 = self.controllers.find_by_id('A')
+        id3 = self.controllers.find_by_id('B')
         self.assertTrue(isinstance(id1, Controller))
         self.assertTrue(isinstance(id2, Controller))
         self.assertTrue(isinstance(id3, Controller))
@@ -23,7 +23,7 @@ class ControllersTests(unittest.TestCase):
 
     def test_controller_id_listing(self):
         ''' Test controller id listing '''
-        id1 = self.controllers.find_controller('A')
-        id2 = self.controllers.find_controller('B')
-        id3 = self.controllers.find_controller('C')
+        id1 = self.controllers.find_by_id('A')
+        id2 = self.controllers.find_by_id('B')
+        id3 = self.controllers.find_by_id('C')
         self.assertEqual(sorted(self.controllers.get_id_list()), ['A', 'B', 'C'])
