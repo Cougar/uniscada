@@ -62,7 +62,7 @@ class MonitorUniscada:
 
     def sync_tasks(self): # regular checks or tasks
         # put here tasks to be executed in regular intervals
-        log.debug(str(Controllers.instance()))
+        log.debug('Controllers:' + str(Controllers.instance()))
 
         if interval > 0:
             #log.info("UPD processing until next sync...")
