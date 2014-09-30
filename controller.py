@@ -5,6 +5,7 @@ from sdp import SDP
 
 import logging
 log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 __all__ = [
     'Controller',

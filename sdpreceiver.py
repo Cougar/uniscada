@@ -7,6 +7,7 @@ from controllers import Controllers
 
 import logging
 log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 class SDPReceiver(object):
     ''' Keep Controller instances updated with incoming data.
