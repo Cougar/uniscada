@@ -52,6 +52,12 @@ import sys
 sys.path.append('/root/tornado-3.2/')
 sys.path.append('/root/backports.ssl_match_hostname-3.4.0.2/src')
 
+import logging
+import sys
+logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
+
+import datetime
+
 from monpanel import *
 
 import tornado.web
@@ -60,6 +66,10 @@ import tornado.websocket
 
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial, wraps
+
+from udpcomm import *
+from controllers import Controllers
+from sdpreceiver import SDPReceiver
 
 EXECUTOR = ThreadPoolExecutor(max_workers=50)
 
@@ -150,6 +160,10 @@ class RootHandler(tornado.web.RequestHandler):
 
 
 class RestHandler(tornado.web.RequestHandler):
+    def __init__(self, *args, **kwargs):
+        self._controllers = kwargs.pop('controllers', None)
+        super(RestHandler, self).__init__(*args, **kwargs)
+
     def initialize(self):
         pass
 
@@ -188,6 +202,10 @@ class RestHandler(tornado.web.RequestHandler):
 
 
 class WebSocketHandler(tornado.websocket.WebSocketHandler):
+    def __init__(self, *args, **kwargs):
+        self._controllers = kwargs.pop('controllers', None)
+        super(WebSocketHandler, self).__init__(*args, **kwargs)
+
     def open(self, *args):
         if self not in wsclients:
             wsclients.append(self)
@@ -249,6 +267,34 @@ class FileHandler(tornado.web.RequestHandler):
     def get(self, *args, **kwargs):
         self.render(args[0])
 
+class UDPReader(object):
+    def __init__(self, addr, port, controllers):
+        import socket
+        import tornado.ioloop
+        import functools
+
+        self._controllers = controllers
+        self.b = SDPReceiver(self._controllers)
+        self.u = UDPComm(addr, port, self.b.datagram_from_controller)
+        self.interval = 10
+        self.ioloop = tornado.ioloop.IOLoop.instance()
+        self.sync_tasks()
+
+    def sync_tasks(self): # regular checks or tasks
+        # put here tasks to be executed in regular intervals
+        log.debug('Controllers:' + str(self._controllers))
+        self.ioloop.add_timeout(datetime.timedelta(seconds=self.interval), self.sync_tasks)
+
+    def _callback(self, sock, fd, events):
+        if events & self._io_loop.READ:
+            self._callback_read(sock, fd)
+        if events & self._io_loop.ERROR:
+            print("IOLoop error")
+            sys.exit(1)
+
+    def _callback_read(self, sock, fd):
+        (data, addr) = sock.recvfrom(4096)
+        pass
 
 
 if __name__ == '__main__':
@@ -257,10 +303,17 @@ if __name__ == '__main__':
     tornado.options.define("http_port", default = "8888", help = "HTTP port (0 to disable)", type = int)
     tornado.options.define("https_port", default = "4433", help = "HTTPS port (0 to disable)", type = int)
     tornado.options.define("listen_address", default = "0.0.0.0", help = "Listen this address only", type = str)
+    tornado.options.define("udp_port", default = "44444", help = "UDP listen port", type = int)
 
     args = sys.argv
     args.append("--logging=debug")
     tornado.options.parse_command_line(args)
+
+    controllers = Controllers()
+
+    handler_settings = {
+        "controllers": controllers,
+    }
 
     app_settings = {
         "debug": True
@@ -268,8 +321,8 @@ if __name__ == '__main__':
 
     app = tornado.web.Application([
         (r'/files/(wstest.html|wstest.js)', FileHandler),
-        (r'/api/v1/(servicegroups|hostgroups|services)(/(.*))?', RestHandler),
-        (r'/api/v1/ws', WebSocketHandler),
+        (r'/api/v1/(servicegroups|hostgroups|services)(/(.*))?', RestHandler, handler_settings),
+        (r'/api/v1/ws', WebSocketHandler, handler_settings),
         (r'/api/v1/', RootHandler),
         (r'/.*', UnknownHandler)
     ], **app_settings)
@@ -288,6 +341,8 @@ if __name__ == '__main__':
         print("HTTP server listening on port " + str(options.http_port))
         app.listen(options.http_port, address = options.listen_address)
         print("OK")
+
+    UDPReader("0.0.0.0", int(options.udp_port), controllers)
 
     import tornado.ioloop
     tornado.ioloop.IOLoop.instance().start()
