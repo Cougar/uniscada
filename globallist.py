@@ -35,7 +35,7 @@ class GlobalList(object):
         if not id in self._members:
             log.info('  create a new member(%s)', str(id))
             self._members[id] = self.class_name(id)
-        log.error('NEW INSTANCE: ' + str(self._members[id]))
+        log.info('instance: ' + str(self._members[id]))
         return self._members[id]
 
     def get_id_list(self):
