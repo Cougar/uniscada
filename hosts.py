@@ -1,6 +1,5 @@
 ''' Keep track of all hosts (devices) for Comm modules
 '''
-import threading
 
 from globallist import GlobalList
 from host import Host

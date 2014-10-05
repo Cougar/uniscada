@@ -1,6 +1,5 @@
 ''' Keep track of all connected WebSocket clients
 '''
-import threading
 
 from globallist import GlobalList
 from wsclient import WsClient

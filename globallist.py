@@ -1,6 +1,5 @@
 ''' Keep track of list of objects identified by some id
 '''
-import threading
 
 import logging
 log = logging.getLogger(__name__)

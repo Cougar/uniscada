@@ -1,6 +1,5 @@
 ''' Keep track of all known controllers
 '''
-import threading
 
 from globallist import GlobalList
 from controller import Controller
