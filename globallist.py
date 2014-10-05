@@ -16,7 +16,7 @@ class GlobalList(object):
     def __init__(self):
         self._members = {}
         self.class_name = self.getMemberClass()
-        log.debug('Initialise a new global list of ' + str(self.class_name))
+        log.info('Initialise a new global list of ' + str(self.class_name))
 
     def getMemberClass(self):
         ''' Return a class name that should be used for members
@@ -31,11 +31,11 @@ class GlobalList(object):
 
         :returns: member instance
         '''
-        log.debug('find_by_id(%s)', str(id))
         if not id in self._members:
-            log.info('  create a new member(%s)', str(id))
-            self._members[id] = self.class_name(id)
-        log.info('instance: ' + str(self._members[id]))
+            self._members[id] = self.class_name(id, listinstance=self)
+            log.info('find_by_id(%s): created a new member(%s)', str(id), str(self._members[id]))
+        else:
+            log.info('find_by_id(%s): existing member(%s)', str(id), str(self._members[id]))
         return self._members[id]
 
     def get_id_list(self):

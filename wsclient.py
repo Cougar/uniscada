@@ -13,10 +13,11 @@ __all__ = [
 
 class WsClient(object):
     ''' One WebSocket client '''
-    def __init__(self, id):
+    def __init__(self, id, listinstance = None):
         ''' Create a new WebSocket client instance
 
         :param id: WebSocket handler instance
+        :param listinstance: optional WsClients instance
         '''
         log.debug('Create a new WebSocket client (%s)', str(id))
         self._id = id

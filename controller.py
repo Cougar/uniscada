@@ -18,10 +18,11 @@ __all__ = [
 
 class Controller(object):
     ''' One controller '''
-    def __init__(self, id):
+    def __init__(self, id, listinstance = None):
         ''' Create new controller instance
 
         :param id: controller id
+        :param listinstance: optional Controllers instance
         '''
         log.debug('Create a new controller (%s)', str(id))
         self._id = id
