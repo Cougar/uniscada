@@ -3,8 +3,9 @@ import unittest
 from globallist import GlobalList
 
 class MemberClass(object):
-    def __init__(self, id):
+    def __init__(self, id, listinstance):
         self.id = id
+        self.listinstance = listinstance
 
 class DerivedGlobalList(GlobalList):
     def getMemberClass(self):
@@ -25,6 +26,7 @@ class GlobalListTests(unittest.TestCase):
         ''' Test member instance setup '''
         id1 = self.globallist.find_by_id('A')
         self.assertEqual(id1.id, 'A')
+        self.assertEqual(id1.listinstance, self.globallist)
 
     def test_add_member(self):
         ''' Test member add and lookup '''
