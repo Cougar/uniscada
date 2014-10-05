@@ -18,12 +18,17 @@ function ChangeButtonFocus() {
     document.getElementById("wsclose").disabled = wsconnected;
 }
 
+function get_ws_url(s) {
+    var l = window.location;
+    return ((l.protocol === "https:") ? "wss://" : "ws://") + l.hostname + (((l.port != 80) && (l.port != 443)) ? ":" + l.port : "") + s;
+}
+
 function WebSocketOpen() {
     if (! "WebSocket" in window) {
         alert("Websocket not supported");
         return;
     }
-    ws = new WebSocket("wss://receiver.itvilla.com:4433/api/v1/ws");
+    ws = new WebSocket(get_ws_url("/api/v1/ws"));
     ws.onopen = wsOnOpen;
     ws.onmessage = wsOnMessage;
     ws.onclose = wsOnClose;
