@@ -30,5 +30,6 @@ class WsClient(object):
         return self._id
 
     def __str__(self):
-        return('id = ' + str(self._id))
+        return(str(self._id) + ': ' +
+                'debug = ' + str(self._x_debug))
 

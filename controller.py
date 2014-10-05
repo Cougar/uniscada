@@ -145,6 +145,7 @@ class Controller(object):
         self._send_queue.pop(reg, None)
 
     def __str__(self):
-        return('id = ' + str(self._id) +
+        return(str(self._id) + ': ' +
+               'host = ' + str(self._host) +
                ', state = ' + str(self._state) +
                ', send_queue = ' + str(self._send_queue))
