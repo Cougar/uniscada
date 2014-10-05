@@ -212,6 +212,8 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         self._usersessions = kwargs.pop('usersessions', None)
         self._controllers = kwargs.pop('controllers', None)
         self._wsclients = kwargs.pop('wsclients', None)
+        self._authenticated = False
+        self._args = args
         super(WebSocketHandler, self).__init__(*args, **kwargs)
 
     def open(self, *args):
@@ -223,13 +225,35 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             return
         try:
             self._usersession = self._usersessions.find_by_id(self.user)
+            if self._usersession.get_userdata():
+                self._userauth_done()
+            else:
+                self._usersession.read_userdata_form_nagois(callback = self._userauth_done)
         except Exception as e:
             self.write_message(json.dumps({'message': 'error: ' + str(e)}))
             return
 
+    def _userauth_done(self):
+        log.info('_userauth_done()')
+        userdata = self._usersessions.find_by_id(self.user).get_userdata()
+        if not userdata:
+            log.error('didnt get userdata')
+            self.write_message(json.dumps({'message': 'Authentication error', 'login_url': 'https://login.itvilla.com/login'}, indent=4, sort_keys=True))
+            self.close()
+        elif userdata.get('user_name', None) != self.user:
+            log.error('userdata username mismatch: %s : %s', str(userdata.get('user_name', None)), self.user)
+            self.write_message(json.dumps({'message': 'Authentication error', 'login_url': 'https://login.itvilla.com/login'}, indent=4, sort_keys=True))
+            self.close()
+            # FIXME remove UserSession instance after such event
+        else:
+            self._authenticated = True
+
     def on_message(self, message):
         if self.user  == None:
             self.write_message(json.dumps({'message': 'Not authenticated', 'login_url': 'https://login.itvilla.com/login'}, indent=4, sort_keys=True))
+            return
+        if not self._authenticated:
+            self.write_message(json.dumps({'message': 'Authentication in progress...'}, indent=4, sort_keys=True))
             return
 
         try:
