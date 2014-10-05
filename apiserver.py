@@ -68,6 +68,7 @@ from concurrent.futures import ThreadPoolExecutor
 from functools import partial, wraps
 
 from udpcomm import *
+from usersessions import UserSessions
 from controllers import Controllers
 from sdpreceiver import SDPReceiver
 from wsclients import WsClients
@@ -164,6 +165,7 @@ class RootHandler(tornado.web.RequestHandler):
 
 class RestHandler(tornado.web.RequestHandler):
     def __init__(self, *args, **kwargs):
+        self._usersessions = kwargs.pop('usersessions', None)
         self._controllers = kwargs.pop('controllers', None)
         self._wsclients = kwargs.pop('wsclients', None)
         super(RestHandler, self).__init__(*args, **kwargs)
@@ -207,6 +209,7 @@ class RestHandler(tornado.web.RequestHandler):
 
 class WebSocketHandler(tornado.websocket.WebSocketHandler):
     def __init__(self, *args, **kwargs):
+        self._usersessions = kwargs.pop('usersessions', None)
         self._controllers = kwargs.pop('controllers', None)
         self._wsclients = kwargs.pop('wsclients', None)
         super(WebSocketHandler, self).__init__(*args, **kwargs)
@@ -219,7 +222,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             self.write_message(json.dumps({'message': 'Not authenticated', 'login_url': 'https://login.itvilla.com/login'}, indent=4, sort_keys=True))
             return
         try:
-            self.session = Session(self.user)
+            self._usersession = self._usersessions.find_by_id(self.user)
         except Exception as e:
             self.write_message(json.dumps({'message': 'error: ' + str(e)}))
             return
@@ -269,11 +272,12 @@ class FileHandler(tornado.web.RequestHandler):
         self.render(args[0])
 
 class UDPReader(object):
-    def __init__(self, addr, port, controllers, wsclients):
+    def __init__(self, addr, port, usersessions, controllers, wsclients):
         import socket
         import tornado.ioloop
         import functools
 
+        self._usersessions = usersessions
         self._controllers = controllers
         self._wsclients = wsclients
         self.b = SDPReceiver(self._controllers)
@@ -284,6 +288,7 @@ class UDPReader(object):
 
     def sync_tasks(self): # regular checks or tasks
         # put here tasks to be executed in regular intervals
+        log.debug('Users:' + str(self._usersessions))
         log.debug('Controllers:' + str(self._controllers))
         log.debug('WSClients:' + str(self._wsclients))
         self.ioloop.add_timeout(datetime.timedelta(seconds=self.interval), self.sync_tasks)
@@ -317,10 +322,12 @@ if __name__ == '__main__':
     args.append("--logging=debug")
     tornado.options.parse_command_line(args)
 
+    usersessions = UserSessions()
     controllers = Controllers()
     wsclients = WsClients()
 
     handler_settings = {
+        "usersessions": usersessions,
         "controllers": controllers,
         "wsclients": wsclients,
     }
