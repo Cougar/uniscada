@@ -71,6 +71,8 @@ from udpcomm import *
 from controllers import Controllers
 from sdpreceiver import SDPReceiver
 
+log = logging.getLogger(__name__)
+
 EXECUTOR = ThreadPoolExecutor(max_workers=50)
 
 wsclients = []
