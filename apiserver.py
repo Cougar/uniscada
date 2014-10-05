@@ -70,6 +70,7 @@ from functools import partial, wraps
 from udpcomm import *
 from controllers import Controllers
 from sdpreceiver import SDPReceiver
+from wsclients import WsClients
 
 log = logging.getLogger(__name__)
 
@@ -164,6 +165,7 @@ class RootHandler(tornado.web.RequestHandler):
 class RestHandler(tornado.web.RequestHandler):
     def __init__(self, *args, **kwargs):
         self._controllers = kwargs.pop('controllers', None)
+        self._wsclients = kwargs.pop('wsclients', None)
         super(RestHandler, self).__init__(*args, **kwargs)
 
     def initialize(self):
@@ -206,13 +208,11 @@ class RestHandler(tornado.web.RequestHandler):
 class WebSocketHandler(tornado.websocket.WebSocketHandler):
     def __init__(self, *args, **kwargs):
         self._controllers = kwargs.pop('controllers', None)
+        self._wsclients = kwargs.pop('wsclients', None)
         super(WebSocketHandler, self).__init__(*args, **kwargs)
 
     def open(self, *args):
-        if self not in wsclients:
-            wsclients.append(self)
-            self.subscriptions = []
-            self.subscriptiontokens = {}
+        self.wsclient = self._wsclients.find_by_id(self)
         cookeiauth = CookieAuth(self)
         self.user = cookeiauth.get_current_user()
         if self.user == None:
@@ -262,20 +262,20 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         self.write_message(json.dumps(reply, indent=4, sort_keys=True))
 
     def on_close(self):
-        if self in wsclients:
-            wsclients.remove(self)
+        self._wsclients.remove_by_id(self)
 
 class FileHandler(tornado.web.RequestHandler):
     def get(self, *args, **kwargs):
         self.render(args[0])
 
 class UDPReader(object):
-    def __init__(self, addr, port, controllers):
+    def __init__(self, addr, port, controllers, wsclients):
         import socket
         import tornado.ioloop
         import functools
 
         self._controllers = controllers
+        self._wsclients = wsclients
         self.b = SDPReceiver(self._controllers)
         self.u = UDPComm(addr, port, self.b.datagram_from_controller)
         self.interval = 10
@@ -285,6 +285,7 @@ class UDPReader(object):
     def sync_tasks(self): # regular checks or tasks
         # put here tasks to be executed in regular intervals
         log.debug('Controllers:' + str(self._controllers))
+        log.debug('WSClients:' + str(self._wsclients))
         self.ioloop.add_timeout(datetime.timedelta(seconds=self.interval), self.sync_tasks)
 
     def _callback(self, sock, fd, events):
@@ -312,9 +313,11 @@ if __name__ == '__main__':
     tornado.options.parse_command_line(args)
 
     controllers = Controllers()
+    wsclients = WsClients()
 
     handler_settings = {
         "controllers": controllers,
+        "wsclients": wsclients,
     }
 
     app_settings = {
@@ -344,7 +347,7 @@ if __name__ == '__main__':
         app.listen(options.http_port, address = options.listen_address)
         print("OK")
 
-    UDPReader("0.0.0.0", int(options.udp_port), controllers)
+    UDPReader("0.0.0.0", int(options.udp_port), controllers, wsclients)
 
     import tornado.ioloop
     tornado.ioloop.IOLoop.instance().start()
