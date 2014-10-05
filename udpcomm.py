@@ -1,8 +1,9 @@
 import traceback
-from host import *
 import socket
 import tornado.ioloop
 import functools # from functools import partial
+
+from hosts import Hosts
 
 import logging
 log = logging.getLogger(__name__)
@@ -20,6 +21,7 @@ class UDPComm(object): # object on millegiparast vajalik
         self.addr=addr
         self.port=port
         self.handler=handler
+        self._hosts = Hosts()
 
         self._io_loop = tornado.ioloop.IOLoop.instance()
         self._io_loop.add_handler(self._sock.fileno(), functools.partial(self._callback, self._sock), self._io_loop.READ)
@@ -35,12 +37,14 @@ class UDPComm(object): # object on millegiparast vajalik
     def _callback_read(self, sock, fd):
         (data, addr) = sock.recvfrom(4096)
         log.debug("got UDP " + str({ "from": addr, "msg": str(data) }))
-        host = Host(self, addr)
+        host = self._hosts.find_by_id(addr)
+        host.set_receiver(self._handler)  # FIXME set it only once
+        host.set_sender(self.send)  # FIXME set it only once
         if not isinstance(data, str):
             data = data.decode("UTF-8")
-        self.handler(host, data)
+        host.receiver(data)
 
-    def send(self, addr, sendstring = ''):
+    def send(self, host, sendstring = ''):
         '''
         actual udp sending. give message as parameter
         Sends UDP data immediately, adding self.inum if >0.
@@ -51,6 +55,7 @@ class UDPComm(object): # object on millegiparast vajalik
         log.debug("send going to send to %s: %s", str(addr), sendstring)
         if isinstance(sendstring, str):
             sendstring = sendstring.encode(encoding='UTF-8')
+        addr = host.get_id()
         try:
             sendlen = self._sock.sendto(sendstring, addr)
             log.debug('sent ack to '+str(repr(addr))+' '+str(sendstring).replace('\n',' '))
