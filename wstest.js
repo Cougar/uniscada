@@ -82,6 +82,10 @@ function WebSocketSend(method, res) {
 }
 
 
+function WebSocketSubscribe(res) {
+    WebSocketSend('subscribe', res);
+}
+
 function WebSocketSendJSON(res) {
     WebSocketSend('get', res);
 }
