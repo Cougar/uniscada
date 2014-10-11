@@ -37,6 +37,12 @@ class GlobalList(object):
             log.info('find_by_id(%s): existing member(%s)', str(id), str(self._members[id]))
         return self._members[id]
 
+    def get_id(self, id):
+        if id in self._members:
+            return self._members[id]
+        else:
+            return None
+
     def get_id_list(self):
         ''' Generates a list of member instances
 
