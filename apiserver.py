@@ -179,8 +179,8 @@ class RestHandler(tornado.web.RequestHandler):
     @unblock
     def get(self, *args, **kwargs):
 
-        user = self.get_current_user()
-        if user == None:
+        self.user = self.get_current_user()
+        if self.user == None:
             return({ 'status': 200, 'bodydata': {'message': 'Not authenticated', 'login_url': 'https://login.itvilla.com/login'} })
 
         if len(args) != 3:
@@ -193,10 +193,15 @@ class RestHandler(tornado.web.RequestHandler):
             filter = args[2]
 
         try:
-            body = self.session.sql2json(args[0], filter)
+            self._usersession = self._usersessions.find_by_id(self.user)
+            if not self._usersession.get_userdata():
+                self._usersession.read_userdata_form_nagois()
+                # FIXME return right reload page with 307
+                # FIXME add delay to  avoid race condition
+                return({ 'status': 200, 'headers': [ { 'Location': 'https://receiver.itvilla.com:4433/api/v1/hosts' } ], 'bodydata': {'message' : 'Authentication in progress..'} })
 
             headers = [
-                    { 'X-Username': user }
+                    { 'X-Username': self.user }
             ]
             return({ 'status': 200, 'headers': headers, 'bodydata': body })
         except SessionAuthenticationError as e:
