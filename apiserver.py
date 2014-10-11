@@ -186,8 +186,6 @@ class RestHandler(tornado.web.RequestHandler):
         if len(args) != 3:
             return({'message' : 'missing arguments'})
 
-        self.session = Session(user)
-
         filter = None
         if args[2] != '':
             filter = args[2]
@@ -287,14 +285,17 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
                 filter = resources[2]
 
             try:
-                reply['body'] = self.session.sql2json(resources[1], filter)
+                reply['body'] = self._usersession.sql2json(resources[1], filter)
             except Exception as e:
                 reply['message'] = 'error: ' + str(e)
 
-        self.write_message(json.dumps(reply, indent=4, sort_keys=True))
+        self.wsclient.send_data(reply)
 
     def on_close(self):
         self._wsclients.remove_by_id(self)
+
+    def __str__(self):
+        return(str(self._args))
 
 class FileHandler(tornado.web.RequestHandler):
     def get(self, *args, **kwargs):
