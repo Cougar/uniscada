@@ -27,11 +27,9 @@ class SDPTests(unittest.TestCase):
         d = self.sdp.get_data('ABS')
         self.assertTrue(isinstance(d, int))
         self.assertEqual(d, 3)
-        self.assertEqual(self.sdp.get_data('ABs'), None)
-        self.assertEqual(self.sdp.get_data('abS'), None)
 
-        self.assertRaises(Exception, self.sdp.add_keyvalue, 'ACS', 'a')
-        self.assertRaises(Exception, self.sdp.add_keyvalue, 'ADS', [1, 2])
+        self.assertRaises(Exception, self.sdp.add_keyvalue, 'AXS', 'a')
+        self.assertRaises(Exception, self.sdp.add_keyvalue, 'AYS', [1, 2])
 
     def test_add_status(self):
         ''' Test setting/getting Status key:val '''
@@ -42,8 +40,8 @@ class SDPTests(unittest.TestCase):
         self.assertEqual(self.sdp.get_data('AAs'), None)
         self.assertEqual(self.sdp.get_data('aaS'), None)
 
-        self.assertRaises(Exception, self.sdp.add_status, 'AB', 'a')
-        self.assertRaises(Exception, self.sdp.add_status, 'AC', [1, 2])
+        self.assertRaises(Exception, self.sdp.add_status, 'AX', 'a')
+        self.assertRaises(Exception, self.sdp.add_status, 'AY', [1, 2])
 
     def test_add_keyvalue_value(self):
         ''' Test setting/getting key:val for Value '''
@@ -58,31 +56,23 @@ class SDPTests(unittest.TestCase):
         d = self.sdp.get_data('ABV')
         self.assertTrue(isinstance(d, float))
         self.assertEqual(d, 1.5)
-        self.assertEqual(self.sdp.get_data('ABv'), None)
-        self.assertEqual(self.sdp.get_data('abV'), None)
 
         self.sdp.add_keyvalue('ACV', 'abc')
         d = self.sdp.get_data('ACV')
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, 'abc')
-        self.assertEqual(self.sdp.get_data('ACv'), None)
-        self.assertEqual(self.sdp.get_data('acV'), None)
 
         self.sdp.add_keyvalue('ADV', 'cde xyz')
         d = self.sdp.get_data('ADV')
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, 'cde xyz')
-        self.assertEqual(self.sdp.get_data('ADv'), None)
-        self.assertEqual(self.sdp.get_data('adV'), None)
 
         self.sdp.add_keyvalue('AEV', '1 2 3.5')
         d = self.sdp.get_data('AEV')
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, '1 2 3.5')
-        self.assertEqual(self.sdp.get_data('AEv'), None)
-        self.assertEqual(self.sdp.get_data('aeV'), None)
 
-        self.assertRaises(Exception, self.sdp.add_keyvalue, 'ADV', [1, 2])
+        self.assertRaises(Exception, self.sdp.add_keyvalue, 'AXV', [1, 2])
 
     def test_add_keyvalue_values(self):
         ''' Test setting/getting key:val for List of Values '''
@@ -97,12 +87,10 @@ class SDPTests(unittest.TestCase):
         d = self.sdp.get_data('ABW')
         self.assertTrue(isinstance(d, list))
         self.assertEqual(d, [1, 2, 3.5])
-        self.assertEqual(self.sdp.get_data('ABw'), None)
-        self.assertEqual(self.sdp.get_data('abW'), None)
 
-        self.assertRaises(Exception, self.sdp.add_keyvalue, 'ACW', 1)
-        self.assertRaises(Exception, self.sdp.add_keyvalue, 'ADW', 1.5)
-        self.assertRaises(Exception, self.sdp.add_keyvalue, 'AEW', 'a')
+        self.assertRaises(Exception, self.sdp.add_keyvalue, 'AXW', 1)
+        self.assertRaises(Exception, self.sdp.add_keyvalue, 'AYW', 1.5)
+        self.assertRaises(Exception, self.sdp.add_keyvalue, 'AZW', 'a')
 
     def test_add_value(self):
         ''' Test setting/getting Value and List of Values key:val '''
@@ -119,38 +107,21 @@ class SDPTests(unittest.TestCase):
         d = self.sdp.get_data('ABV')
         self.assertTrue(isinstance(d, float))
         self.assertEqual(d, 1.5)
-        self.assertEqual(self.sdp.get_data('ABv'), None)
-        self.assertEqual(self.sdp.get_data('abV'), None)
-        self.assertEqual(self.sdp.get_data('ABS'), None)
-        self.assertEqual(self.sdp.get_data('ABW'), None)
 
         self.sdp.add_value('AC', 'value')
         d = self.sdp.get_data('ACV')
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, 'value')
-        self.assertEqual(self.sdp.get_data('ACv'), None)
-        self.assertEqual(self.sdp.get_data('acV'), None)
-        self.assertEqual(self.sdp.get_data('ACS'), None)
-        self.assertEqual(self.sdp.get_data('ACW'), None)
 
         self.sdp.add_value('AD', [1])
         d = self.sdp.get_data('ADW')
         self.assertTrue(isinstance(d, list))
         self.assertEqual(d, [1])
-        self.assertEqual(self.sdp.get_data('ADv'), None)
-        self.assertEqual(self.sdp.get_data('adV'), None)
-        self.assertEqual(self.sdp.get_data('ADS'), None)
-        self.assertEqual(self.sdp.get_data('ADV'), None)
 
         self.sdp.add_value('AE', [1, 2, 3])
         d = self.sdp.get_data('AEW')
         self.assertTrue(isinstance(d, list))
         self.assertEqual(d, [1, 2, 3])
-        self.assertEqual(self.sdp.get_data('AEv'), None)
-        self.assertEqual(self.sdp.get_data('aeV'), None)
-        self.assertEqual(self.sdp.get_data('ADS'), None)
-        self.assertEqual(self.sdp.get_data('ADV'), None)
-
 
     def test_add_keyvalue_data(self):
         ''' Test setting/getting key:val for Other Data '''
@@ -162,9 +133,9 @@ class SDPTests(unittest.TestCase):
         self.assertEqual(self.sdp.get_data('a'), None)
         self.assertEqual(self.sdp.get_data('aaa'), None)
 
-        self.assertRaises(Exception, self.sdp.add_keyvalue, 'ab', 1)
-        self.assertRaises(Exception, self.sdp.add_keyvalue, 'ac', 1.5)
-        self.assertRaises(Exception, self.sdp.add_keyvalue, 'ad', [1, 2])
+        self.assertRaises(Exception, self.sdp.add_keyvalue, 'ax', 1)
+        self.assertRaises(Exception, self.sdp.add_keyvalue, 'ay', 1.5)
+        self.assertRaises(Exception, self.sdp.add_keyvalue, 'az', [1, 2])
 
     def test_add_keyvalue_request_data(self):
         ''' Test setting/getting key:val where val == '?' '''
@@ -172,22 +143,16 @@ class SDPTests(unittest.TestCase):
         d = self.sdp.get_data('AAS')
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, '?')
-        self.assertEqual(self.sdp.get_data('AAs'), None)
-        self.assertEqual(self.sdp.get_data('aaS'), None)
 
         self.sdp.add_keyvalue('ABV', '?')
         d = self.sdp.get_data('ABV')
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, '?')
-        self.assertEqual(self.sdp.get_data('ABv'), None)
-        self.assertEqual(self.sdp.get_data('abV'), None)
 
         self.sdp.add_keyvalue('ACW', '?')
         d = self.sdp.get_data('ACW')
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, '?')
-        self.assertEqual(self.sdp.get_data('ACw'), None)
-        self.assertEqual(self.sdp.get_data('acW'), None)
 
     def test_add_keyvalue_values(self):
         ''' Test setting/getting key:val for List of Values '''
@@ -195,20 +160,16 @@ class SDPTests(unittest.TestCase):
         d = self.sdp.get_data('AAW')
         self.assertTrue(isinstance(d, list))
         self.assertEqual(d, [1])
-        self.assertEqual(self.sdp.get_data('AAw'), None)
-        self.assertEqual(self.sdp.get_data('aaW'), None)
 
         self.sdp.add_keyvalue('ABW', '1 2 35')
         d = self.sdp.get_data('ABW')
         self.assertTrue(isinstance(d, list))
         self.assertEqual(d, [1, 2, 35])
-        self.assertEqual(self.sdp.get_data('ABw'), None)
-        self.assertEqual(self.sdp.get_data('abW'), None)
 
-        self.assertRaises(Exception, self.sdp.add_keyvalue, 'ACW', 1)
-        self.assertRaises(Exception, self.sdp.add_keyvalue, 'ADW', 1.5)
-        self.assertRaises(Exception, self.sdp.add_keyvalue, 'AEW', 'a')
-        self.assertRaises(Exception, self.sdp.add_keyvalue, 'AFW', '1.5 2.2')
+        self.assertRaises(Exception, self.sdp.add_keyvalue, 'AXW', 1)
+        self.assertRaises(Exception, self.sdp.add_keyvalue, 'AYW', 1.5)
+        self.assertRaises(Exception, self.sdp.add_keyvalue, 'AZW', 'a')
+        self.assertRaises(Exception, self.sdp.add_keyvalue, 'AQW', '1.5 2.2')
 
     def test_encode_with_id(self):
         ''' Test encoder for full packet'''
