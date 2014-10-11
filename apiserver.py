@@ -14,6 +14,8 @@ GOOD
     http://receiver.itvilla.com:8888/api/v1/services/00204AB80D57
     http://receiver.itvilla.com:8888/api/v1/services/00204AB80BF9
     http://receiver.itvilla.com:8888/api/v1/services/00204AA95C56
+    http://receiver.itvilla.com:8888/api/v1/hosts/
+    http://receiver.itvilla.com:8888/api/v1/hosts/00204AA95C56
 
     https://receiver.itvilla.com:4433/api/v1/hostgroups
     https://receiver.itvilla.com:4433/api/v1/hostgroups/
@@ -25,6 +27,8 @@ GOOD
     https://receiver.itvilla.com:4433/api/v1/services/00204AB80D57
     https://receiver.itvilla.com:4433/api/v1/services/00204AB80BF9
     https://receiver.itvilla.com:4433/api/v1/services/00204AA95C56
+    https://receiver.itvilla.com:4433/api/v1/hosts/
+    https://receiver.itvilla.com:4433/api/v1/hosts/00204AA95C56
 
 BAD
     http://receiver.itvilla.com:8888/
@@ -35,6 +39,7 @@ BAD
     http://receiver.itvilla.com:8888/api/v1/servicegroups/hvvmon_ee
     http://receiver.itvilla.com:8888/api/v1/services/x
     http://receiver.itvilla.com:8888/api/v1/services/0008E101A8E9
+    http://receiver.itvilla.com:8888/api/v1/hosts/x
 
     https://receiver.itvilla.com:4433/
     https://receiver.itvilla.com:4433/api/v1/
@@ -44,6 +49,7 @@ BAD
     https://receiver.itvilla.com:4433/api/v1/servicegroups/hvvmon_ee
     https://receiver.itvilla.com:4433/api/v1/services/x
     https://receiver.itvilla.com:4433/api/v1/services/0008E101A8E9
+    https://receiver.itvilla.com:4433/api/v1/hosts/x
 
 """
 
@@ -197,6 +203,12 @@ class RestHandler(tornado.web.RequestHandler):
                 # FIXME return right reload page with 307
                 # FIXME add delay to  avoid race condition
                 return({ 'status': 200, 'headers': [ { 'Location': 'https://receiver.itvilla.com:4433/api/v1/hosts' } ], 'bodydata': {'message' : 'Authentication in progress..'} })
+
+            if args[0] == 'hosts':
+                from api_hosts import API_hosts
+                body = API_hosts(self._controllers).output(self.user, filter)
+            else:
+                body = {}
 
             headers = [
                     { 'X-Username': self.user }
