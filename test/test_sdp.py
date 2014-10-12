@@ -154,6 +154,20 @@ class SDPTests(unittest.TestCase):
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, '?')
 
+    def test_timestamp(self):
+        ''' Test get_timestamp() method '''
+        self.assertEqual(self.sdp.get_timestamp(), None)
+        self.sdp.add_keyvalue('in', '1')
+        self.assertEqual(self.sdp.get_timestamp(), None)
+        self.sdp.add_keyvalue('in', '2,123')
+        self.assertEqual(self.sdp.get_timestamp(), 123)
+        self.sdp.add_keyvalue('in', '3,456.7')
+        self.assertEqual(self.sdp.get_timestamp(), 456.7)
+        self.sdp.add_keyvalue('in', '4,567,89')
+        self.assertEqual(self.sdp.get_timestamp(), None)
+        self.sdp.add_keyvalue('in', '5,67.8.9')
+        self.assertEqual(self.sdp.get_timestamp(), None)
+
     def test_add_keyvalue_values(self):
         ''' Test setting/getting key:val for List of Values '''
         self.sdp.add_keyvalue('AAW', '1')

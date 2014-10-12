@@ -1,6 +1,7 @@
 ''' Message datagram composition and decomposition
     according to the Uniscada Service Description Protocol.
 '''
+import re
 
 import logging
 log = logging.getLogger(__name__)
@@ -142,6 +143,23 @@ class SDP(object):
             yield (key, str(self.data['data'][key]))
         for key in self.data['query'].keys():
             yield (key, '?')
+
+    def get_timestamp(self):
+        ''' Read SDP timestamp from "in:<num>,<timestamp>"
+
+        If "in" consists timestamp but the format has errors the
+        Exception will be raised.
+
+        :returns: timestamp or 'None' if not exists
+        '''
+        inn = str(self.get_data('in'))
+        if not inn:
+            return None
+        p = re.compile('^\d+,(\d+(\.\d+)?)$')
+        m = p.match(inn)
+        if not m:
+            return None
+        return float(m.group(1))
 
     def encode(self, id=None):
         ''' Encodes SDP packet to datagram
