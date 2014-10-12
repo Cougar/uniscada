@@ -16,6 +16,8 @@ GOOD
     http://receiver.itvilla.com:8888/api/v1/services/00204AA95C56
     http://receiver.itvilla.com:8888/api/v1/hosts/
     http://receiver.itvilla.com:8888/api/v1/hosts/00204AA95C56
+    http://receiver.itvilla.com:8888/api/v1/controllers/
+    http://receiver.itvilla.com:8888/api/v1/controllers/00204AA95C56
 
     https://receiver.itvilla.com:4433/api/v1/hostgroups
     https://receiver.itvilla.com:4433/api/v1/hostgroups/
@@ -29,6 +31,8 @@ GOOD
     https://receiver.itvilla.com:4433/api/v1/services/00204AA95C56
     https://receiver.itvilla.com:4433/api/v1/hosts/
     https://receiver.itvilla.com:4433/api/v1/hosts/00204AA95C56
+    https://receiver.itvilla.com:4433/api/v1/controllers/
+    https://receiver.itvilla.com:4433/api/v1/controllers/00204AA95C56
 
 BAD
     http://receiver.itvilla.com:8888/
@@ -40,6 +44,7 @@ BAD
     http://receiver.itvilla.com:8888/api/v1/services/x
     http://receiver.itvilla.com:8888/api/v1/services/0008E101A8E9
     http://receiver.itvilla.com:8888/api/v1/hosts/x
+    http://receiver.itvilla.com:8888/api/v1/controllers/x
 
     https://receiver.itvilla.com:4433/
     https://receiver.itvilla.com:4433/api/v1/
@@ -50,6 +55,7 @@ BAD
     https://receiver.itvilla.com:4433/api/v1/services/x
     https://receiver.itvilla.com:4433/api/v1/services/0008E101A8E9
     https://receiver.itvilla.com:4433/api/v1/hosts/x
+    https://receiver.itvilla.com:4433/api/v1/controllers/x
 
 """
 
@@ -207,6 +213,9 @@ class RestHandler(tornado.web.RequestHandler):
             if args[0] == 'hosts':
                 from api_hosts import API_hosts
                 body = API_hosts(self._controllers).output(self.user, filter)
+            elif args[0] == 'controllers':
+                from api_controllers import API_controllers
+                body = API_controllers(self._controllers).output(self.user, filter)
             else:
                 body = {}
 
@@ -380,7 +389,7 @@ if __name__ == '__main__':
 
     app = tornado.web.Application([
         (r'/files/(wstest.html|wstest.js)', FileHandler),
-        (r'/api/v1/(servicegroups|hostgroups|services)(/(.*))?', RestHandler, handler_settings),
+        (r'/api/v1/(servicegroups|hostgroups|services|hosts|controllers)(/(.*))?', RestHandler, handler_settings),
         (r'/api/v1/ws', WebSocketHandler, handler_settings),
         (r'/api/v1/', RootHandler),
         (r'/.*', UnknownHandler)
