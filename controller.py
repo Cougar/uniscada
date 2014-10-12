@@ -25,7 +25,7 @@ class Controller(object):
         :param id: controller id
         :param listinstance: optional Controllers instance
         '''
-        log.debug('Create a new controller (%s)', str(id))
+        log.info('Create a new controller (%s)', str(id))
         self._id = id
         self._host = None
         self._state = {}
@@ -51,7 +51,7 @@ class Controller(object):
             log.info('set_host(%s, %s): replace old host %s', str(self._id), str(host), str(self._host))
             self._host.remove()
         else:
-            log.info('set_host(%s, %s): already exists', str(self._id), str(host))
+            log.debug('set_host(%s, %s): already exists', str(self._id), str(host))
             return
         self._host = host
 

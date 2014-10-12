@@ -62,7 +62,7 @@ class Host(object):
         if not self._receiver:
             log.error('receiver(%s, "%s"): callback not set', str(self._id), str(receivedmessage))
             return
-        log.info('receiver(%s, "%s")', str(self._id), str(receivedmessage))
+        log.debug('receiver(%s, "%s")', str(self._id), str(receivedmessage))
         self._receiver(self, receivedmessage)
 
     def send(self, sendmessage):
@@ -78,7 +78,7 @@ class Host(object):
         if not self._sender:
             log.error('send(%s, "%s"): callback not set', str(self._id), str(sendmessage))
             return
-        log.info('send(%s, "%s")', str(self._id), str(sendmessage))
+        log.debug('send(%s, "%s")', str(self._id), str(sendmessage))
         self._sender(self, sendmessage)
 
     def remove(self):
