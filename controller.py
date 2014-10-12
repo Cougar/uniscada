@@ -12,6 +12,7 @@ __all__ = [
     'Controller',
     'get_id',
     'set_host',
+    'set_state_reg', 'get_state_register_list', 'get_state_reg',
     'set_state_reg', 'get_state_reg',
     'set_last_sdp', 'ack_last_sdp',
     'send_queue_reset', 'send_queue_add_last_reg', 'send_queue_remove_reg',
@@ -64,6 +65,15 @@ class Controller(object):
         '''
         log.debug('set_statereg(%s, %s, %s, %s)', str(self._id), str(reg), str(val), str(ts))
         self._state[reg] = { 'data': val, 'ts': ts }
+
+    def get_state_register_list(self):
+        ''' Generates (reg, val, ts) duples for all variables known
+        for the controller
+
+        :returns: Generated (reg, val, ts) duple for each register
+        '''
+        for reg in self._state.keys():
+            yield (reg, self._state[reg]['data'], self._state[reg]['ts'])
 
     def get_state_reg(self, reg):
         ''' Get reg from the state dictionary of this controller

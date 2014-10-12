@@ -30,3 +30,11 @@ class ControllerTests(unittest.TestCase):
     def test_state_reg(self):
         ''' Test controller state missing register '''
         self.assertEqual(self.controller.get_state_reg('xxx'), (None, None))
+
+    def test_state_register_list(self):
+        ''' Test get_state_register_list() method '''
+        self.assertEqual(list(self.controller.get_state_register_list()), [])
+        self.controller.set_state_reg('ABC', 123, ts=100)
+        self.controller.set_state_reg('DEF', 'abc', ts=200)
+        self.controller.set_state_reg('GHI', [4, 5, 6], ts=300)
+        self.assertItemsEqual(list(self.controller.get_state_register_list()), [('ABC', 123, 100), ('DEF', 'abc', 200), ('GHI', [4, 5, 6], 300)])
