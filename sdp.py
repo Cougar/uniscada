@@ -7,6 +7,13 @@ import logging
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
+__all__ = [
+    'SDP',
+    'add_keyvalue', 'add_status', 'add_value',
+    'get_data', 'get_data_list', 'get_timestamp',
+    'encode', 'decode',
+]
+
 class SDP(object):
     ''' Convert to and from SDP protocol datagram '''
     def __init__(self):
@@ -172,6 +179,7 @@ class SDP(object):
         if id:
             self.add_keyvalue('id', id)
         if not 'id' in self.data['data']:
+            log.error('id missing, cant encode')
             raise Exception("id missing");
         for key in self.data['data'].keys():
             datagram += key + ':' + str(self.data['data'][key]) + '\n'
@@ -198,15 +206,19 @@ class SDP(object):
                 log.warning('empty line in datagram')
                 continue
             if not ':' in line:
+                log.error('datagram line format error: no colon')
                 raise Exception('datagram line error: \"' + line + '\"')
             try:
                 (key, val) = line.split(':', 1)
             except:
+                log.error('datagram line format error: cant split')
                 raise Exception('error in line: \"' + line + '\"')
             if ':' in val:
+                log.error('datagram line format error: more than one colon')
                 raise Exception('colon in value: \"' + val + '\"')
             self.add_keyvalue(key, val)
         if self.get_data('id') is None:
+            log.error('id missing in datagram')
             raise Exception('id: _MUST_ exists in datagram')
 
     def __str__(self):
