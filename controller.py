@@ -1,5 +1,6 @@
 ''' Controller data structure
 '''
+import time
 
 from sdp import SDP
 
@@ -29,6 +30,7 @@ class Controller(object):
         self._host = None
         self._state = {}
         self._last_sdp = None
+        self._last_sdp_ts = None
         self._send_queue = {}
 
     def get_id(self):
@@ -53,7 +55,7 @@ class Controller(object):
             return
         self._host = host
 
-    def set_state_reg(self, reg, val, ts = None):
+    def set_state_reg(self, reg, val, ts = time.time()):
         ''' Set val of reg in the state dictionary of this controller
 
         :param reg: register name
@@ -77,7 +79,7 @@ class Controller(object):
             log.debug('get_state_reg(%s, %s): None', str(self._id), str(reg))
             return None
 
-    def set_last_sdp(self, sdp, ts = None):
+    def set_last_sdp(self, sdp, ts = time.time()):
         ''' Remember last SDP packet and process it locally
 
         :param sdp: SDP instance
@@ -85,6 +87,7 @@ class Controller(object):
         '''
         log.debug('set_last_sdp(%s)', str(self._id))
         self._last_sdp = sdp
+        self._last_sdp_ts = ts
         self._process_incoming_sdp(sdp, ts = ts)
 
     def _process_incoming_sdp(self, sdp, ts = None):

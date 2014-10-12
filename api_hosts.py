@@ -30,4 +30,6 @@ class API_hosts(object):
                 r1['key'] = reg[0]
                 r1['value'] = h._last_sdp.get_data(reg[0])
                 r['registers'].append(r1)
+        if h._last_sdp_ts:
+            r['timestamp'] = h._last_sdp_ts
         return r
