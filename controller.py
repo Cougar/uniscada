@@ -103,7 +103,7 @@ class Controller(object):
         for (register, value) in self._last_sdp.get_data_list():
             if register == 'id' or register == 'in':
                 continue
-            if '?' in value:
+            if value == '?':
                 self.send_queue_add_last_reg(register)
             else:
                 self.set_state_reg(register, value, ts = ts)
