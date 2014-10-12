@@ -79,14 +79,15 @@ class Controller(object):
 
         :param reg: register name
 
-        :returns: register value or None if not exist
+        :returns: register (value, timestamp) duple or
+        (None, None) if not exist
         '''
         if reg in self._state:
-            log.debug('get_state_reg(%s, %s): %s', str(self._id), str(reg), str(self._state[reg]['data']))
-            return self._state[reg]['data']
+            log.debug('get_state_reg(%s, %s): (%s, %d)', str(self._id), str(reg), str(self._state[reg]['data']), self._state[reg]['ts'])
+            return (self._state[reg]['data'], self._state[reg]['ts'])
         else:
-            log.debug('get_state_reg(%s, %s): None', str(self._id), str(reg))
-            return None
+            log.debug('get_state_reg(%s, %s): (None, None)', str(self._id), str(reg))
+            return (None, None)
 
     def set_last_sdp(self, sdp, ts = time.time()):
         ''' Remember last SDP packet and process it locally
@@ -150,7 +151,7 @@ class Controller(object):
         :param reg: register to add the the queue
         '''
         log.debug('send_queue_add_last_reg(%s, %s)', str(self._id), str(reg))
-        val = self.get_state_reg(reg)
+        (val, ts) = self.get_state_reg(reg)
         if val:
             log.debug('  %s', str(val))
             self._send_queue[reg] = val
