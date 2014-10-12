@@ -13,7 +13,6 @@ __all__ = [
     'get_id',
     'set_host',
     'set_state_reg', 'get_state_register_list', 'get_state_reg',
-    'set_state_reg', 'get_state_reg',
     'set_last_sdp', 'ack_last_sdp',
     'send_queue_reset', 'send_queue_add_last_reg', 'send_queue_remove_reg',
 ]
