@@ -1,6 +1,6 @@
 import unittest
 
-from sdp import *
+from sdp import SDP
 
 class SDPTests(unittest.TestCase):
     '''
