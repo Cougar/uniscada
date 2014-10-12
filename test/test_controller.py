@@ -1,4 +1,5 @@
 import unittest
+import time
 
 from controller import Controller
 
@@ -14,7 +15,18 @@ class ControllerTests(unittest.TestCase):
         self.assertEqual(self.controller.get_id(), '123')
 
     def test_state_reg(self):
-        ''' Test controller state register functions '''
+        ''' Test controller state register without timestamp '''
+        timestamp = time.time()
         self.controller.set_state_reg('ABC', 123)
-        self.assertEqual(self.controller.get_state_reg('ABC'), 123)
-        self.assertEqual(self.controller.get_state_reg('xxx'), None)
+        (val, ts) = self.controller.get_state_reg('ABC')
+        self.assertEqual(val, 123)
+        self.assertAlmostEqual(ts, timestamp, delta=2)
+
+    def test_state_reg(self):
+        ''' Test controller state register with timestamp '''
+        self.controller.set_state_reg('ABC', 123, ts=999)
+        self.assertEqual(self.controller.get_state_reg('ABC'), (123, 999))
+
+    def test_state_reg(self):
+        ''' Test controller state missing register '''
+        self.assertEqual(self.controller.get_state_reg('xxx'), (None, None))
