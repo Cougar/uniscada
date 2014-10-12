@@ -47,12 +47,12 @@ class Controller(object):
         '''
         if not self._host:
             log.debug('set_host(%s, %s): new', str(self._id), str(host))
-        elif host != self._host:
-            log.info('set_host(%s, %s): replace old host %s', str(self._id), str(host), str(self._host))
-            self._host.remove()
-        else:
+        elif host == self._host:
             log.debug('set_host(%s, %s): already exists', str(self._id), str(host))
             return
+        else:
+            log.info('set_host(%s, %s): replace old host %s', str(self._id), str(host), str(self._host))
+            self._host.remove()
         self._host = host
 
     def set_state_reg(self, reg, val, ts = time.time()):
