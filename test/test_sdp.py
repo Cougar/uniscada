@@ -325,10 +325,7 @@ class SDPTests(unittest.TestCase):
         ''' Test decoder with invalid datagram '''
         self.assertRaises(Exception, self.sdp.decode, '')
         self.assertRaises(Exception, self.sdp.decode, '\n')
-        self.assertRaises(Exception, self.sdp.decode, 'id:abc\n\n')
-        self.assertRaises(Exception, self.sdp.decode, 'id:abc\n\nAAS:1')
         self.assertRaises(Exception, self.sdp.decode, 'id:abc\nABC')
-        self.assertRaises(Exception, self.sdp.decode, '\nid:abc')
         self.assertRaises(Exception, self.sdp.decode, 'id:abc\nABS:abc')
         self.assertRaises(Exception, self.sdp.decode, 'id:abc\nACW:123 bcd')
         self.assertRaises(Exception, self.sdp.decode, 'id:abc\nADW:1.0 2.2')

@@ -176,10 +176,17 @@ class SDP(object):
         :param datagram: The string representation of SDP datagram
         '''
         for line in datagram.splitlines():
+            if line == '':
+                log.warning('empty line in datagram')
+                continue
+            if not ':' in line:
+                raise Exception('datagram line error: \"' + line + '\"')
             try:
-                (key, val) = line.split(':')
+                (key, val) = line.split(':', 1)
             except:
                 raise Exception('error in line: \"' + line + '\"')
+            if ':' in val:
+                raise Exception('colon in value: \"' + val + '\"')
             self.add_keyvalue(key, val)
         if self.get_data('id') is None:
             raise Exception('id: _MUST_ exists in datagram')
