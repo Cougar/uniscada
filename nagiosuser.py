@@ -49,9 +49,9 @@ class NagiosUser:
     def _async_handle_request(self, response):
         ''' Handle non-blocking Nagios data reader response
         '''
-        log.info('_async_handle_request(): ' + str(response))
+        log.info('_async_handle_request(%s)', str(response))
         if response.error:
-            log.error('_async_handle_request(): Nagios data read error: ' + str(response.error))
+            log.error('_async_handle_request(): Nagios data read error: %s', str(response.error))
             self._data_callback(None)
         else:
             self._userdata = json.loads(response.body.decode(encoding='UTF-8')).get('user_data', None)

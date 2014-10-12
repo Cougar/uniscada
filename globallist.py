@@ -15,7 +15,7 @@ class GlobalList(object):
     def __init__(self):
         self._members = {}
         self.class_name = self.getMemberClass()
-        log.info('Initialise a new global list of ' + str(self.class_name))
+        log.info('Initialise a new global list of %s', str(self.class_name))
 
     def getMemberClass(self):
         ''' Return a class name that should be used for members

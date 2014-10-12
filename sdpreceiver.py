@@ -43,6 +43,6 @@ class SDPReceiver(object):
         controller.set_host(host)
         controller.set_last_sdp(sdp, ts = time.time())
 
-        log.debug('Controller: ' + str(controller))
+        log.debug('Controller: %s', str(controller))
         controller.ack_last_sdp()
         log.debug("---------------------------------")

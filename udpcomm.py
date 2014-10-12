@@ -1,3 +1,4 @@
+import time
 import socket
 import tornado.ioloop
 from functools import partial
@@ -52,7 +53,7 @@ class UDPComm(object):
 
         '''
         (data, addr) = sock.recvfrom(4096)
-        log.debug("got UDP " + str({ "from": addr, "msg": str(data) }))
+        log.debug("got UDP datagram from %s @%.1f: %s", str(addr), time.time(), str(data))
         host = self._hosts.find_by_id(addr)
         host.set_receiver(self._handler)  # FIXME set it only once
         host.set_sender(self._send)  # FIXME set it only once

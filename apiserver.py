@@ -330,9 +330,9 @@ class UDPReader(object):
 
     def sync_tasks(self): # regular checks or tasks
         # put here tasks to be executed in regular intervals
-        log.debug('Users:' + str(self._usersessions))
-        log.debug('Controllers:' + str(self._controllers))
-        log.debug('WSClients:' + str(self._wsclients))
+        log.debug('Users: %s', str(self._usersessions))
+        log.debug('Controllers: %s', str(self._controllers))
+        log.debug('WSClients: %s', str(self._wsclients))
         self.ioloop.add_timeout(datetime.timedelta(seconds=self.interval), self.sync_tasks)
 
     def _callback(self, sock, fd, events):
