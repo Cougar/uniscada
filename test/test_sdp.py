@@ -45,6 +45,7 @@ class SDPTests(unittest.TestCase):
 
         self.assertRaises(Exception, self.sdp.add_status, 'AX', 'a')
         self.assertRaises(Exception, self.sdp.add_status, 'AY', [1, 2])
+        self.assertRaises(Exception, self.sdp.add_status, 'AZ', None)
 
     def test_add_keyvalue_value(self):
         ''' Test setting/getting key:val for Value '''
@@ -75,6 +76,14 @@ class SDPTests(unittest.TestCase):
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, '1 2 3.5')
 
+        self.sdp.add_keyvalue('AFV', 'not null string')
+        d = self.sdp.get_data('AFV')
+        self.assertTrue(isinstance(d, str))
+        self.assertEqual(d, 'not null string')
+
+        self.sdp.add_keyvalue('AGV', 'null')
+        self.assertEqual(self.sdp.get_data('AGV'), 'null')
+
         self.sdp.add_keyvalue('AHV', '')
         self.assertEqual(self.sdp.get_data('AHV'), '')
 
@@ -93,6 +102,11 @@ class SDPTests(unittest.TestCase):
         d = self.sdp.get_data('ABW')
         self.assertTrue(isinstance(d, list))
         self.assertEqual(d, [1, 2, 3.5])
+
+        self.sdp.add_keyvalue('ACW', '1 null 3.5')
+        d = self.sdp.get_data('ACW')
+        self.assertTrue(isinstance(d, list))
+        self.assertEqual(d, [1, None, 3.5])
 
         self.assertRaises(Exception, self.sdp.add_keyvalue, 'AXW', 1)
         self.assertRaises(Exception, self.sdp.add_keyvalue, 'AYW', 1.5)
@@ -131,6 +145,15 @@ class SDPTests(unittest.TestCase):
         self.assertTrue(isinstance(d, list))
         self.assertEqual(d, [1, 2, 3])
 
+        self.sdp.add_value('AF', None)
+        self.assertEqual(self.sdp.get_data('AFV'), None)
+        self.assertEqual(self.sdp.get_data('AFW'), None)
+
+        self.sdp.add_value('AG', [1, None, 3])
+        d = self.sdp.get_data('AGW')
+        self.assertTrue(isinstance(d, list))
+        self.assertEqual(d, [1, None, 3])
+
     def test_add_keyvalue_data(self):
         ''' Test setting/getting key:val for Other Data '''
         self.sdp.add_keyvalue('aa', '123')
@@ -140,6 +163,11 @@ class SDPTests(unittest.TestCase):
         self.assertEqual(self.sdp.get_data('AA'), None)
         self.assertEqual(self.sdp.get_data('a'), None)
         self.assertEqual(self.sdp.get_data('aaa'), None)
+
+        self.sdp.add_keyvalue('ab', 'null')
+        d = self.sdp.get_data('ab')
+        self.assertTrue(isinstance(d, str))
+        self.assertEqual(d, 'null')
 
         self.assertRaises(Exception, self.sdp.add_keyvalue, 'ax', 1)
         self.assertRaises(Exception, self.sdp.add_keyvalue, 'ay', 1.5)
@@ -188,6 +216,11 @@ class SDPTests(unittest.TestCase):
         self.assertTrue(isinstance(d, list))
         self.assertEqual(d, [1, 2, 35])
 
+        self.sdp.add_keyvalue('ACW', '1 null 35')
+        d = self.sdp.get_data('ACW')
+        self.assertTrue(isinstance(d, list))
+        self.assertEqual(d, [1, None, 35])
+
         self.assertRaises(Exception, self.sdp.add_keyvalue, 'AXW', 1)
         self.assertRaises(Exception, self.sdp.add_keyvalue, 'AYW', 1.5)
         self.assertRaises(Exception, self.sdp.add_keyvalue, 'AZW', 'a')
@@ -211,6 +244,7 @@ class SDPTests(unittest.TestCase):
         self.sdp.add_keyvalue('iq', '?')
         self.sdp.add_keyvalue('TOV', '4000D3349FEBBEAE') # legacy
         self.sdp.add_keyvalue('ALF', '4000D3349FEBBEAE')
+        self.sdp.add_keyvalue('AMW', '8 null 9')
         datagram = self.sdp.encode()
         self.assertTrue(isinstance(datagram, str))
         self.assertEqual(sorted(datagram.splitlines()), [
@@ -226,6 +260,7 @@ class SDPTests(unittest.TestCase):
             'AJV:?',
             'AKW:?',
             'ALF:4000D3349FEBBEAE',
+            'AMW:8 null 9',
             'TOV:4000D3349FEBBEAE',
             'id:abc123',
             'ip:10.0.0.10',
@@ -277,7 +312,7 @@ class SDPTests(unittest.TestCase):
 
     def test_decode_valid(self):
         ''' Test decoder with valid datagram '''
-        self.sdp.decode('id:abc123\nAAS:1\nABV:2\nACV:3.5\nADV:4\nAEV:5.5\nAFV:abc\nAGW:4\nAHW:5 6 75\nAIS:?\nAJV:?\nAKW:?\niq:?\nip:10.0.0.10\nALF:4000D3349FEBBEAE\nTOV:4000D3349FEBBEAE\n')
+        self.sdp.decode('id:abc123\nAAS:1\nABV:2\nACV:3.5\nADV:4\nAEV:5.5\nAFV:abc\nAGW:4\nAHW:5 6 75\nAIS:?\nAJV:?\nAKW:?\niq:?\nip:10.0.0.10\nALF:4000D3349FEBBEAE\nTOV:4000D3349FEBBEAE\nAMW:8 null 9\n')
 
         d = self.sdp.get_data('id')
         self.assertTrue(isinstance(d, str))
@@ -318,6 +353,10 @@ class SDPTests(unittest.TestCase):
         d = self.sdp.get_data('AHW')
         self.assertTrue(isinstance(d, list))
         self.assertEqual(d, [5, 6, 75])
+
+        d = self.sdp.get_data('AMW')
+        self.assertTrue(isinstance(d, list))
+        self.assertEqual(d, [8, None, 9])
 
         d = self.sdp.get_data('ALF')
         self.assertTrue(isinstance(d, str))

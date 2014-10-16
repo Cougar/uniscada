@@ -34,6 +34,9 @@ class SDP(object):
         If key ends with "W", it is saved as a List of Values (str)
         All other keys are saved as Data (str)
 
+        String 'null' is allowed in "V" and "W" keys and will be changed
+        to None
+
         Data type conversion is caller responsibility. Only valid
         data types are accepted.
 
@@ -59,12 +62,10 @@ class SDP(object):
         elif key[-1] == 'W':
             if not isinstance(val, str):
                 raise Exception('List of Values _MUST_BE_ string of numbers')
-            try:
-                if val != ' '.join(list(map(str, (list(map(int, val.split(' '))))))):
-                    raise Exception('Only integers allowed in List of Values')
-            except:
+            lst = list(map(self._list_str_to_value, val.split(' ')))
+            if val != ' '.join(list(map(self._list_value_to_str, lst))):
                 raise Exception('Only integers allowed in List of Values')
-            self.add_value(key[:-1], list(map(int, val.split(' '))))
+            self.add_value(key[:-1], lst)
         else:
             if not isinstance(val, str):
                 raise Exception('Data _MUST_BE_ string')
@@ -193,7 +194,7 @@ class SDP(object):
             datagram += key + 'S:' + str(self.data['status'][key]) + '\n'
         for key in self.data['value'].keys():
             if isinstance(self.data['value'][key], list):
-                datagram += key + 'W:' + ' '.join(map(str, self.data['value'][key])) + '\n'
+                datagram += key + 'W:' + ' '.join(map(self._list_value_to_str, self.data['value'][key])) + '\n'
             else:
                 datagram += key + 'V:' + str(self.data['value'][key]) + '\n'
         for key in self.data['query'].keys():
@@ -224,6 +225,18 @@ class SDP(object):
         if self.get_data('id') is None:
             log.error('id missing in datagram')
             raise Exception('id: _MUST_ exists in datagram')
+
+    @staticmethod
+    def _list_str_to_value(s):
+        if s == 'null':
+            return None
+        return int(s)
+
+    @staticmethod
+    def _list_value_to_str(s):
+        if s:
+            return str(s)
+        return 'null'
 
     def __str__(self):
         ''' Returns data dictionary '''
