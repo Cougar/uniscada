@@ -133,10 +133,10 @@ class SDPTests(unittest.TestCase):
 
     def test_add_keyvalue_data(self):
         ''' Test setting/getting key:val for Other Data '''
-        self.sdp.add_keyvalue('aa', '123abc')
+        self.sdp.add_keyvalue('aa', '123')
         d = self.sdp.get_data('aa')
         self.assertTrue(isinstance(d, str))
-        self.assertEqual(d, '123abc')
+        self.assertEqual(d, '123')
         self.assertEqual(self.sdp.get_data('AA'), None)
         self.assertEqual(self.sdp.get_data('a'), None)
         self.assertEqual(self.sdp.get_data('aaa'), None)
