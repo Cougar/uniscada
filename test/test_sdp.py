@@ -28,8 +28,11 @@ class SDPTests(unittest.TestCase):
         self.assertTrue(isinstance(d, int))
         self.assertEqual(d, 3)
 
+        self.assertRaises(Exception, self.sdp.add_keyvalue, 'AxS', -1)
+        self.assertRaises(Exception, self.sdp.add_keyvalue, 'AyS', 4)
         self.assertRaises(Exception, self.sdp.add_keyvalue, 'AXS', 'a')
         self.assertRaises(Exception, self.sdp.add_keyvalue, 'AYS', [1, 2])
+        self.assertRaises(Exception, self.sdp.add_keyvalue, 'AZS', None)
 
     def test_add_status(self):
         ''' Test setting/getting Status key:val '''

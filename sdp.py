@@ -29,7 +29,7 @@ class SDP(object):
 
         If val is "?", it is saved as a special query
         If key ends with "F", it is saved as a Float (hex str) - also TOV as legacy!
-        If key ends with "S", it is saved as a Status (int)
+        If key ends with "S", it is saved as a Status (int [0 .. 3])
         If key ends with "V", it is saved as a Value (int, float or str)
         If key ends with "W", it is saved as a List of Values (str)
         All other keys are saved as Data (str)
@@ -73,10 +73,12 @@ class SDP(object):
         ''' Add Status key:val pair to the packet
 
         :param key: Status key without "S" suffix
-        :param val: Status value (int)
+        :param val: Status value (int 0..3)
         '''
         if not isinstance(val, int):
             raise Exception('Status _MUST_BE_ int type')
+        if val not in range(4):
+            raise Exception('Status _MUST_BE_ between 0 and 3')
         self.data['status'][key] = int(val)
 
     def add_value(self, key, val):
