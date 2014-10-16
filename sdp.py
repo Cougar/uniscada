@@ -50,7 +50,8 @@ class SDP(object):
         elif key[-1] == 'S':
             self.add_status(key[:-1], int(val))
         elif key[-1] == 'V':
-            if not isinstance(val, int) and \
+            if val and \
+               not isinstance(val, int) and \
                not isinstance(val, float) and \
                not isinstance(val, str):
                 raise Exception('Value _MUST_BE_ str, int or float type')
@@ -87,7 +88,8 @@ class SDP(object):
         :param key: Value or List of Values key without "V" or "W" suffix
         :param val: Value value (int, float or str) or List of Values value (list)
         '''
-        if not isinstance(val, int) and \
+        if val and \
+           not isinstance(val, int) and \
            not isinstance(val, float) and \
            not isinstance(val, str) and \
            not isinstance(val, list):
