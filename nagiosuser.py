@@ -25,9 +25,9 @@ class NagiosUser:
     def __init__(self, user):
         ''' User authorization data from Nagios
 
-        Creating instance do not get eny data from Nagios. To read user
-        data from Nagios async_load_userdata() and/or getuserdata()
-        needs to be called
+        Creating instance without reading any data from Nagios.
+        To read user data from Nagios async_load_userdata()
+        and/or getuserdata() needs to be called
 
         :param user: user name
         '''
@@ -53,9 +53,12 @@ class NagiosUser:
         if response.error:
             log.error('_async_handle_request(): Nagios data read error: %s', str(response.error))
             self._data_callback(None)
-        else:
-            self._userdata = json.loads(response.body.decode(encoding='UTF-8')).get('user_data', None)
-            self._data_callback(self._userdata)
+        try:
+            userdata = json.loads(response.body.decode(encoding='UTF-8')).get('user_data', None)
+            self._data_callback(userdata)
+        except:
+            raise SessionException('invalid nagios response')
+            self._data_callback(None)
 
     def _sync_load_userdata(self):
         ''' Load user data from Nagios (blocking)

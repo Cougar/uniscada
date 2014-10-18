@@ -60,7 +60,17 @@ class UserSession(object):
 
         :param userdata: userdata
         '''
-        self._userdata = userdata
+        try:
+            if self._id == userdata.get('user_data', None).get('user_name', None):
+                self._userdata = userdata
+                return
+        except Exception as ex:
+            self._userdata = None
+            log.error('userdata check error: %s', str(ex))
+            raise Exception('userdata check error: %s' % str(ex))
+        self._userdata = None
+        log.error('Nagios didnt return right user data')
+        raise Exception('Nagios didnt return right user data')
 
     def get_userdata(self):
         ''' Return userdata or None if not initialised
