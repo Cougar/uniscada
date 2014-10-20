@@ -22,29 +22,26 @@ class NagiosUser:
     '''
     baseurl = 'https://n.itvilla.com/get_user_data?user_name='
 
-    def __init__(self, user):
+    def __init__(self):
         ''' User authorization data from Nagios
 
         Creating instance without reading any data from Nagios.
         To read user data from Nagios async_load_userdata()
         and/or getuserdata() needs to be called
-
-        :param user: user name
         '''
-        log.info('NagiosUser(%s)', str(user))
-        if user == None:
-            raise Exception('missing user')
-        self.user = user
-        self._userdata = None
+        log.info('NagiosUser()')
 
-    def async_load_userdata(self, data_callback):
+    def async_load_userdata(self, user, data_callback):
         ''' Non-blocking Nagios data reader
 
+        :param user: user name
         :param data_callback: call data_callback(data) when data arrived
         '''
         log.debug('_async_load_userdata()')
+        if user == None:
+            raise Exception('missing user')
         self._data_callback = data_callback
-        tornado.httpclient.AsyncHTTPClient().fetch(self.__class__.baseurl + self.user, self._async_handle_request)
+        tornado.httpclient.AsyncHTTPClient().fetch(self.__class__.baseurl + user, self._async_handle_request)
 
     def _async_handle_request(self, response):
         ''' Handle non-blocking Nagios data reader response
@@ -60,8 +57,12 @@ class NagiosUser:
             raise SessionException('invalid nagios response')
             self._data_callback(None)
 
-    def _sync_load_userdata(self):
+    def getuserdata(self, user):
         ''' Load user data from Nagios (blocking)
+
+        :param user: user name
+
+        :return: user data structure
         '''
         http_client = tornado.httpclient.HTTPClient()
         try:
@@ -79,19 +80,3 @@ class NagiosUser:
         except:
             raise SessionException('invalid nagios response')
         self._userdata = jsondata.get('user_data', None)
-
-    def getuserdata(self):
-        ''' Return user data
-
-        If userdata missing then load it (blocking)
-
-        :return: user data structure
-        '''
-        if not self._userdata:
-            self._sync_load_userdata()
-        if not self._userdata:
-            raise SessionException('user data missing')
-        return self._userdata
-
-    def __str__(self):
-        return(str(self.user) + ': userdata = ' + str(self._userdata))

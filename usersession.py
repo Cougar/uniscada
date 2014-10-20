@@ -41,7 +41,7 @@ class UserSession(object):
             :param callback: optional callback function
         '''
         self._userdata_callback = callback
-        NagiosUser(self._id).async_load_userdata(self._userdata_from_nagios)
+        NagiosUser().async_load_userdata(self._id, self._userdata_from_nagios)
 
     def _userdata_from_nagios(self, userdata):
         ''' Process Nagios reply with userdata
