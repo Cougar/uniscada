@@ -103,10 +103,10 @@ class SDPTests(unittest.TestCase):
         self.assertTrue(isinstance(d, list))
         self.assertEqual(d, [1, 2, 3.5])
 
-        self.sdp.add_keyvalue('ACW', '1 null 3.5')
+        self.sdp.add_keyvalue('ACW', '0 null 3.5')
         d = self.sdp.get_data('ACW')
         self.assertTrue(isinstance(d, list))
-        self.assertEqual(d, [1, None, 3.5])
+        self.assertEqual(d, [0, None, 3.5])
 
         self.assertRaises(Exception, self.sdp.add_keyvalue, 'AXW', 1)
         self.assertRaises(Exception, self.sdp.add_keyvalue, 'AYW', 1.5)

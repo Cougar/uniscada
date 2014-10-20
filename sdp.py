@@ -234,9 +234,9 @@ class SDP(object):
 
     @staticmethod
     def _list_value_to_str(s):
-        if s:
-            return str(s)
-        return 'null'
+        if s is None:
+            return 'null'
+        return str(s)
 
     def __str__(self):
         ''' Returns data dictionary '''
