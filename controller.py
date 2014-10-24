@@ -132,9 +132,10 @@ class Controller(object):
 
         ack = SDP()
         ack.add_keyvalue('id', self._id)
-        inn = self._last_sdp.get_data('in')
-        if inn is not None:
-            ack.add_keyvalue('in', inn)
+        if self._last_sdp:
+            inn = self._last_sdp.get_data('in')
+            if inn:
+                ack.add_keyvalue('in', inn)
         for reg in self._send_queue.keys():
             ack.add_keyvalue(reg, self._send_queue[reg])
         self._host.send(ack.encode())
