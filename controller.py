@@ -29,6 +29,7 @@ class Controller(object):
         self._id = id
         self._host = None
         self._state = {}
+        self._state_ts = None
         self._last_sdp = None
         self._last_sdp_ts = None
         self._send_queue = {}
@@ -96,21 +97,39 @@ class Controller(object):
         :param ts: optional timestamp
         '''
         log.debug('set_last_sdp(%s)', str(self._id))
-        self._last_sdp = sdp
-        self._last_sdp_ts = ts
-        self._process_incoming_sdp(sdp, ts = ts)
+        try:
+            self._process_incoming_sdp(sdp, ts = ts)
+            self._last_sdp = sdp
+            self._last_sdp_ts = ts
+        except Exception as e:
+            log.error('contoller=%s SDP processing error: %s', str(self._id),  str(e))
 
-    def _process_incoming_sdp(self, sdp, ts = None):
+    def _process_incoming_sdp(self, sdp, ts = time.time()):
         ''' Process SDP packet from controller:
+
+        - check if controller sent timestamp too
+        - check if packet is still valid if timestamp exists
+        - update state dictionary and the send queue
+
+        :param sdp: SDP instance
+        :param ts: optional timestamp of SDP packet
+        '''
+        log.debug('_process_incoming_sdp(%s)', str(self._id))
+
+        self._update_state_from_sdp(sdp, ts)
+        self._state_ts = ts
+
+    def _update_state_from_sdp(self, sdp, ts = time.time()):
+        ''' Read last SDP packet and update state dictionary
 
         - update state dictionary
         - remove seen registers from the send queue
 
         :param sdp: SDP instance
-        :param ts: optional timestamp
+        :param ts: optional timestamp of SDP packet
         '''
-        log.debug('_process_incoming_sdp(%s)', str(self._id))
-        for (register, value) in self._last_sdp.get_data_list():
+        log.debug('_update_state_from_sdp(%s)', str(self._id))
+        for (register, value) in sdp.get_data_list():
             if register == 'id' or register == 'in':
                 continue
             if value == '?':
