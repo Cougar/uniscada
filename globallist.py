@@ -48,6 +48,8 @@ class GlobalList(object):
 
         :returns: Generated instance for each member
         '''
+        if not self._members:
+            return
         for id in self._members.keys():
             yield(id)
 
