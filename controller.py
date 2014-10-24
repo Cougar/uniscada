@@ -117,7 +117,7 @@ class Controller(object):
                 self.send_queue_add_last_reg(register)
             else:
                 self.set_state_reg(register, value, ts = ts)
-                self.send_queue_remove_reg(register)
+                self.send_queue_remove_reg(register, value)
 
     def ack_last_sdp(self):
         ''' Send ACK based on the last SDP packet.
@@ -156,13 +156,21 @@ class Controller(object):
             log.debug('  %s', str(val))
             self._send_queue[reg] = val
 
-    def send_queue_remove_reg(self, reg):
+    def send_queue_remove_reg(self, reg, val):
         ''' Remove one register from send queue
 
         :param reg: register to remove
+        :param val: expected register value
         '''
+        expval = self._send_queue.get(reg, None)
+        if not expval:
+            return
         log.debug('send_queue_remove_reg(%s, %s)', str(self._id), str(reg))
-        self._send_queue.pop(reg, None)
+        if expval != val:
+            log.warning('controller=%s reg=%s val=\"%s\" != sent val=\"%s\"', str(self.id), str(reg), str(val), str(expval))
+            return
+        else:
+            self._send_queue.pop(reg)
 
     def __str__(self):
         return(str(self._id) + ': ' +
