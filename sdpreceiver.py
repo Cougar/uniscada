@@ -31,7 +31,11 @@ class SDPReceiver(object):
         '''
         log.info('datagram_from_controller(%s): %s', str(host), str(datagram))
         sdp = SDP()
-        sdp.decode(datagram)
+        try:
+            sdp.decode(datagram)
+        except Exception as e:
+            log.error('sdp.decode() exception: %s', str(e))
+            return
 
         id = sdp.get_data('id')
 
