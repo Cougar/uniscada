@@ -32,9 +32,9 @@ class GlobalList(object):
         '''
         if not id in self._members:
             self._members[id] = self.class_name(id, listinstance=self)
-            log.info('find_by_id(%s): created a new member(%s)', str(id), str(self._members[id]))
+            log.debug('find_by_id(%s): created a new member(%s)', str(id), str(self._members[id]))
         else:
-            log.info('find_by_id(%s): existing member(%s)', str(id), str(self._members[id]))
+            log.debug('find_by_id(%s): existing member(%s)', str(id), str(self._members[id]))
         return self._members[id]
 
     def get_id(self, id):
@@ -52,11 +52,11 @@ class GlobalList(object):
             yield(id)
 
     def remove_by_id(self, id):
-        log.info('remove_by_id(%s)', str(id))
+        log.debug('remove_by_id(%s)', str(id))
         if id in self._members:
             del self._members[id]
         else:
-            raise KeyError()
+            log.error("No such id: %s", str(id))
 
     def __str__(self):
         s = ''
