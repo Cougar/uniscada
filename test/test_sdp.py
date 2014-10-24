@@ -391,3 +391,4 @@ class SDPTests(unittest.TestCase):
         self.assertRaises(Exception, self.sdp.decode, 'id:abc\nACW:123 bcd')
         self.assertRaises(Exception, self.sdp.decode, 'id:abc\nADW:1.0 2.2')
         self.assertRaises(Exception, self.sdp.decode, 'id:abc\nxyz:123 : 456')
+        self.assertRaises(Exception, self.sdp.decode, 'id:abc\nxyz:\n')

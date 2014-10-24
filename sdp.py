@@ -221,6 +221,9 @@ class SDP(object):
             if ':' in val:
                 log.error('datagram line format error: more than one colon')
                 raise Exception('colon in value: \"' + val + '\"')
+            if not val:
+                log.error('value mising for \"%s\"', key)
+                raise Exception('value mising for \"' + key + '\"')
             self.add_keyvalue(key, val)
         if self.get_data('id') is None:
             log.error('id missing in datagram')
