@@ -116,6 +116,25 @@ class Controller(object):
         '''
         log.debug('_process_incoming_sdp(%s)', str(self._id))
 
+        if not sdp:
+            return
+        sdpts = sdp.get_timestamp()
+        if sdpts:
+            now = time.time()
+            log.debug('timestamp read from datagram: %s', str(sdpts))
+            if sdpts > now:
+                # FIXME: drop such packets
+                log.warning('%s sent packet from the future (%d sec)', str(self._id), int(sdpts - now))
+                return
+            if (now - sdpts) > 60 * 60 * 24 * 7:  # TODO: config param
+                # FIXME: drop such packets
+                log.warning('ignoring too old timestamp from %s: %d, now=%d', str(self._id), int(sdpts), int(now))
+                return
+            ts = sdpts
+        if self._state_ts:
+            if ts < self._state_ts:
+                log.info('old state ts=%d, new ts=%d', self._state_ts, ts)
+                raise Exception('SDP packet is older than previous, ignoring')
         self._update_state_from_sdp(sdp, ts)
         self._state_ts = ts
 
