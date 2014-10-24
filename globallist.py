@@ -60,6 +60,9 @@ class GlobalList(object):
         else:
             log.error("No such id: %s", str(id))
 
+    def __getstate__(self):
+        return self.__dict__
+
     def __str__(self):
         s = ''
         for id in self.get_id_list():

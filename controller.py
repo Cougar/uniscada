@@ -211,6 +211,12 @@ class Controller(object):
         else:
             self._send_queue.pop(reg)
 
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        state['_host'] = None
+        state['_send_queue'] = {}
+        return state
+
     def __str__(self):
         return(str(self._id) + ': ' +
                'host = ' + str(self._host) +
