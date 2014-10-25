@@ -45,17 +45,17 @@ function WebSocketClose() {
 }
 
 function wsOnOpen() {
-    Display("----------------------------------------------\nWebsocket connected\n");
+    Display("#FFFFFF", "----------------------------------------------\nWebsocket connected\n");
     ChangeButtonFocus();
 }
 
 function wsOnMessage(evt) {
     var received_msg = evt.data;
-    Display(received_msg);
+    Display("#00FF00", received_msg);
 }
 
 function wsOnClose() {
-    Display("Connection is closed...\n")
+    Display("#FF0000", "Connection is closed...\n")
     ws = null;
     ChangeButtonFocus();
 }
@@ -76,7 +76,7 @@ function WebSocketSend(method, res) {
             msg.token = token;
         }
         var json = JSON.stringify(msg);
-        Display('Send: ' + json);
+        Display('#7777FF', 'Send: ' + json);
         ws.send(json)
     }
 }
@@ -94,8 +94,11 @@ function WebSocketSubscribe(res) {
     WebSocketSend('subscribe', res);
 }
 
-function Display(msg) {
-        lines = lines.concat(msg.match(/[^\r\n]+/g))
+function Display(color, msg) {
+        newlines = msg.match(/[^\r\n]+/g)
+        for (var i = 0; i < newlines.length; ++i) {
+            lines.push('<font color="' + color + '">' + newlines[i] + '</font>')
+        }
         lines = lines.slice(-40);
         document.getElementById("messages").innerHTML = lines.join('\n');
 }
