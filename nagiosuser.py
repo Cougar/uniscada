@@ -66,7 +66,7 @@ class NagiosUser:
         '''
         http_client = tornado.httpclient.HTTPClient()
         try:
-            nagiosdata = http_client.fetch(self.__class__.baseurl + self.user).body.decode(encoding='UTF-8')
+            nagiosdata = http_client.fetch(self.__class__.baseurl + user).body.decode(encoding='UTF-8')
         except:
             raise SessionException('problem with nagios query: ' + str(sys.exc_info()[1]))
         http_client.close()
@@ -75,8 +75,8 @@ class NagiosUser:
         except:
             raise SessionException('problem with json: ' + str(sys.exc_info()[1]))
         try:
-            if self.user != jsondata.get('user_data').get('user_name'):
+            if user != jsondata.get('user_data').get('user_name'):
                 raise SessionException('invalid user name in nagios response')
         except:
             raise SessionException('invalid nagios response')
-        self._userdata = jsondata.get('user_data', None)
+        return jsondata.get('user_data', None)
