@@ -87,6 +87,8 @@ from controllers import Controllers
 from sdpreceiver import SDPReceiver
 from wsclients import WsClients
 
+from api import API
+
 log = logging.getLogger(__name__)
 
 EXECUTOR = ThreadPoolExecutor(max_workers=50)
@@ -213,14 +215,7 @@ class RestHandler(tornado.web.RequestHandler):
                 # FIXME return right URL
                 return({ 'status': 200, 'headers': [ { 'Location': 'https://receiver.itvilla.com:4433/api/v1/hosts' } ], 'bodydata': {'message' : 'Authentication in progress..'} })
 
-            if args[0] == 'hosts':
-                from api_hosts import API_hosts
-                body = API_hosts(self._usersessions, self._controllers).output(self.user, filter)
-            elif args[0] == 'controllers':
-                from api_controllers import API_controllers
-                body = API_controllers(self._usersessions, self._controllers).output(self.user, filter)
-            else:
-                body = {}
+            body = API(self._usersessions, self._controllers).get(self.user, args[0], filter)
 
             headers = [
                     { 'X-Username': self.user }
@@ -245,6 +240,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         self.wsclient = self._wsclients.find_by_id(self)
         cookeiauth = CookieAuth(self)
         self.user = cookeiauth.get_current_user()
+        self._api = API(self._usersessions, self._controllers)
         if self.user == None:
             self.write_message(json.dumps({'message': 'Not authenticated', 'login_url': 'https://login.itvilla.com/login'}, indent=4, sort_keys=True))
             return
@@ -307,7 +303,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
                 filter = resources[2]
 
             try:
-                reply['body'] = self._usersession.sql2json(resources[1], filter)
+                reply['body'] = self._api.get(self.user, resources[1], filter)
             except Exception as e:
                 reply['message'] = 'error: ' + str(e)
 
