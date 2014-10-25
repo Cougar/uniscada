@@ -47,3 +47,15 @@ class UserSessionTest(unittest.TestCase):
         wronguserdata['user_name'] = 'WRONGUSER'
         self.assertRaises(Exception, self.usersession._userdata_from_nagios, wronguserdata)
         self.assertEqual(self.usersession.get_userdata(), None)
+
+    def test_user_access_ok(self):
+        self.usersession._userdata_from_nagios(self.userdata)
+        self.assertEqual(True, self.usersession.check_access('112233445566'))
+
+    def test_user_access_fail_nouser(self):
+        self.assertEqual(False, self.usersession.check_access('112233445566'))
+
+    def test_user_access_fail_noaccess(self):
+        self.usersession._userdata_from_nagios(self.userdata)
+        self.assertEqual(False, self.usersession.check_access('0A1B2C3D4E5F'))
+        self.assertEqual(False, self.usersession.check_access('000000000000'))

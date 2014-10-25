@@ -25,6 +25,7 @@ class UserSession(object):
         self._id = id
         self._userdata = None
         self._userdata_callback = None
+        self._controllerlist = {}
 
     def get_id(self):
         ''' Get id of user (username)
@@ -61,16 +62,22 @@ class UserSession(object):
         :param userdata: userdata
         '''
         try:
-            if self._id == userdata.get('user_name', None):
-                self._userdata = userdata
-                return
+            if self._id != userdata.get('user_name', None):
+                self._userdata = None
+                log.error('Nagios didnt return right user data')
+                raise Exception('Nagios didnt return right user data')
         except Exception as ex:
             self._userdata = None
             log.error('userdata check error: %s', str(ex))
             raise Exception('userdata check error: %s' % str(ex))
-        self._userdata = None
-        log.error('Nagios didnt return right user data')
-        raise Exception('Nagios didnt return right user data')
+        self._userdata = userdata
+        self._controllerlist = {}
+        if not 'user_groups' in self._userdata:
+            log.warnig('user %s does not have any user_groups defined', self._id)
+            return
+        for group in self._userdata.get('user_groups'):
+            for mac in self._userdata.get('user_groups').get(group):
+                self._controllerlist[mac] = True
 
     def get_userdata(self):
         ''' Return userdata or None if not initialised
@@ -78,6 +85,19 @@ class UserSession(object):
         :returns: userdata or None
         '''
         return self._userdata
+
+    def check_access(self, mac):
+        ''' Check user access to the controller
+
+        :param mac: mac address of controller
+
+        :returns: True if access is granted, False otherwise
+        '''
+        if not self._userdata:
+            return False
+        if mac in self._controllerlist:
+            return True
+        return False
 
     def __str__(self):
         return(str(self._id) + ': ' +
