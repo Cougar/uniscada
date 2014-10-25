@@ -80,3 +80,13 @@ class NagiosUser:
         except:
             raise SessionException('invalid nagios response')
         return jsondata.get('user_data', None)
+
+
+def main():
+    if sys.argv.__len__() != 2:
+        print("usage: %s <username>" % sys.argv[0])
+        sys.exit(1)
+    print(json.dumps(NagiosUser().getuserdata(sys.argv[1]), indent=4, sort_keys=True))
+
+if __name__ == "__main__":
+    main()
