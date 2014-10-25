@@ -1,5 +1,8 @@
+from sessionexception import SessionException
+
 class API_hosts(object):
-    def __init__(self, controllers):
+    def __init__(self, usersessions, controllers):
+        self._usersessions = usersessions
         self._controllers = controllers
 
     def output(self, user, filter):
@@ -9,14 +12,17 @@ class API_hosts(object):
             return self._output_one_controller(user, filter)
 
     def _output_all_controllers(self, user):
-        # FIXME add user authorization
+        usersession = self._usersessions.find_by_id(user)
         r = []
         for host in self._controllers.get_id_list():
-            r.append({ 'host': host })
+            if usersession.check_access(host):
+                r.append({ 'host': host })
         return r
 
     def _output_one_controller(self, user, host):
-        # FIXME add user authorization
+        usersession = self._usersessions.find_by_id(user)
+        if not usersession.check_access(host):
+            raise SessionException('unknown host')
         h = self._controllers.get_id(host)
         if not h:
             return {}

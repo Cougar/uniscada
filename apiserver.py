@@ -79,6 +79,8 @@ import tornado.websocket
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial, wraps
 
+from sessionexception import SessionException
+
 from udpcomm import *
 from usersessions import UserSessions
 from controllers import Controllers
@@ -207,15 +209,16 @@ class RestHandler(tornado.web.RequestHandler):
             if not self._usersession.get_userdata():
                 self._usersession.read_userdata_form_nagois()
                 # FIXME return right reload page with 307
-                # FIXME add delay to  avoid race condition
+                # FIXME add delay to avoid race condition
+                # FIXME return right URL
                 return({ 'status': 200, 'headers': [ { 'Location': 'https://receiver.itvilla.com:4433/api/v1/hosts' } ], 'bodydata': {'message' : 'Authentication in progress..'} })
 
             if args[0] == 'hosts':
                 from api_hosts import API_hosts
-                body = API_hosts(self._controllers).output(self.user, filter)
+                body = API_hosts(self._usersessions, self._controllers).output(self.user, filter)
             elif args[0] == 'controllers':
                 from api_controllers import API_controllers
-                body = API_controllers(self._controllers).output(self.user, filter)
+                body = API_controllers(self._usersessions, self._controllers).output(self.user, filter)
             else:
                 body = {}
 
@@ -223,8 +226,6 @@ class RestHandler(tornado.web.RequestHandler):
                     { 'X-Username': self.user }
             ]
             return({ 'status': 200, 'headers': headers, 'bodydata': body })
-        except SessionAuthenticationError as e:
-            return({ 'status': 200, 'bodydata': {'message' : str(e)} })
         except SessionException as e:
             return({ 'status': 500, 'bodydata': {'message' : str(e)} })
         except Exception as e:

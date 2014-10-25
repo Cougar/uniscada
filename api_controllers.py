@@ -1,5 +1,8 @@
+from sessionexception import SessionException
+
 class API_controllers(object):
-    def __init__(self, controllers):
+    def __init__(self, usersessions, controllers):
+        self._usersessions = usersessions
         self._controllers = controllers
 
     def output(self, user, filter):
@@ -9,14 +12,17 @@ class API_controllers(object):
             return self._output_one_controller(user, filter)
 
     def _output_all_controllers(self, user):
-        # FIXME add user authorization
+        usersession = self._usersessions.find_by_id(user)
         r = []
         for controller in self._controllers.get_id_list():
-            r.append({ 'controller': str(controller) })
+            if usersession.check_access(controller):
+                r.append({ 'controller': str(controller) })
         return r
 
     def _output_one_controller(self, user, controller):
-        # FIXME add user authorization
+        usersession = self._usersessions.find_by_id(user)
+        if not usersession.check_access(controller):
+            raise SessionException('unknown controller')
         c = self._controllers.get_id(controller)
         if not c:
             return {}
