@@ -23,6 +23,7 @@ class UserSession(object):
         '''
         log.debug('Create a new user (%s)', str(id))
         self._id = id
+        self._isadmin = False
         self._userdata = None
         self._userdata_callback = None
         self._controllerlist = {}
@@ -86,6 +87,18 @@ class UserSession(object):
         '''
         return self._userdata
 
+    def set_admin(self):
+        ''' Set admin privilege
+        '''
+        self._isadmin = True
+
+    def is_admin(self):
+        ''' Check if user has admin privilege
+
+        :returns: True if user has admin privilege
+        '''
+        return self._isadmin
+
     def check_access(self, mac):
         ''' Check user access to the controller
 
@@ -93,6 +106,8 @@ class UserSession(object):
 
         :returns: True if access is granted, False otherwise
         '''
+        if self.is_admin():
+            return True
         if not self._userdata:
             return False
         if mac in self._controllerlist:
