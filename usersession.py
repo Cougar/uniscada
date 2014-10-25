@@ -61,7 +61,7 @@ class UserSession(object):
         :param userdata: userdata
         '''
         try:
-            if self._id == userdata.get('user_data', None).get('user_name', None):
+            if self._id == userdata.get('user_name', None):
                 self._userdata = userdata
                 return
         except Exception as ex:

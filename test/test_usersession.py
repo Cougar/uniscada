@@ -9,25 +9,23 @@ class UserSessionTest(unittest.TestCase):
     def setUp(self):
         self.usersession = UserSession('testuser')
         self.userdata = {
-                "user_data":{
-                    "user_name":"testuser",
-                    "user_groups":{
-                        "testgroup":{},
-                        "kvv":{
+                "user_name":"testuser",
+                "user_groups":{
+                    "testgroup":{},
+                    "kvv":{
+                        "112233445566":"controller1",
+                        "010203040506":"controller2",
+                        "0123456789AB":"controller3"
+                        }
+                    },
+                "hostgroups":{
+                    "testgroup":{
+                        "alias":"testgroup",
+                        "members":{
                             "112233445566":"controller1",
                             "010203040506":"controller2",
-                            "0123456789AB":"controller3"
-                            }
-                        },
-                    "hostgroups":{
-                        "testgroup":{
-                            "alias":"testgroup",
-                            "members":{
-                                "112233445566":"controller1",
-                                "010203040506":"controller2",
-                                "0123456789AB":"controller3",
-                                "0A1B2C3D4E5F":"controller4"
-                                }
+                            "0123456789AB":"controller3",
+                            "0A1B2C3D4E5F":"controller4"
                             }
                         }
                     }
@@ -46,6 +44,6 @@ class UserSessionTest(unittest.TestCase):
 
     def test_load_wrong_data(self):
         wronguserdata = self.userdata
-        wronguserdata['user_data']['user_name'] = 'WRONGUSER'
+        wronguserdata['user_name'] = 'WRONGUSER'
         self.assertRaises(Exception, self.usersession._userdata_from_nagios, wronguserdata)
         self.assertEqual(self.usersession.get_userdata(), None)
