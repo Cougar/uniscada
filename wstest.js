@@ -86,7 +86,7 @@ function WebSocketSubscribe(res) {
     WebSocketSend('subscribe', res);
 }
 
-function WebSocketSendJSON(res) {
+function WebSocketGet(res) {
     WebSocketSend('get', res);
 }
 
