@@ -11,18 +11,18 @@ class API_controllers(object):
     def _output_all_controllers(self, user):
         # FIXME add user authorization
         r = []
-        for id in self._controllers.get_id_list():
-            r.append({ 'controller': str(id) })
+        for controller in self._controllers.get_id_list():
+            r.append({ 'controller': str(controller) })
         return r
 
-    def _output_one_controller(self, user, id):
+    def _output_one_controller(self, user, controller):
         # FIXME add user authorization
-        controller = self._controllers.get_id(id)
-        if not controller:
+        c = self._controllers.get_id(controller)
+        if not c:
             return {}
         r = {}
-        r['controller'] = str(id)
+        r['controller'] = str(controller)
         r['registers'] = []
-        for (reg, val, ts) in controller.get_state_register_list():
+        for (reg, val, ts) in c.get_state_register_list():
             r['registers'].append({ 'register': reg, 'value': val, 'timestamp': ts })
         return r
