@@ -96,11 +96,37 @@ from websockethandler import WebSocketHandler
 log = logging.getLogger(__name__)
 
 
+
+class TimerTasks(object):
+    def __init__(self, interval, usersessions, controllers, wsclients, msgbus, udpcomm):
+        import tornado.ioloop
+
+        self._usersessions = usersessions
+        self._controllers = controllers
+        self._wsclients = wsclients
+        self._msgbus = msgbus
+        self._udpcomm = udpcomm
+        self._interval = interval
+        self.ioloop = tornado.ioloop.IOLoop.instance()
+        self._timer_tasks()
+
+    def _timer_tasks(self):
+        ''' Tasks that needs to be executed in regular intervals '''
+        if self._usersessions:
+            log.debug('Users: %s', str(self._usersessions))
+        if self._controllers:
+            log.debug('Controllers: %s', str(self._controllers))
+        if self._wsclients:
+            log.debug('WSClients: %s', str(self._wsclients))
+        if self._msgbus:
+            log.debug('MsgBus: %s', str(self._msgbus))
+        if self._udpcomm:
+            log.debug('UDPComm: %s', str(self._udpcomm))
+        self.ioloop.add_timeout(datetime.timedelta(seconds=self._interval), self._timer_tasks)
+
 class UDPReader(object):
     def __init__(self, addr, port, usersessions, controllers, wsclients, msgbus):
         import socket
-        import tornado.ioloop
-        import functools
 
         self._usersessions = usersessions
         self._controllers = controllers
@@ -108,17 +134,8 @@ class UDPReader(object):
         self._msgbus = msgbus
         self.b = SDPReceiver(self._controllers, self._msgbus)
         self.u = UDPComm(addr, port, self.b.datagram_from_controller)
-        self.interval = 10
-        self.ioloop = tornado.ioloop.IOLoop.instance()
-        self.sync_tasks()
 
-    def sync_tasks(self): # regular checks or tasks
-        # put here tasks to be executed in regular intervals
-        log.debug('Users: %s', str(self._usersessions))
-        log.debug('Controllers: %s', str(self._controllers))
-        log.debug('WSClients: %s', str(self._wsclients))
-        self.ioloop.add_timeout(datetime.timedelta(seconds=self.interval), self.sync_tasks)
-
+        TimerTasks(10, usersessions, controllers, wsclients, msgbus, self.u)
 
 is_closing = False
 
