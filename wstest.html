@@ -18,7 +18,8 @@
         <div id="messages" style="height:700px;background:black;color:white;"></div>
         </pre>
         <a href="javascript:WebSocketSend('klick')">Send something</a><br />
-        <a href="javascript:WebSocketSubscribe('DEBUG_ALL')">subscribe DEBUG_ALL</a><br />
+        <a href="javascript:WebSocketSubscribe('/DEBUG_ALL')">subscribe /DEBUG_ALL</a><br />
+        <a href="javascript:WebSocketGet('/')">/</a><br />
         <a href="javascript:WebSocketGet('/hostgroups')">/hostgroups</a><br />
         <a href="javascript:WebSocketGet('/hostgroups/saared')">/hostgroups/saared</a><br />
         <a href="javascript:WebSocketGet('/services')">/services</a><br />
@@ -27,9 +28,11 @@
         <a href="javascript:WebSocketGet('/hosts')">/hosts</a><br />
         <a href="/api/v1/hosts/00204AA95C56">/hosts/00204AA95C56</a> <a href="javascript:WebSocketGet('/hosts/00204AA95C56')">get</a> <a href="javascript:WebSocketSubscribe('/hosts/00204AA95C56')">subscribe</a><br />
         <a href="/api/v1/hosts/D05162F4636F">/hosts/D05162F4636F</a> <a href="javascript:WebSocketGet('/hosts/D05162F4636F')">get</a> <a href="javascript:WebSocketSubscribe('/hosts/D05162F4636F')">subscribe</a><br /><br />
+        <a href="/api/v1/hosts/00204AB80C53">/hosts/00204AB80C53</a> <a href="javascript:WebSocketGet('/hosts/00204AB80C53')">get</a> <a href="javascript:WebSocketSubscribe('/hosts/00204AB80C53')">subscribe</a><br /><br />
         <a href="javascript:WebSocketGet('/controllers')">/controllers</a><br />
         /controllers/00204AA95C56 <a href="javascript:WebSocketGet('/controllers/00204AA95C56')">get</a> <a href="javascript:WebSocketSubscribe('/controllers/00204AA95C56')">subscribe</a><br />
         /controllers/D05162F4636F <a href="javascript:WebSocketGet('/controllers/D05162F4636F')">get</a> <a href="javascript:WebSocketSubscribe('/controllers/D05162F4636F')">subscribe</a><br /><br />
+        /controllers/00204AB80C53 <a href="javascript:WebSocketGet('/controllers/00204AB80C53')">get</a> <a href="javascript:WebSocketSubscribe('/controllers/00204AB80C53')">subscribe</a><br /><br />
         <a href="javascript:WebSocketSubscribe('/services/00204AB80C53')">subscribe /services/00204AB80C53</a><br />
     </body>
 </html>
