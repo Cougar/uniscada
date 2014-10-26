@@ -95,8 +95,6 @@ log = logging.getLogger(__name__)
 
 EXECUTOR = ThreadPoolExecutor(max_workers=50)
 
-wsclients = []
-
 class CookieAuth:
     def __init__(self, handler):
         self.handler = handler
@@ -245,7 +243,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         cookeiauth = CookieAuth(self)
         self.user = cookeiauth.get_current_user()
         self._api = API(self._usersessions, self._controllers)
-        if self.user == None:
+        if not self.user:
             self.write_message(json.dumps({'message': 'Not authenticated', 'login_url': 'https://login.itvilla.com/login'}, indent=4, sort_keys=True))
             return
         try:
@@ -274,17 +272,18 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             self._authenticated = True
 
     def on_message(self, message):
-        if self.user  == None:
-            self.write_message(json.dumps({'message': 'Not authenticated', 'login_url': 'https://login.itvilla.com/login'}, indent=4, sort_keys=True))
-            return
+        if not self.user:
+           self.wsclient.send_data({'message': 'Not authenticated', 'login_url': 'https://login.itvilla.com/login'})
+           return
+
         if not self._authenticated:
-            self.write_message(json.dumps({'message': 'Authentication in progress...'}, indent=4, sort_keys=True))
+            self.wsclient.send_data({'message': 'Authentication in progress...'})
             return
 
         try:
             jsondata = json.loads(message)
         except:
-            self.write_message(json.dumps({'message': str(sys.exc_info()[1])}))
+            self.wsclient.send_data({'message': str(sys.exc_info()[1])})
             return
 
         method = jsondata.get('method', None)
