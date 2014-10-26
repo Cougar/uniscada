@@ -80,6 +80,7 @@ from concurrent.futures import ThreadPoolExecutor
 from functools import partial, wraps
 
 from sessionexception import SessionException
+import signal
 
 from udpcomm import *
 from usersessions import UserSessions
@@ -360,6 +361,18 @@ class FileHandler(tornado.web.RequestHandler):
     def get(self, *args, **kwargs):
         self.render(args[0])
 
+is_closing = False
+
+def signal_handler(signum, frame):
+    global is_closing
+    logging.info('exiting...')
+    is_closing = True
+
+def try_exit():
+    global is_closing
+    if is_closing:
+        tornado.ioloop.IOLoop.instance().stop()
+        logging.info('exit success')
 
 
 if __name__ == '__main__':
@@ -416,4 +429,10 @@ if __name__ == '__main__':
     UDPReader("0.0.0.0", int(options.udp_port), usersessions, controllers, wsclients, msgbus)
 
     import tornado.ioloop
+
+
+    signal.signal(signal.SIGINT, signal_handler)
+    tornado.ioloop.PeriodicCallback(try_exit, 100).start()
     tornado.ioloop.IOLoop.instance().start()
+
+    log.info(' --- EXIT ---')
