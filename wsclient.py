@@ -29,7 +29,9 @@ class WsClient(object):
         '''
         return self._id
 
-    def __str__(self):
-        return(str(self._id) + ': ' +
-                'debug = ' + str(self._x_debug))
+    def send_data(self, data):
+        log.debug('send_data')
+        self._id.write_message(json.dumps(data, indent=4, sort_keys=True))
 
+    def __str__(self):
+        return(str(self._id))
