@@ -93,6 +93,7 @@ from api import API
 
 from cookieauth import CookieAuth
 from roothandler import RootHandler
+from filehandler import FileHandler
 
 log = logging.getLogger(__name__)
 
@@ -328,10 +329,6 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
     def __str__(self):
         return(str(self._args))
-
-class FileHandler(tornado.web.RequestHandler):
-    def get(self, *args, **kwargs):
-        self.render(args[0])
 
 class UDPReader(object):
     def __init__(self, addr, port, usersessions, controllers, wsclients, msgbus):
