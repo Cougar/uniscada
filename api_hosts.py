@@ -26,16 +26,4 @@ class API_hosts(object):
         h = self._controllers.get_id(host)
         if not h:
             return {}
-        r = {}
-        r['host'] = host
-        r['registers'] = h._state
-        r['registers'] = []
-        if h._last_sdp:
-            for reg in h._last_sdp.get_data_list():
-                r1 = {}
-                r1['key'] = reg[0]
-                r1['value'] = h._last_sdp.get_data(reg[0])
-                r['registers'].append(r1)
-        if h._last_sdp_ts:
-            r['timestamp'] = h._last_sdp_ts
-        return r
+        return h.get_host_data_v1()

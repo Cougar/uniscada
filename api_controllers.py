@@ -26,9 +26,4 @@ class API_controllers(object):
         c = self._controllers.get_id(controller)
         if not c:
             return {}
-        r = {}
-        r['controller'] = str(controller)
-        r['registers'] = []
-        for (reg, val, ts) in c.get_state_register_list():
-            r['registers'].append({ 'register': reg, 'value': val, 'timestamp': ts })
-        return r
+        return c.get_controller_data_v1()

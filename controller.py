@@ -90,6 +90,37 @@ class Controller(object):
             log.debug('get_state_reg(%s, %s): (None, None)', str(self._id), str(reg))
             return (None, None)
 
+    def get_controller_data_v1(self):
+        ''' Return controller data in API v1 format
+
+        :returns: controller data in API v1 format
+        '''
+        r = {}
+        r['controller'] = str(self._id)
+        r['registers'] = []
+        for (reg, val, ts) in self.get_state_register_list():
+            r['registers'].append({ 'register': reg, 'value': val, 'timestamp': ts })
+        return r
+
+    def get_host_data_v1(self):
+        ''' Return host data in API v1 format
+
+        :returns: host data in API v1 format
+        '''
+        r = {}
+        r['host'] = self._id
+        r['registers'] = self._state
+        r['registers'] = []
+        if self._last_sdp:
+            for reg in self._last_sdp.get_data_list():
+                r1 = {}
+                r1['key'] = reg[0]
+                r1['value'] = self._last_sdp.get_data(reg[0])
+                r['registers'].append(r1)
+        if self._last_sdp_ts:
+            r['timestamp'] = self._last_sdp_ts
+        return r
+
     def set_last_sdp(self, sdp, ts = time.time()):
         ''' Remember last SDP packet and process it locally
 
