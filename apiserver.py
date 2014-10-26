@@ -300,7 +300,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             self.wsclient.send_data(reply)
             return
 
-        if method not in ['get']:
+        if method not in ['get', 'subscribe']:
             reply['message'] = 'error: unknown method'
             self.wsclient.send_data(reply)
             return
@@ -328,12 +328,28 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
                 reply['body'] = self._api.get(self.user, query, filter)
             except Exception as e:
                 reply['message'] = 'error: ' + str(e)
+        elif method == 'subscribe':
+            usersession = self._usersessions.find_by_id(self.user)
+            if not usersession.check_access(filter):
+                reply['message'] = 'error: no such resource'
+                self.wsclient.send_data(reply)
+                return
+
+            self._msgbus.subscribe(token, resource, self, self._on_bus_message)
+            reply['message'] = 'success'
         else:
             raise Exception('update known method list above')
 
         self.wsclient.send_data(reply)
 
+    def _on_bus_message(self, token, subject, data):
+        log.info("_on_bus_message(%s, %s, %s)", str(token), str(subject), str(data))
+        if token:
+            data['token'] = token
+        self.wsclient.send_data(data)
+
     def on_close(self):
+        self._msgbus.unsubscribe_all(self)
         self._wsclients.remove_by_id(self)
 
     def __str__(self):

@@ -51,3 +51,13 @@ class SDPReceiver(object):
         log.debug('Controller: %s', str(controller))
         controller.ack_last_sdp()
         log.debug("---------------------------------")
+
+        r = {}
+        r['resource'] = '/controllers/' + str(controller.get_id())
+        r['body'] = controller.get_controller_data_v1()
+        self._msgbus.publish(r['resource'], r)
+
+        r = {}
+        r['resource'] = '/hosts/' + str(controller.get_id())
+        r['body'] = controller.get_host_data_v1()
+        self._msgbus.publish(r['resource'], r)
