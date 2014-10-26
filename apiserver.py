@@ -70,7 +70,7 @@ logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 
 import datetime
 
-from monpanel import *
+import json
 
 import tornado.web
 import tornado.gen
