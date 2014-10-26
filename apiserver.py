@@ -289,26 +289,47 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         method = jsondata.get('method', None)
         token = jsondata.get('token', None)
         resource = jsondata.get('resource', None)
-        resources = []
 
         reply = {}
 
-        if resource != None:
-            resources = resource.split('/')
-            reply['resource'] = resource
-
-        if token != None:
+        if token:
             reply['token'] = token
 
-        if method == 'get':
-            filter = None
-            if len(resources) == 3:
-                filter = resources[2]
+        if not method:
+            reply['message'] = 'error: method missing'
+            self.wsclient.send_data(reply)
+            return
 
+        if method not in ['get']:
+            reply['message'] = 'error: unknown method'
+            self.wsclient.send_data(reply)
+            return
+
+        if not resource:
+            reply['message'] = 'error: resource missing'
+            self.wsclient.send_data(reply)
+            return
+
+        reply['resource'] = resource
+        (root, query, filter) = (resource + '//').split('/', 3)[0:3]
+
+        if root != '':
+            reply['message'] = 'error: resource path must be absolute'
+            self.wsclient.send_data(reply)
+            return
+
+        if query not in ['hosts', 'controllers']:
+            reply['message'] = 'error: unknown resource'
+            self.wsclient.send_data(reply)
+            return
+
+        if method == 'get':
             try:
-                reply['body'] = self._api.get(self.user, resources[1], filter)
+                reply['body'] = self._api.get(self.user, query, filter)
             except Exception as e:
                 reply['message'] = 'error: ' + str(e)
+        else:
+            raise Exception('update known method list above')
 
         self.wsclient.send_data(reply)
 
