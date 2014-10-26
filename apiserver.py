@@ -402,15 +402,26 @@ if __name__ == '__main__':
     tornado.options.define("https_port", default = "4433", help = "HTTPS port (0 to disable)", type = int)
     tornado.options.define("listen_address", default = "0.0.0.0", help = "Listen this address only", type = str)
     tornado.options.define("udp_port", default = "44444", help = "UDP listen port", type = int)
+    tornado.options.define("statefile", default = "/tmp/apiserver.pkl", help = "Read/write server state to/from this file during statup/shutdown", type = str)
 
     args = sys.argv
     args.append("--logging=debug")
     tornado.options.parse_command_line(args)
 
     usersessions = UserSessions()
-    controllers = Controllers()
     wsclients = WsClients()
     msgbus = MsgBus()
+
+    import pickle
+    try:
+        f = open(options.statefile, 'rb')
+        log.info("restore state from pickle")
+        unpickler = pickle.Unpickler(f)
+        controllers = unpickler.load()
+        log.info("controllers restored")
+        f.close()
+    except:
+        controllers = Controllers()
 
     handler_settings = {
         "usersessions": usersessions,
@@ -456,3 +467,9 @@ if __name__ == '__main__':
     tornado.ioloop.IOLoop.instance().start()
 
     log.info(' --- EXIT ---')
+
+    import pickle
+    f = open(options.statefile, 'wb')
+    pickler = pickle.Pickler(f, 0)
+    pickler.dump(controllers)
+    f.close()
