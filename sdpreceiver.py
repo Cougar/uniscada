@@ -16,12 +16,13 @@ class SDPReceiver(object):
     convert it to the SDP structure, find out sender Controller and
     update its internal state. Finally send ACK back to the Controller.
     '''
-    def __init__(self, controllers):
+    def __init__(self, controllers, msgbus):
         ''' SDP receiver instance.
 
         :param controllers: global Controllers instance
         '''
         self._controllers = controllers
+        self._msgbus = msgbus
 
     def datagram_from_controller(self, host, datagram):
         ''' Process incoming datagram

@@ -86,6 +86,7 @@ from usersessions import UserSessions
 from controllers import Controllers
 from sdpreceiver import SDPReceiver
 from wsclients import WsClients
+from msgbus import MsgBus
 
 from api import API
 
@@ -184,6 +185,7 @@ class RestHandler(tornado.web.RequestHandler):
         self._usersessions = kwargs.pop('usersessions', None)
         self._controllers = kwargs.pop('controllers', None)
         self._wsclients = kwargs.pop('wsclients', None)
+        self._msgbus = kwargs.pop('msgbus', None)
         super(RestHandler, self).__init__(*args, **kwargs)
 
     def initialize(self):
@@ -232,6 +234,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         self._usersessions = kwargs.pop('usersessions', None)
         self._controllers = kwargs.pop('controllers', None)
         self._wsclients = kwargs.pop('wsclients', None)
+        self._msgbus = kwargs.pop('msgbus', None)
         self._authenticated = False
         self._args = args
         super(WebSocketHandler, self).__init__(*args, **kwargs)
@@ -320,7 +323,7 @@ class FileHandler(tornado.web.RequestHandler):
         self.render(args[0])
 
 class UDPReader(object):
-    def __init__(self, addr, port, usersessions, controllers, wsclients):
+    def __init__(self, addr, port, usersessions, controllers, wsclients, msgbus):
         import socket
         import tornado.ioloop
         import functools
@@ -328,7 +331,8 @@ class UDPReader(object):
         self._usersessions = usersessions
         self._controllers = controllers
         self._wsclients = wsclients
-        self.b = SDPReceiver(self._controllers)
+        self._msgbus = msgbus
+        self.b = SDPReceiver(self._controllers, self._msgbus)
         self.u = UDPComm(addr, port, self.b.datagram_from_controller)
         self.interval = 10
         self.ioloop = tornado.ioloop.IOLoop.instance()
@@ -373,11 +377,13 @@ if __name__ == '__main__':
     usersessions = UserSessions()
     controllers = Controllers()
     wsclients = WsClients()
+    msgbus = MsgBus()
 
     handler_settings = {
         "usersessions": usersessions,
         "controllers": controllers,
         "wsclients": wsclients,
+        "msgbus": msgbus,
     }
 
     app_settings = {
@@ -407,7 +413,7 @@ if __name__ == '__main__':
         app.listen(options.http_port, address = options.listen_address)
         print("OK")
 
-    UDPReader("0.0.0.0", int(options.udp_port), controllers, wsclients)
+    UDPReader("0.0.0.0", int(options.udp_port), usersessions, controllers, wsclients, msgbus)
 
     import tornado.ioloop
     tornado.ioloop.IOLoop.instance().start()
