@@ -91,22 +91,11 @@ from msgbus import MsgBus
 
 from api import API
 
+from cookieauth import CookieAuth
+
 log = logging.getLogger(__name__)
 
 EXECUTOR = ThreadPoolExecutor(max_workers=50)
-
-class CookieAuth:
-    def __init__(self, handler):
-        self.handler = handler
-
-    def get_current_user(self):
-        try:
-            cookeiauth = self.handler.get_cookie('itvilla_com', None)
-            if cookeiauth == None:
-                return None
-            return cookeiauth.split(':')[0]
-        except:
-            return None
 
 
 def unblock(f):
