@@ -105,5 +105,5 @@ function Display(color, msg) {
 
 function ClearDisplay() {
     lines = [];
-    Display('');
+    document.getElementById("messages").innerHTML = '';
 }
