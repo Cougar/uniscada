@@ -119,20 +119,6 @@ class UDPReader(object):
         log.debug('WSClients: %s', str(self._wsclients))
         self.ioloop.add_timeout(datetime.timedelta(seconds=self.interval), self.sync_tasks)
 
-    def _callback(self, sock, fd, events):
-        if events & self._io_loop.READ:
-            self._callback_read(sock, fd)
-        if events & self._io_loop.ERROR:
-            print("IOLoop error")
-            sys.exit(1)
-
-    def _callback_read(self, sock, fd):
-        (data, addr) = sock.recvfrom(4096)
-        pass
-
-class FileHandler(tornado.web.RequestHandler):
-    def get(self, *args, **kwargs):
-        self.render(args[0])
 
 is_closing = False
 
