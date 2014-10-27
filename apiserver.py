@@ -161,6 +161,9 @@ if __name__ == '__main__':
     tornado.options.define("listen_address", default = "0.0.0.0", help = "Listen this address only", type = str)
     tornado.options.define("udp_port", default = "44444", help = "UDP listen port", type = int)
     tornado.options.define("statefile", default = "/tmp/apiserver.pkl", help = "Read/write server state to/from this file during statup/shutdown", type = str)
+    tornado.options.define("setup_dump", default = "/srv/scada/sqlite/controller.sql", help = "SQLite dump of controller setup", type = str)
+    tornado.options.define("setup_field", default = "mac", help = "Controller id field name", type = str)
+    tornado.options.define("setup_table", default = "controller", help = "Table name", type = str)
 
     args = sys.argv
     args.append("--logging=debug")
@@ -181,7 +184,7 @@ if __name__ == '__main__':
     except:
         controllers = Controllers()
 
-    ControllerSetup().loadsql(controllers, '/srv/scada/sqlite/controller.sql', 'controller', 'mac')
+    ControllerSetup().loadsql(controllers, options.setup_dump, options.setup_table, options.setup_field)
 
     handler_settings = {
         "usersessions": usersessions,
