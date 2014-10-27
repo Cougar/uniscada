@@ -32,9 +32,11 @@ class API_hostgroups(object):
         if 'members' in userdata['hostgroups'][hostgroup]:
             for host, alias in userdata['hostgroups'][hostgroup]['members'].items():
                 if usersession.check_access(host):
+                    self._controllers.get_id(host)
+                    servicegroup = self._controllers.get_id(host).get_setup().get('servicetable', '')
                     r['hosts'].append({
                         'id': host,
                         'alias': alias,
-                        'servicegroup': 'xxx'   # FIXME
+                        'servicegroup': servicegroup
                         })
         return r
