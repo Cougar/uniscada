@@ -11,6 +11,7 @@ log.addHandler(logging.NullHandler())
 __all__ = [
     'Controller',
     'get_id',
+    'set_setup', 'get_setup',
     'set_host',
     'set_state_reg', 'get_state_register_list', 'get_state_reg',
     'set_last_sdp', 'ack_last_sdp',
@@ -33,6 +34,7 @@ class Controller(object):
         self._last_sdp = None
         self._last_sdp_ts = None
         self._send_queue = {}
+        self._setup = {}
 
     def get_id(self):
         ''' Get id of controller
@@ -40,6 +42,20 @@ class Controller(object):
         :returns: controller id
         '''
         return self._id
+
+    def set_setup(self, setup):
+        ''' Set setup data
+
+        :param setup: setup data
+        '''
+        self._setup = setup
+
+    def get_setup(self):
+        ''' Return setup data
+
+        :returns: setup data
+        '''
+        return self._setup
 
     def set_host(self, host):
         ''' Assign Host instance to the controller
@@ -251,5 +267,6 @@ class Controller(object):
     def __str__(self):
         return(str(self._id) + ': ' +
                'host = ' + str(self._host) +
+               ', setup = ' + str(self._setup) +
                ', state = ' + str(self._state) +
                ', send_queue = ' + str(self._send_queue))

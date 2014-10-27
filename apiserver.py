@@ -84,6 +84,8 @@ from sdpreceiver import SDPReceiver
 from wsclients import WsClients
 from msgbus import MsgBus
 
+from controllersetup import ControllerSetup
+
 from api import API
 
 from cookieauth import CookieAuth
@@ -178,6 +180,8 @@ if __name__ == '__main__':
         f.close()
     except:
         controllers = Controllers()
+
+    ControllerSetup().loadsql(controllers, '/srv/scada/sqlite/controller.sql', 'controller', 'mac')
 
     handler_settings = {
         "usersessions": usersessions,
