@@ -31,6 +31,9 @@ class API(object):
         elif resource == 'controllers':
             from api_controllers import API_controllers
             data = API_controllers(self._usersessions, self._controllers).output(user, filter)
+        elif resource == 'hostgroups':
+            from api_hostgroups import API_hostgroups
+            data = API_hostgroups(self._usersessions, self._controllers).output(user, filter)
         else:
             data = {}
         return data
