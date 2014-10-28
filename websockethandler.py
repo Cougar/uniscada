@@ -17,6 +17,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
     def __init__(self, *args, **kwargs):
         self._usersessions = kwargs.pop('usersessions', None)
         self._controllers = kwargs.pop('controllers', None)
+        self._servicegroups = kwargs.pop('servicegroups', None)
         self._wsclients = kwargs.pop('wsclients', None)
         self._msgbus = kwargs.pop('msgbus', None)
         self._authenticated = False
@@ -27,7 +28,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         self.wsclient = self._wsclients.find_by_id(self)
         cookeiauth = CookieAuth(self)
         self.user = cookeiauth.get_current_user()
-        self._api = API(self._usersessions, self._controllers)
+        self._api = API(self._usersessions, self._controllers, self._servicegroups)
         if not self.user:
             self.write_message(json.dumps({'message': 'Not authenticated', 'login_url': 'https://login.itvilla.com/login'}, indent=4, sort_keys=True))
             return
@@ -103,7 +104,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             self.wsclient.send_data(reply)
             return
 
-        if query not in ['hosts', 'controllers', 'hostgroups']:
+        if query not in ['hosts', 'controllers', 'hostgroups', 'servicegroups']:
             reply['message'] = 'error: unknown resource'
             self.wsclient.send_data(reply)
             return

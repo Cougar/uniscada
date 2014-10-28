@@ -63,6 +63,7 @@ class RestHandler(tornado.web.RequestHandler):
     def __init__(self, *args, **kwargs):
         self._usersessions = kwargs.pop('usersessions', None)
         self._controllers = kwargs.pop('controllers', None)
+        self._servicegroups = kwargs.pop('servicegroups', None)
         self._wsclients = kwargs.pop('wsclients', None)
         self._msgbus = kwargs.pop('msgbus', None)
         super(RestHandler, self).__init__(*args, **kwargs)
@@ -96,7 +97,7 @@ class RestHandler(tornado.web.RequestHandler):
                 # FIXME return right URL
                 return({ 'status': 200, 'headers': [ { 'Location': 'https://receiver.itvilla.com:4433/api/v1/hosts' } ], 'bodydata': {'message' : 'Authentication in progress..'} })
 
-            body = API(self._usersessions, self._controllers).get(self.user, args[0], filter)
+            body = API(self._usersessions, self._controllers, self._servicegroups).get(self.user, args[0], filter)
 
             headers = [
                     { 'X-Username': self.user }

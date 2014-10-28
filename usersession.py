@@ -27,6 +27,7 @@ class UserSession(object):
         self._userdata = None
         self._userdata_callback = None
         self._controllerlist = {}
+        self._servicegroupids = None
 
     def get_id(self):
         ''' Get id of user (username)
@@ -79,6 +80,12 @@ class UserSession(object):
         for group in self._userdata.get('user_groups'):
             for mac in self._userdata.get('user_groups').get(group):
                 self._controllerlist[mac] = True
+
+    def set_servicegroupids(self, servicegroupids):
+        self._servicegroupids = servicegroupids
+
+    def get_servicegroupids(self):
+        return self._servicegroupids
 
     def get_userdata(self):
         ''' Return userdata or None if not initialised

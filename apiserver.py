@@ -80,6 +80,7 @@ import signal
 from udpcomm import *
 from usersessions import UserSessions
 from controllers import Controllers
+from servicegroups import ServiceGroups
 from sdpreceiver import SDPReceiver
 from wsclients import WsClients
 from msgbus import MsgBus
@@ -100,7 +101,7 @@ log = logging.getLogger(__name__)
 
 
 class TimerTasks(object):
-    def __init__(self, interval, usersessions, controllers, wsclients, msgbus, udpcomm):
+    def __init__(self, interval, usersessions, controllers, wsclients, msgbus, udpcomm, servicegroups):
         import tornado.ioloop
 
         self._usersessions = usersessions
@@ -108,6 +109,7 @@ class TimerTasks(object):
         self._wsclients = wsclients
         self._msgbus = msgbus
         self._udpcomm = udpcomm
+        self._servicegroups = servicegroups
         self._interval = interval
         self.ioloop = tornado.ioloop.IOLoop.instance()
         self._timer_tasks()
@@ -118,6 +120,8 @@ class TimerTasks(object):
             log.debug('Users: %s', str(self._usersessions))
         if self._controllers:
             log.debug('Controllers: %s', str(self._controllers))
+        if self._servicegroups:
+            log.debug('Servicegroups: %s', str(self._servicegroups))
         if self._wsclients:
             log.debug('WSClients: %s', str(self._wsclients))
         if self._msgbus:
@@ -127,17 +131,18 @@ class TimerTasks(object):
         self.ioloop.add_timeout(datetime.timedelta(seconds=self._interval), self._timer_tasks)
 
 class UDPReader(object):
-    def __init__(self, addr, port, usersessions, controllers, wsclients, msgbus):
+    def __init__(self, addr, port, usersessions, controllers, wsclients, msgbus, servicegroups):
         import socket
 
         self._usersessions = usersessions
         self._controllers = controllers
         self._wsclients = wsclients
         self._msgbus = msgbus
+        self._servicegroups = servicegroups
         self.b = SDPReceiver(self._controllers, self._msgbus)
         self.u = UDPComm(addr, port, self.b.datagram_from_controller)
 
-        TimerTasks(10, usersessions, controllers, wsclients, msgbus, self.u)
+        TimerTasks(10, usersessions, controllers, wsclients, msgbus, self.u, servicegroups)
 
 is_closing = False
 
@@ -186,9 +191,12 @@ if __name__ == '__main__':
 
     ControllerSetup().loadsql(controllers, options.setup_dump, options.setup_table, options.setup_field)
 
+
+    servicegroups = ServiceGroups()
     handler_settings = {
         "usersessions": usersessions,
         "controllers": controllers,
+        "servicegroups": servicegroups,
         "wsclients": wsclients,
         "msgbus": msgbus,
     }
@@ -220,7 +228,7 @@ if __name__ == '__main__':
         app.listen(options.http_port, address = options.listen_address)
         print("OK")
 
-    UDPReader("0.0.0.0", int(options.udp_port), usersessions, controllers, wsclients, msgbus)
+    UDPReader("0.0.0.0", int(options.udp_port), usersessions, controllers, wsclients, msgbus, servicegroups)
 
     import tornado.ioloop
 
