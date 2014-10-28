@@ -86,6 +86,7 @@ from wsclients import WsClients
 from msgbus import MsgBus
 
 from controllersetup import ControllerSetup
+from servicegroupsetup import ServiceGroupSetup
 
 from api import API
 
@@ -161,6 +162,8 @@ def try_exit():
 if __name__ == '__main__':
     from tornado.options import define, options, parse_command_line
 
+    tornado.options.define("ignore_sql_errors", default = False, help = "do not validate config consistency and ignore sql errors", type = bool)
+
     tornado.options.define("http_port", default = "8888", help = "HTTP port (0 to disable)", type = int)
     tornado.options.define("https_port", default = "4433", help = "HTTPS port (0 to disable)", type = int)
     tornado.options.define("listen_address", default = "0.0.0.0", help = "Listen this address only", type = str)
@@ -169,6 +172,8 @@ if __name__ == '__main__':
     tornado.options.define("setup_dump", default = "/srv/scada/sqlite/controller.sql", help = "SQLite dump of controller setup", type = str)
     tornado.options.define("setup_field", default = "mac", help = "Controller id field name", type = str)
     tornado.options.define("setup_table", default = "controller", help = "Table name", type = str)
+    tornado.options.define("service_sqldir", default = "/srv/scada/sqlite/", help = "Directory of servicegroup definition SQLite dumps", type = str)
+    tornado.options.define("register_field", default = "sta_reg", help = "Service id field name", type = str)
 
     args = sys.argv
     args.append("--logging=debug")
@@ -193,6 +198,26 @@ if __name__ == '__main__':
 
 
     servicegroups = ServiceGroups()
+    for controller in controllers.get_id_list():
+        c = controllers.get_id(controller)
+        servicetable = c.get_setup().get('servicetable', None)
+        log.info('controller: %s, servicegroup: %s', str(c._id), str(servicetable))
+        if servicetable and servicetable != '':
+            if not servicegroups.get_id(servicetable):  # load only once
+                servicegroup = servicegroups.find_by_id(servicetable)
+                try:
+                    ServiceGroupSetup(servicegroup, servicetable).loadsql(options.service_sqldir, options.register_field)
+                    log.info('servicegroup %s loaded', servicetable)
+                    log.debug('servicegroup %s loaded: %s', servicetable, str(servicegroup))
+                except Exception as ex:
+                    if not options.ignore_sql_errors:
+                        raise Exception(ex)
+
+            else:
+                log.info('already loaded')
+        else:
+            log.info('no servicetable defined')
+
     handler_settings = {
         "usersessions": usersessions,
         "controllers": controllers,
