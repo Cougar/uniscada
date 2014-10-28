@@ -73,7 +73,12 @@ class UserSession(object):
             log.error('userdata check error: %s', str(ex))
             raise Exception('userdata check error: %s' % str(ex))
         self._userdata = userdata
+        self._update_controllerlist()
+
+    def _update_controllerlist(self):
         self._controllerlist = {}
+        if not self._userdata:
+            return
         if not 'user_groups' in self._userdata:
             log.warnig('user %s does not have any user_groups defined', self._id)
             return
