@@ -22,7 +22,7 @@ class MsgBus(object):
         :param owner: listener
         :param func: callback function func(token, subject, message)
         '''
-        log.debug('subscribe(%s, %s, %s, %s)', str(token), str(subject), str(owner), str(func))
+        log.info('subscribe(%s, %s, %s, %s)', str(token), str(subject), str(owner), str(func))
         if not owner in self._subscriptions:
             self._subscriptions[owner] = {}
         if not token in self._subscriptions[owner]:
@@ -50,7 +50,7 @@ class MsgBus(object):
         :param subject: message subject to listen
         :param owner: listener
         '''
-        log.debug('unsubscribe(%s, %s, %s)', str(token), str(subject), str(owner))
+        log.info('unsubscribe(%s, %s, %s)', str(token), str(subject), str(owner))
         if not owner in self._subscriptions:
             raise Exception('no subscriptions for this owner')
         if not token in self._subscriptions[owner]:
@@ -68,7 +68,7 @@ class MsgBus(object):
 
         :param owner: listener
         '''
-        log.debug('unsubscribe_all(%s)', str(owner))
+        log.info('unsubscribe_all(%s)', str(owner))
         if owner in self._subscriptions:
             del self._subscriptions[owner]
 
