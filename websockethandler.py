@@ -86,6 +86,11 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             self.wsclient.send_data(reply)
             return
 
+        if method == 'disconnect':
+            self.close()
+            self.on_close()
+            return
+
         if method not in ['get', 'subscribe']:
             reply['message'] = 'error: unknown method'
             self.wsclient.send_data(reply)
