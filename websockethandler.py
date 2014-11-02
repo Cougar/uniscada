@@ -128,11 +128,13 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
             self._msgbus.subscribe(token, resource, self, self._on_bus_message)
             reply['message'] = 'success'
+            reply['body'] = {}
         elif method == 'unsubscribe':
             usersession = self._usersessions.find_by_id(self.user)
             try:
                 self._msgbus.unsubscribe(token, resource, self)
                 reply['message'] = 'success'
+                reply['body'] = {}
             except Exception as e:
                 reply['message'] = 'error: ' + str(e)
         else:
