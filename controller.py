@@ -201,7 +201,7 @@ class Controller(object):
             if value == '?':
                 self.send_queue_add_last_reg(register)
             else:
-                self.set_state_reg(register, value, ts = ts)
+                self.set_state_reg(register, sdp.get_data(register), ts = ts)
                 self.send_queue_remove_reg(register, value)
 
     def ack_last_sdp(self):
