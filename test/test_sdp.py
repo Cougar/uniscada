@@ -89,6 +89,22 @@ class SDPTests(unittest.TestCase):
 
         self.assertRaises(Exception, self.sdp.add_keyvalue, 'AXV', [1, 2])
 
+    def test_add_keyvalue_values_list(self):
+        ''' Test setting/getting key:val for List of Values (list) '''
+        self.sdp.add_keyvalue('AAW', [1])
+        d = self.sdp.get_data('AAW')
+        self.assertTrue(isinstance(d, list))
+        self.assertEqual(d, [1])
+        self.assertEqual(self.sdp.get_data('AAw'), None)
+        self.assertEqual(self.sdp.get_data('aaW'), None)
+
+        self.sdp.add_keyvalue('ABW', [1, None, 2])
+        d = self.sdp.get_data('ABW')
+        self.assertTrue(isinstance(d, list))
+        self.assertEqual(d, [1, None, 2])
+
+        self.assertRaises(Exception, self.sdp.add_keyvalue, 'AXV', [0, None, 3.5])
+
     def test_add_keyvalue_values(self):
         ''' Test setting/getting key:val for List of Values '''
         self.sdp.add_keyvalue('AAW', '1')
@@ -113,6 +129,7 @@ class SDPTests(unittest.TestCase):
         self.assertRaises(Exception, self.sdp.add_keyvalue, 'AZW', 'a')
         self.assertRaises(Exception, self.sdp.add_keyvalue, 'AQW', '')
         self.assertRaises(Exception, self.sdp.add_keyvalue, 'AWW', None)
+        self.assertRaises(Exception, self.sdp.add_keyvalue, 'AVW', [ 1.5 ])
 
     def test_add_value(self):
         ''' Test setting/getting Value and List of Values key:val '''

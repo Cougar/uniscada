@@ -60,11 +60,14 @@ class SDP(object):
                 raise Exception('Value _MUST_BE_ str, int or float type')
             self.add_value(key[:-1], val)
         elif key[-1] == 'W':
-            if not isinstance(val, str):
-                raise Exception('List of Values _MUST_BE_ string of numbers')
+            if not isinstance(val, str) and \
+               not isinstance(val, list):
+                raise Exception('List of Values _MUST_BE_ string or list of numbers but ' + str(key) + ' is ' + str(type(val)))
+            if isinstance(val, list):
+                val = ' '.join(list(map(self._list_value_to_str, val)))
             lst = list(map(self._list_str_to_value, val.split(' ')))
             if val != ' '.join(list(map(self._list_value_to_str, lst))):
-                raise Exception('Only integers allowed in List of Values')
+                raise Exception('Only integers allowed in List of Values: "' + val + '" != "' + ' '.join(list(map(self._list_value_to_str, lst))) + '"')
             self.add_value(key[:-1], lst)
         else:
             if not isinstance(val, str):
