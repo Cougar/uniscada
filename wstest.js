@@ -86,6 +86,10 @@ function WebSocketSubscribe(res) {
     WebSocketSend('subscribe', res);
 }
 
+function WebSocketUnsubscribe(res) {
+    WebSocketSend('unsubscribe', res);
+}
+
 function WebSocketGet(res) {
     WebSocketSend('get', res);
 }
