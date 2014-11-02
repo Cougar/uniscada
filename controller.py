@@ -125,7 +125,6 @@ class Controller(object):
         '''
         r = {}
         r['host'] = self._id
-        r['registers'] = self._state
         r['registers'] = []
         if self._last_sdp:
             for reg in self._last_sdp.get_data_list():

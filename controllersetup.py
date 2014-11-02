@@ -26,7 +26,7 @@ class ControllerSetup(object):
         :param table: SQLite table name
         :param field: SQLite table controler name field
         '''
-        log.info('Load controller setup from SQlite dump %s table %s field %s', str(sqldump), str(table), str(field))
+        log.info('Load controller setup from SQLite dump %s table %s field %s', str(sqldump), str(table), str(field))
         try:
             sql = open(sqldump, encoding='utf-8').read()
         except Exception as e:

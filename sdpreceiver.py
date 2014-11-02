@@ -20,6 +20,7 @@ class SDPReceiver(object):
         ''' SDP receiver instance.
 
         :param controllers: global Controllers instance
+        :param msgbus: message bus instance
         '''
         self._controllers = controllers
         self._msgbus = msgbus

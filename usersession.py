@@ -80,7 +80,7 @@ class UserSession(object):
         if not self._userdata:
             return
         if not 'user_groups' in self._userdata:
-            log.warnig('user %s does not have any user_groups defined', self._id)
+            log.warning('user %s does not have any user_groups defined', self._id)
             return
         for group in self._userdata.get('user_groups'):
             for mac in self._userdata.get('user_groups').get(group):
