@@ -109,7 +109,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             self.wsclient.send_data(reply)
             return
 
-        if query not in ['hosts', 'controllers', 'hostgroups', 'servicegroups']:
+        if query not in ['hosts', 'controllers', 'hostgroups', 'servicegroups', 'services']:
             reply['message'] = 'error: unknown resource'
             self.wsclient.send_data(reply)
             return

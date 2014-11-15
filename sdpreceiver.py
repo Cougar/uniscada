@@ -62,3 +62,8 @@ class SDPReceiver(object):
         r['resource'] = '/hosts/' + str(controller.get_id())
         r['body'] = controller.get_host_data_v1()
         self._msgbus.publish(r['resource'], r)
+
+        r = {}
+        r['resource'] = '/services/' + str(controller.get_id())
+        r['body'] = controller.get_service_data_v1_last_sdp()
+        self._msgbus.publish(r['resource'], r)

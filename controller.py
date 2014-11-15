@@ -137,6 +137,57 @@ class Controller(object):
             r['timestamp'] = self._last_sdp_ts
         return r
 
+    def get_service_data_v1(self):
+        ''' Return service data in API v1 format
+
+        :returns: service data in API v1 format
+        '''
+        r = {}
+        r['host'] = self._id
+        r['services'] = []
+        for (reg, val, ts) in self.get_state_register_list():
+            r1 = {}
+            r1['key'] = reg
+            if isinstance(val, list):
+                r1['value'] = list(map(str, val))
+            else:
+                r1['value'] = [ str(val) ]
+            r1['status'] = '0'  # FIXME
+            r['services'].append(r1)
+        if self._last_sdp_ts:
+            r['timestamp'] = self._last_sdp_ts
+        return r
+
+    def get_service_data_v1_last_sdp(self):
+        ''' Return service data in API v1 format
+
+        Only changes by last incoming SDP datagramm will be returned
+
+        :returns: service data in API v1 format
+        '''
+        if not self._last_sdp:
+            return {}
+        last_sdp_keys = []
+        for reg in self._last_sdp.get_data_list():
+                last_sdp_keys.append(reg[0])
+        r = {}
+        r['host'] = self._id
+        r['services'] = []
+        for (reg, val, ts) in self.get_state_register_list():
+            if not reg in last_sdp_keys:
+                continue
+            r1 = {}
+            r1['key'] = reg
+            if isinstance(val, list):
+                r1['value'] = list(map(str, val))
+            else:
+                r1['value'] = [ str(val) ]
+            r1['status'] = '0'  # FIXME
+            r['services'].append(r1)
+        if self._last_sdp_ts:
+            r['timestamp'] = self._last_sdp_ts
+        return r
+
     def set_last_sdp(self, sdp, ts = time.time()):
         ''' Remember last SDP packet and process it locally
 

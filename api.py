@@ -38,6 +38,9 @@ class API(object):
         elif resource == 'servicegroups':
             from api_servicegroups import API_servicegroups
             data = API_servicegroups(self._usersessions, self._controllers, self._servicegroups).output(user, filter)
+        elif resource == 'services':
+            from api_services import API_services
+            data = API_services(self._usersessions, self._controllers, self._servicegroups).output(user, filter)
         else:
             data = { 'message': 'unknown resource' }
         return data
