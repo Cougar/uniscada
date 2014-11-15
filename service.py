@@ -98,7 +98,6 @@ class Service(object):
                 if str(mp+1) in multicfg:
                     multiperf['cfg'] = True
             r['multiperf'].append(multiperf)
-
         return r
 
     def __str__(self):
