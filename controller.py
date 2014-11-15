@@ -69,8 +69,9 @@ class Controller(object):
             return
         else:
             log.info('set_host(%s, %s): replace old host %s', str(self._id), str(host), str(self._host))
-            self._host.remove()
+            self._host.del_controller(self)
         self._host = host
+        self._host.add_controller(self)
 
     def set_state_reg(self, reg, val, ts = time.time()):
         ''' Set val of reg in the state dictionary of this controller

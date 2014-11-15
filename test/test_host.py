@@ -33,11 +33,26 @@ class HostTests(unittest.TestCase):
         sender.assert_called_once_with(self.host, 'message')
 
     def test_remove_independent_instance(self):
-        self.host.remove()
+        self.host._remove()
 
     def test_remove_list_instance(self):
         globallist = Mock()
         globallist.remove_by_id = Mock()
         self.host = Host(('1.2.3.4', 12345), globallist)
-        self.host.remove()
+        self.host._remove()
+        globallist.remove_by_id.assert_called_once_with(self.host.get_id())
+
+    def test_add_controller(self):
+        controller = Mock()
+        self.host.add_controller(controller)
+        self.assertRaises(Exception, self.host.add_controller, controller)
+
+    def test_del_controller(self):
+        globallist = Mock()
+        globallist.remove_by_id = Mock()
+        self.host = Host(('1.2.3.4', 12345), globallist)
+        controller = Mock()
+        self.assertRaises(Exception, self.host.del_controller, controller)
+        self.host.add_controller(controller)
+        self.host.del_controller(controller)
         globallist.remove_by_id.assert_called_once_with(self.host.get_id())

@@ -10,6 +10,7 @@ __all__ = [
     'get_id',
     'set_sender',
     'send',
+    'add_controller', 'del_controller',
 ]
 
 class Host(object):
@@ -25,6 +26,7 @@ class Host(object):
         self._listinstance = listinstance
         self._receiver = None
         self._sender = None
+        self._controllers = []
 
     def get_id(self):
         ''' Get id of host/device (IP, port duple)
@@ -81,14 +83,45 @@ class Host(object):
         log.debug('send(%s, "%s")', str(self._id), str(sendmessage))
         self._sender(self, sendmessage)
 
-    def remove(self):
+    def add_controller(self, controller):
+        ''' Associate a new Controller with this Host
+
+        This method associates Controller with this Host.
+
+        :param controller: Controller to associate
+        '''
+        log.info('add_controller %d + 1: %s: %s', len(self._controllers), str(controller.get_id()), self.get_id())
+        if controller in self._controllers:
+            raise Exception('BUG: Controller ' + str(controller.get_id()) + ' is already associated with Host ' + str(self.get_id()))
+        self._controllers.append(controller)
+
+    def del_controller(self, controller):
+        ''' Remove Controller association with this Host
+
+        This method deassociates Controller from this Host. If there is
+        no more controllers associated then Host instance will be
+        removed from Hosts list.
+
+        :param controller: Controller to deassociate
+        '''
+        log.info('del_controller %d - 1: %s: %s', len(self._controllers), str(controller.get_id()), self.get_id())
+        if not controller in self._controllers:
+            raise Exception('BUG: Controller ' + str(controller.get_id()) + ' is not associated associated with Host ' + str(self.get_id()))
+        self._controllers.remove(controller)
+        if not len(self._controllers):
+            self._remove()
+
+    def _remove(self):
         ''' Remove this host instance from Hosts list '''
         if not self._listinstance:
-            log.error('remove(%s): instance is not initiated by list', str(self))
+            log.error('_remove(%s): instance is not initiated by list', str(self))
             return
         else:
-            log.info('remove(%s)', str(self))
+            log.info('_remove(%s)', str(self))
             self._listinstance.remove_by_id(self.get_id())
+
+    def __eq__(self, host):
+        return self.get_id() == host.get_id()
 
     def __str__(self):
         return(str(self._id))
