@@ -23,7 +23,13 @@ class API_hosts(object):
                 c = controller.get_id()
                 if usersession.check_access(c):
                     entry.append(c)
-            if len(entry):
+            if  usersession.is_admin():
+                r.append({
+                    'host': h,
+                    'controllers': entry,
+                    'stats': host.get_stats()
+                    })
+            elif len(entry):
                 r.append({ 'host': h, 'controllers': entry })
         return r
 
