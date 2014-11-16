@@ -125,7 +125,9 @@ class Controller(object):
         :returns: host data in API v1 format
         '''
         r = {}
-        r['host'] = self._id
+        r['controller'] = self._id
+        if self._host:
+            r['host'] = str(self._host.get_id())
         r['registers'] = []
         if self._last_sdp:
             for reg in self._last_sdp.get_data_list():
@@ -135,7 +137,7 @@ class Controller(object):
                 r['registers'].append(r1)
         if self._last_sdp_ts:
             r['timestamp'] = self._last_sdp_ts
-        return r
+        return [r]
 
     def get_service_data_v1(self):
         ''' Return service data in API v1 format
