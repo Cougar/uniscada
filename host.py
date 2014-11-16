@@ -1,6 +1,6 @@
 ''' Physical host or device data structure for Comm module
 '''
-import time
+from stats import Stats
 
 import logging
 log = logging.getLogger(__name__)
@@ -30,8 +30,7 @@ class Host(object):
         self._sender = None
         self._addr = None
         self._controllers = []
-        self._stats = {}
-        self._set_stats('created', time.time())
+        self._stats = Stats()
 
     def get_id(self):
         ''' Get id of host/device (IP, port duple)
@@ -78,10 +77,10 @@ class Host(object):
             log.error('receiver(%s, "%s"): callback not set', str(self._id), str(receivedmessage))
             return
         log.debug('receiver(%s, "%s")', str(self._id), str(receivedmessage))
-        self._add_stats('rx/bytes', len(receivedmessage))
-        self._add_stats('rx/packets', 1)
-        self._set_stats('rx/last/datagram', receivedmessage)
-        self._set_stats('rx/last/timestamp', time.time())
+        self._stats.add('rx/bytes', len(receivedmessage))
+        self._stats.add('rx/packets', 1)
+        self._stats.set('rx/last/datagram', receivedmessage)
+        self._stats.set_timestamp('rx/last/timestamp')
         self._receiver(self, receivedmessage)
 
     def send(self, sendmessage):
@@ -98,10 +97,10 @@ class Host(object):
             log.error('send(%s, "%s"): callback not set', str(self._id), str(sendmessage))
             return
         log.debug('send(%s, %s, "%s")', str(self._id), str(self._addr), str(sendmessage))
-        self._add_stats('tx/bytes', len(sendmessage))
-        self._add_stats('tx/packets', 1)
-        self._set_stats('tx/last/datagram', sendmessage)
-        self._set_stats('tx/last/timestamp', time.time())
+        self._stats.add('tx/bytes', len(sendmessage))
+        self._stats.add('tx/packets', 1)
+        self._stats.set('tx/last/datagram', sendmessage)
+        self._stats.set_timestamp('tx/last/timestamp')
         self._sender(self, self._addr, sendmessage)
 
     def add_controller(self, controller):
@@ -154,15 +153,7 @@ class Host(object):
 
         :returns: statistics
         '''
-        return self._stats
-
-    def _set_stats(self, stats, val):
-        self._stats[stats] = val
-
-    def _add_stats(self, counter, num):
-        if not counter in self._stats:
-            self._stats[counter] = 0
-        self._stats[counter] = self._stats[counter] + num
+        return self._stats.get()
 
     def __eq__(self, host):
         return self.get_id() == host.get_id()
