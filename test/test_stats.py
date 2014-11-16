@@ -43,3 +43,16 @@ class StatsTests(unittest.TestCase):
         self.stats.set_timestamp('name')
         stats = self.stats.get()
         self.assertAlmostEqual(stats['name'], tm, delta=1)
+
+    def test_set_subnames(self):
+        ''' Test name1/name2/../nameN type names '''
+        self.stats.set('name1/name2', 12)
+        self.stats.set('name1/name3', 23)
+        stats = self.stats.get()
+        self.assertTrue('name1' in stats)
+        self.assertTrue('name2' in stats['name1'])
+        self.assertEqual(stats['name1']['name2'], 12)
+        self.assertTrue('name3' in stats['name1'])
+        self.assertEqual(stats['name1']['name3'], 23)
+        self.assertRaises(Exception, self.stats.set, 'name1', 123)
+        self.assertRaises(Exception, self.stats.set, 'name1/name2/name3', 123)
