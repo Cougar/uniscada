@@ -29,8 +29,9 @@ class HostTests(unittest.TestCase):
     def test_sender(self):
         sender = Mock()
         self.host.set_sender(sender)
+        self.host.set_addr('addr')
         self.host.send('message')
-        sender.assert_called_once_with(self.host, 'message')
+        sender.assert_called_once_with(self.host, 'addr', 'message')
 
     def test_remove_independent_instance(self):
         self.host._remove()
