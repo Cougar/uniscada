@@ -10,7 +10,7 @@ __all__ = [
     'get_id',
     'set_sender', 'set_addr',
     'send',
-    'add_controller', 'del_controller',
+    'add_controller', 'del_controller', 'get_controller_list',
 ]
 
 class Host(object):
@@ -119,6 +119,14 @@ class Host(object):
         self._controllers.remove(controller)
         if not len(self._controllers):
             self._remove()
+
+    def get_controller_list(self):
+        ''' Generates a list of known controllers behind this host
+
+        :returns: Generated controller item
+        '''
+        for controller in self._controllers:
+            yield controller
 
     def _remove(self):
         ''' Remove this host instance from Hosts list '''
