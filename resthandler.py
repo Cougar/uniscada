@@ -61,11 +61,12 @@ class JSONBinEncoder(json.JSONEncoder):
 
 class RestHandler(tornado.web.RequestHandler):
     def __init__(self, *args, **kwargs):
-        self._usersessions = kwargs.pop('usersessions', None)
-        self._controllers = kwargs.pop('controllers', None)
-        self._servicegroups = kwargs.pop('servicegroups', None)
-        self._wsclients = kwargs.pop('wsclients', None)
-        self._msgbus = kwargs.pop('msgbus', None)
+        self._core = kwargs.pop('core', None)
+        self._usersessions = self._core.usersessions()
+        self._controllers = self._core.controllers()
+        self._servicegroups = self._core.servicegroups()
+        self._wsclients = self._core.wsclients()
+        self._msgbus = self._core.msgbus()
         super(RestHandler, self).__init__(*args, **kwargs)
 
     def initialize(self):
@@ -97,7 +98,7 @@ class RestHandler(tornado.web.RequestHandler):
                 # FIXME return right URL
                 return({ 'status': 200, 'headers': [ { 'Location': 'https://receiver.itvilla.com:4433/api/v1/hosts' } ], 'bodydata': {'message' : 'Authentication in progress..'} })
 
-            body = API(self._usersessions, self._controllers, self._servicegroups).get(self.user, args[0], filter)
+            body = API(self._core).get(self.user, args[0], filter)
 
             headers = [
                     { 'X-Username': self.user }

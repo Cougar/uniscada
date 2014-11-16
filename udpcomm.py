@@ -11,24 +11,25 @@ log.addHandler(logging.NullHandler())
 
 class UDPComm(object):
     ''' UDP socket listener '''
-    def __init__(self, addr, port, handler):
+    def __init__(self, addr, port, handler, core):
         ''' Listen UDP socket and forward all incoming datagrams to
         the handler(host, data)
 
         :param addr: bind IP address ("0.0.0.0" for ANY)
         :param port: UDP listen port number
         :param handler: handler function for incoming data
+        :param core: Core instance
         '''
         log.info('Initialise UDPComm(%s, %s, %s)', str(addr), str(port), str(handler))
         self.addr = addr
         self.port = port
         self._handler = handler
+        self._core = core
+        self._hosts = self._core.hosts()
 
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self._sock.setblocking(False)
         self._sock.bind((self.addr, self.port))
-
-        self._hosts = Hosts()
 
         self._io_loop = tornado.ioloop.IOLoop.instance()
         self._io_loop.add_handler(self._sock.fileno(), partial(self._callback, self._sock), self._io_loop.READ)

@@ -77,13 +77,9 @@ import tornado.gen
 
 import signal
 
+from core import Core
 from udpcomm import *
-from usersessions import UserSessions
-from controllers import Controllers
-from servicegroups import ServiceGroups
 from sdpreceiver import SDPReceiver
-from wsclients import WsClients
-from msgbus import MsgBus
 
 from controllersetup import ControllerSetup
 from servicegroupsetup import ServiceGroupSetup
@@ -102,48 +98,34 @@ log = logging.getLogger(__name__)
 
 
 class TimerTasks(object):
-    def __init__(self, interval, usersessions, controllers, wsclients, msgbus, udpcomm, servicegroups):
+    def __init__(self, interval, core, udpcomm):
         import tornado.ioloop
 
-        self._usersessions = usersessions
-        self._controllers = controllers
-        self._wsclients = wsclients
-        self._msgbus = msgbus
+        self._core = core
         self._udpcomm = udpcomm
-        self._servicegroups = servicegroups
         self._interval = interval
         self.ioloop = tornado.ioloop.IOLoop.instance()
         self._timer_tasks()
 
     def _timer_tasks(self):
         ''' Tasks that needs to be executed in regular intervals '''
-        if self._usersessions:
-            log.debug('Users: %s', str(self._usersessions))
-        if self._controllers:
-            log.debug('Controllers: %s', str(self._controllers))
-        if self._servicegroups:
-            log.debug('Servicegroups: %s', str(self._servicegroups))
-        if self._wsclients:
-            log.debug('WSClients: %s', str(self._wsclients))
-        if self._msgbus:
-            log.debug('MsgBus: %s', str(self._msgbus))
-        if self._udpcomm:
-            log.debug('UDPComm: %s', str(self._udpcomm))
+        log.debug('Users: %s', str(self._core.usersessions()))
+        log.debug('Controllers: %s', str(self._core.controllers()))
+        log.debug('Servicegroups: %s', str(self._core.servicegroups()))
+        log.debug('WSClients: %s', str(self._core.wsclients()))
+        log.debug('MsgBus: %s', str(self._core.msgbus()))
+        log.debug('UDPComm: %s', str(self._udpcomm))
         self.ioloop.add_timeout(datetime.timedelta(seconds=self._interval), self._timer_tasks)
 
 class UDPReader(object):
-    def __init__(self, addr, port, usersessions, controllers, wsclients, msgbus, servicegroups):
+    def __init__(self, addr, port, core):
         import socket
 
-        self._usersessions = usersessions
-        self._controllers = controllers
-        self._wsclients = wsclients
-        self._msgbus = msgbus
-        self._servicegroups = servicegroups
-        self.b = SDPReceiver(self._controllers, self._msgbus)
-        self.u = UDPComm(addr, port, self.b.datagram_from_controller)
+        self._core = core
+        self.b = SDPReceiver(self._core)
+        self.u = UDPComm(addr, port, self.b.datagram_from_controller, self._core)
 
-        TimerTasks(10, usersessions, controllers, wsclients, msgbus, self.u, servicegroups)
+        TimerTasks(10, self._core, self.u)
 
 is_closing = False
 
@@ -179,25 +161,13 @@ if __name__ == '__main__':
     args.append("--logging=debug")
     tornado.options.parse_command_line(args)
 
-    usersessions = UserSessions()
-    wsclients = WsClients()
-    msgbus = MsgBus()
-
-    import pickle
-    try:
-        f = open(options.statefile, 'rb')
-        log.info("restore state from pickle")
-        unpickler = pickle.Unpickler(f)
-        controllers = unpickler.load()
-        log.info("controllers restored")
-        f.close()
-    except:
-        controllers = Controllers()
+    core = Core()
+    core.restore_state(options.statefile)
+    controllers = core.controllers()
+    servicegroups = core.servicegroups()
 
     ControllerSetup().loadsql(controllers, options.setup_dump, options.setup_table, options.setup_field)
 
-
-    servicegroups = ServiceGroups()
     for controller in controllers.get_id_list():
         c = controllers.get_id(controller)
         servicetable = c.get_setup().get('servicetable', None)
@@ -219,11 +189,7 @@ if __name__ == '__main__':
             log.info('no servicetable defined')
 
     handler_settings = {
-        "usersessions": usersessions,
-        "controllers": controllers,
-        "servicegroups": servicegroups,
-        "wsclients": wsclients,
-        "msgbus": msgbus,
+        "core": core,
     }
 
     app_settings = {
@@ -253,7 +219,7 @@ if __name__ == '__main__':
         app.listen(options.http_port, address = options.listen_address)
         print("OK")
 
-    UDPReader("0.0.0.0", int(options.udp_port), usersessions, controllers, wsclients, msgbus, servicegroups)
+    UDPReader("0.0.0.0", int(options.udp_port), core)
 
     import tornado.ioloop
 
@@ -264,8 +230,4 @@ if __name__ == '__main__':
 
     log.info(' --- EXIT ---')
 
-    import pickle
-    f = open(options.statefile, 'wb')
-    pickler = pickle.Pickler(f, 0)
-    pickler.dump(controllers)
-    f.close()
+    core.save_state(options.statefile)

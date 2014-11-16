@@ -1,10 +1,11 @@
 from sessionexception import SessionException
 
 class API_servicegroups(object):
-    def __init__(self, usersessions, controllers, servicegroups):
-        self._usersessions = usersessions
-        self._controllers = controllers
-        self._servicegroups = servicegroups
+    def __init__(self, core):
+        self._core = core
+        self._usersessions = self._core.usersessions()
+        self._controllers = self._core.controllers()
+        self._servicegroups = self._core.servicegroups()
 
     def output(self, user, filter):
         if not filter:

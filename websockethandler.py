@@ -15,11 +15,12 @@ __all__ = [
 
 class WebSocketHandler(tornado.websocket.WebSocketHandler):
     def __init__(self, *args, **kwargs):
-        self._usersessions = kwargs.pop('usersessions', None)
-        self._controllers = kwargs.pop('controllers', None)
-        self._servicegroups = kwargs.pop('servicegroups', None)
-        self._wsclients = kwargs.pop('wsclients', None)
-        self._msgbus = kwargs.pop('msgbus', None)
+        self._core = kwargs.pop('core', None)
+        self._usersessions = self._core.usersessions()
+        self._controllers = self._core.controllers()
+        self._servicegroups = self._core.servicegroups()
+        self._wsclients = self._core.wsclients()
+        self._msgbus = self._core.msgbus()
         self._authenticated = False
         self._args = args
         super(WebSocketHandler, self).__init__(*args, **kwargs)
@@ -28,7 +29,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         self.wsclient = self._wsclients.find_by_id(self)
         cookeiauth = CookieAuth(self)
         self.user = cookeiauth.get_current_user()
-        self._api = API(self._usersessions, self._controllers, self._servicegroups)
+        self._api = API(self._core)
         if not self.user:
             self.write_message(json.dumps({'message': 'Not authenticated', 'login_url': 'https://login.itvilla.com/login'}, indent=4, sort_keys=True))
             return
