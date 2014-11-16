@@ -3,6 +3,7 @@
 import time
 
 from sdp import SDP
+from stats import Stats
 
 import logging
 log = logging.getLogger(__name__)
@@ -35,6 +36,7 @@ class Controller(object):
         self._last_sdp_ts = None
         self._send_queue = {}
         self._setup = {}
+        self._stats = Stats()
 
     def get_id(self):
         ''' Get id of controller
@@ -201,8 +203,11 @@ class Controller(object):
             self._process_incoming_sdp(sdp, ts = ts)
             self._last_sdp = sdp
             self._last_sdp_ts = ts
+            self._stats.add('rx/sdp/ok', 1)
+            self._stats.set('rx/sdp/last/timestamp', ts)
         except Exception as e:
             log.error('contoller=%s SDP processing error: %s', str(self._id),  str(e))
+            self._stats.add('rx/sdp/errors/total', 1)
             raise Exception(e)
 
     def _process_incoming_sdp(self, sdp, ts = time.time()):
@@ -226,15 +231,18 @@ class Controller(object):
             if sdpts > now:
                 # FIXME: drop such packets
                 log.warning('%s sent packet from the future (%d sec)', str(self._id), int(sdpts - now))
+                self._stats.add('rx/sdp/errors/future', 1)
                 raise Exception('packet has future timestamp')
             if (now - sdpts) > 60 * 60 * 24 * 7:  # TODO: config param
                 # FIXME: drop such packets
                 log.warning('ignoring too old timestamp from %s: %d, now=%d', str(self._id), int(sdpts), int(now))
+                self._stats.add('rx/sdp/errors/too_old', 1)
                 raise Exception('packet timestamp is too old')
             ts = sdpts
         if self._state_ts:
             if ts < self._state_ts:
                 log.info('old state ts=%d, new ts=%d', self._state_ts, ts)
+                self._stats.add('rx/sdp/errors/older_than_previous', 1)
                 raise Exception('SDP packet is older than previous, ignoring')
         self._update_state_from_sdp(sdp, ts)
         self._state_ts = ts
@@ -254,6 +262,7 @@ class Controller(object):
                 continue
             if value == '?':
                 self.send_queue_add_last_reg(register)
+                self._stats.add('rx/sdp/requests', 1)
             else:
                 self.set_state_reg(register, sdp.get_data(register), ts = ts)
                 self.send_queue_remove_reg(register, value)
@@ -277,7 +286,9 @@ class Controller(object):
                 ack.add_keyvalue('in', inn)
         for reg in self._send_queue.keys():
             ack.add_keyvalue(reg, self._send_queue[reg])
+            self._stats.add('tx/sdp/updates', 1)
         self._host.send(ack.encode())
+        self._stats.add('tx/ack', 1)
 
     def send_queue_reset(self):
         ''' Reset send queue
@@ -308,9 +319,11 @@ class Controller(object):
         log.debug('send_queue_remove_reg(%s, %s)', str(self._id), str(reg))
         if expval != val:
             log.warning('controller=%s reg=%s val=\"%s\" != sent val=\"%s\"', str(self._id), str(reg), str(val), str(expval))
+            self._stats.add('rx/sdp/updates/different', 1)
             return
         else:
             self._send_queue.pop(reg)
+            self._stats.add('rx/sdp/updates/accepted', 1)
 
     def __getstate__(self):
         state = self.__dict__.copy()
