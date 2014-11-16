@@ -8,7 +8,7 @@ log.addHandler(logging.NullHandler())
 __all__ = [
     'Host',
     'get_id',
-    'set_sender',
+    'set_sender', 'set_addr',
     'send',
     'add_controller', 'del_controller',
 ]
@@ -26,6 +26,7 @@ class Host(object):
         self._listinstance = listinstance
         self._receiver = None
         self._sender = None
+        self._addr = None
         self._controllers = []
 
     def get_id(self):
@@ -51,6 +52,14 @@ class Host(object):
         log.debug('set_sender(%s, %s)', str(self._id), str(sender))
         self._sender = sender
 
+    def set_addr(self, addr):
+        ''' Set host/device address
+
+        :param addr: host/device address
+        '''
+        log.debug('set_addr(%s, %s)', str(self._id), str(addr))
+        self._addr = addr
+
     def receiver(self, receivedmessage):
         ''' Process data received from the host/controller
 
@@ -73,15 +82,15 @@ class Host(object):
         This method is a wrapper for keeping all host/controller
         communication going via Host class for statistics purposes
 
-        Data will sent by self._sender(self, sendmessage)
+        Data will sent by self._sender(self, addr, sendmessage)
 
         :param sendmessage: data to send to the host/controller
         '''
         if not self._sender:
             log.error('send(%s, "%s"): callback not set', str(self._id), str(sendmessage))
             return
-        log.debug('send(%s, "%s")', str(self._id), str(sendmessage))
-        self._sender(self, sendmessage)
+        log.debug('send(%s, %s, "%s")', str(self._id), str(self._addr), str(sendmessage))
+        self._sender(self, self._addr, sendmessage)
 
     def add_controller(self, controller):
         ''' Associate a new Controller with this Host

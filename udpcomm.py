@@ -55,26 +55,28 @@ class UDPComm(object):
         '''
         (data, addr) = sock.recvfrom(4096)
         log.debug("got UDP datagram from %s @%.1f: %s", str(addr), time.time(), str(data))
-        host = self._hosts.find_by_id(addr)
+        hosturi = 'udp://' + str(addr[0]) + ':' + str(addr[1])
+        host = self._hosts.find_by_id(hosturi)
         host.set_receiver(self._handler)  # FIXME set it only once
         host.set_sender(self._send)  # FIXME set it only once
+        host.set_addr(addr) # FIXME set it only once
         if not isinstance(data, str):
             data = data.decode("UTF-8")
         host.receiver(data)
 
-    def _send(self, host, sendstring):
+    def _send(self, host, addr, sendstring):
         ''' Send UDP datagramm to the host
 
         id of host is (addr, port) duple. data can be binary data
         or string in UTF-8 encoding
 
         :param host: Host instance of controller
+        :param addr: host (addr, port) tuple
         :param sendstring: string data to send
         '''
         if isinstance(sendstring, str):
             sendstring = sendstring.encode(encoding='UTF-8')
         log.info('send(%s, "%s")', str(host), sendstring)
-        addr = host.get_id()
         try:
             sendlen = self._sock.sendto(sendstring, addr)
             return sendlen
