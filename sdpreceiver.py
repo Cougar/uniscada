@@ -37,17 +37,20 @@ class SDPReceiver(object):
             sdp.decode(datagram)
         except Exception as e:
             log.error('sdp.decode() exception: %s', str(e))
-            return
+            raise Exception('sdp.decode() exception: ' + str(e))
 
         id = sdp.get_data('id')
 
         if id is None:
             log.warning('invalid datagram, no id found!')
-            return
+            raise Exception('invalid datagram, no id found!')
 
         controller = self._controllers.find_by_id(id)
         controller.set_host(host)
-        controller.set_last_sdp(sdp, ts = time.time())
+        try:
+            controller.set_last_sdp(sdp, ts = time.time())
+        except Exception as e:
+            raise Exception('sdp set error: ' + str(e))
 
         log.debug('Controller: %s', str(controller))
         controller.ack_last_sdp()

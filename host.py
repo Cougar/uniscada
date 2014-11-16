@@ -79,9 +79,15 @@ class Host(object):
         log.debug('receiver(%s, "%s")', str(self._id), str(receivedmessage))
         self._stats.add('rx/bytes', len(receivedmessage))
         self._stats.add('rx/packets', 1)
-        self._stats.set('rx/last/datagram', receivedmessage)
         self._stats.set_timestamp('rx/last/timestamp')
-        self._receiver(self, receivedmessage)
+        try:
+            self._receiver(self, receivedmessage)
+            self._stats.set('rx/last/datagram', receivedmessage)
+        except Exception as e:
+            self._stats.add('rx/errors', 1)
+            self._stats.set('rx/last_error/datagram', receivedmessage)
+            self._stats.set('rx/last_error/reason', str(e))
+            self._stats.set_timestamp('rx/last_error/timestamp')
 
     def send(self, sendmessage):
         ''' Send data to the host/controller

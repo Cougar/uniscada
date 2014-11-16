@@ -203,6 +203,7 @@ class Controller(object):
             self._last_sdp_ts = ts
         except Exception as e:
             log.error('contoller=%s SDP processing error: %s', str(self._id),  str(e))
+            raise Exception(e)
 
     def _process_incoming_sdp(self, sdp, ts = time.time()):
         ''' Process SDP packet from controller:
@@ -225,11 +226,11 @@ class Controller(object):
             if sdpts > now:
                 # FIXME: drop such packets
                 log.warning('%s sent packet from the future (%d sec)', str(self._id), int(sdpts - now))
-                return
+                raise Exception('packet has future timestamp')
             if (now - sdpts) > 60 * 60 * 24 * 7:  # TODO: config param
                 # FIXME: drop such packets
                 log.warning('ignoring too old timestamp from %s: %d, now=%d', str(self._id), int(sdpts), int(now))
-                return
+                raise Exception('packet timestamp is too old')
             ts = sdpts
         if self._state_ts:
             if ts < self._state_ts:
