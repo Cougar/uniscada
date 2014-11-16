@@ -40,4 +40,4 @@ class API_hosts(object):
         h = self._controllers.get_id(host)
         if not h:
             return {}
-        return h.get_host_data_v1()
+        return h.get_host_data_v1(usersession.is_admin())
