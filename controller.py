@@ -304,7 +304,7 @@ class Controller(object):
             return
         log.debug('send_queue_remove_reg(%s, %s)', str(self._id), str(reg))
         if expval != val:
-            log.warning('controller=%s reg=%s val=\"%s\" != sent val=\"%s\"', str(self.id), str(reg), str(val), str(expval))
+            log.warning('controller=%s reg=%s val=\"%s\" != sent val=\"%s\"', str(self._id), str(reg), str(val), str(expval))
             return
         else:
             self._send_queue.pop(reg)
