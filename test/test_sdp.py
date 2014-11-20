@@ -1,6 +1,7 @@
 import unittest
 
 from sdp import SDP
+from sdpexception import SDPException, SDPDecodeException
 
 class SDPTests(unittest.TestCase):
     '''
@@ -28,11 +29,12 @@ class SDPTests(unittest.TestCase):
         self.assertTrue(isinstance(d, int))
         self.assertEqual(d, 3)
 
-        self.assertRaises(Exception, self.sdp.add_keyvalue, 'AxS', -1)
-        self.assertRaises(Exception, self.sdp.add_keyvalue, 'AyS', 4)
-        self.assertRaises(Exception, self.sdp.add_keyvalue, 'AXS', 'a')
-        self.assertRaises(Exception, self.sdp.add_keyvalue, 'AYS', [1, 2])
-        self.assertRaises(Exception, self.sdp.add_keyvalue, 'AZS', None)
+        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AxS', -1)
+        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AyS', 4)
+        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AqS', '4')
+        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AXS', 'a')
+        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AYS', [1, 2])
+        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AZS', None)
 
     def test_add_status(self):
         ''' Test setting/getting Status key:val '''
@@ -43,9 +45,9 @@ class SDPTests(unittest.TestCase):
         self.assertEqual(self.sdp.get_data('AAs'), None)
         self.assertEqual(self.sdp.get_data('aaS'), None)
 
-        self.assertRaises(Exception, self.sdp.add_status, 'AX', 'a')
-        self.assertRaises(Exception, self.sdp.add_status, 'AY', [1, 2])
-        self.assertRaises(Exception, self.sdp.add_status, 'AZ', None)
+        self.assertRaises(SDPException, self.sdp.add_status, 'AX', 'a')
+        self.assertRaises(SDPException, self.sdp.add_status, 'AY', [1, 2])
+        self.assertRaises(SDPException, self.sdp.add_status, 'AZ', None)
 
     def test_add_keyvalue_value(self):
         ''' Test setting/getting key:val for Value '''
@@ -87,7 +89,7 @@ class SDPTests(unittest.TestCase):
         self.sdp.add_keyvalue('AHV', '')
         self.assertEqual(self.sdp.get_data('AHV'), '')
 
-        self.assertRaises(Exception, self.sdp.add_keyvalue, 'AXV', [1, 2])
+        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AXV', [1, 2])
 
     def test_add_keyvalue_values_list(self):
         ''' Test setting/getting key:val for List of Values (list) '''
@@ -103,7 +105,7 @@ class SDPTests(unittest.TestCase):
         self.assertTrue(isinstance(d, list))
         self.assertEqual(d, [1, None, 2])
 
-        self.assertRaises(Exception, self.sdp.add_keyvalue, 'AXV', [0, None, 3.5])
+        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AXV', [0, None, 3.5])
 
     def test_add_keyvalue_values(self):
         ''' Test setting/getting key:val for List of Values '''
@@ -124,12 +126,12 @@ class SDPTests(unittest.TestCase):
         self.assertTrue(isinstance(d, list))
         self.assertEqual(d, [0, None, 3.5])
 
-        self.assertRaises(Exception, self.sdp.add_keyvalue, 'AXW', 1)
-        self.assertRaises(Exception, self.sdp.add_keyvalue, 'AYW', 1.5)
-        self.assertRaises(Exception, self.sdp.add_keyvalue, 'AZW', 'a')
-        self.assertRaises(Exception, self.sdp.add_keyvalue, 'AQW', '')
-        self.assertRaises(Exception, self.sdp.add_keyvalue, 'AWW', None)
-        self.assertRaises(Exception, self.sdp.add_keyvalue, 'AVW', [ 1.5 ])
+        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AXW', 1)
+        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AYW', 1.5)
+        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AZW', 'a')
+        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AQW', '')
+        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AWW', None)
+        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AVW', [ 1.5 ])
 
     def test_add_value(self):
         ''' Test setting/getting Value and List of Values key:val '''
@@ -186,9 +188,9 @@ class SDPTests(unittest.TestCase):
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, 'null')
 
-        self.assertRaises(Exception, self.sdp.add_keyvalue, 'ax', 1)
-        self.assertRaises(Exception, self.sdp.add_keyvalue, 'ay', 1.5)
-        self.assertRaises(Exception, self.sdp.add_keyvalue, 'az', [1, 2])
+        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'ax', 1)
+        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'ay', 1.5)
+        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'az', [1, 2])
 
     def test_add_keyvalue_request_data(self):
         ''' Test setting/getting key:val where val == '?' '''
@@ -238,10 +240,10 @@ class SDPTests(unittest.TestCase):
         self.assertTrue(isinstance(d, list))
         self.assertEqual(d, [1, None, 35])
 
-        self.assertRaises(Exception, self.sdp.add_keyvalue, 'AXW', 1)
-        self.assertRaises(Exception, self.sdp.add_keyvalue, 'AYW', 1.5)
-        self.assertRaises(Exception, self.sdp.add_keyvalue, 'AZW', 'a')
-        self.assertRaises(Exception, self.sdp.add_keyvalue, 'AQW', '1.5 2.2')
+        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AXW', 1)
+        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AYW', 1.5)
+        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AZW', 'a')
+        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AQW', '1.5 2.2')
 
     def test_encode_with_id(self):
         ''' Test encoder for full packet'''
@@ -325,7 +327,7 @@ class SDPTests(unittest.TestCase):
 
     def test_encode_without_id(self):
         ''' Test encoder without id'''
-        self.assertRaises(Exception, self.sdp.encode)
+        self.assertRaises(SDPException, self.sdp.encode)
 
     def test_decode_valid(self):
         ''' Test decoder with valid datagram '''
@@ -401,11 +403,11 @@ class SDPTests(unittest.TestCase):
 
     def test_decode_invalid(self):
         ''' Test decoder with invalid datagram '''
-        self.assertRaises(Exception, self.sdp.decode, '')
-        self.assertRaises(Exception, self.sdp.decode, '\n')
-        self.assertRaises(Exception, self.sdp.decode, 'id:abc\nABC')
-        self.assertRaises(Exception, self.sdp.decode, 'id:abc\nABS:abc')
-        self.assertRaises(Exception, self.sdp.decode, 'id:abc\nACW:123 bcd')
-        self.assertRaises(Exception, self.sdp.decode, 'id:abc\nADW:1.0 2.2')
-        self.assertRaises(Exception, self.sdp.decode, 'id:abc\nxyz:123 : 456')
-        self.assertRaises(Exception, self.sdp.decode, 'id:abc\nxyz:\n')
+        self.assertRaises(SDPDecodeException, self.sdp.decode, '')
+        self.assertRaises(SDPDecodeException, self.sdp.decode, '\n')
+        self.assertRaises(SDPDecodeException, self.sdp.decode, 'id:abc\nABC')
+        self.assertRaises(SDPDecodeException, self.sdp.decode, 'id:abc\nABS:abc')
+        self.assertRaises(SDPDecodeException, self.sdp.decode, 'id:abc\nACW:123 bcd')
+        self.assertRaises(SDPDecodeException, self.sdp.decode, 'id:abc\nADW:1.0 2.2')
+        self.assertRaises(SDPDecodeException, self.sdp.decode, 'id:abc\nxyz:123 : 456')
+        self.assertRaises(SDPDecodeException, self.sdp.decode, 'id:abc\nxyz:\n')

@@ -3,6 +3,8 @@
 '''
 import re
 
+from sdpexception import SDPException, SDPDecodeException
+
 import logging
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
@@ -49,7 +51,7 @@ class SDP(object):
             if isinstance(val, str):
                 self.data['float'][key] = val
             else:
-                raise Exception('Value _MUST_BE_ hex str type')
+                raise SDPException('Value _MUST_BE_ hex str type')
         elif key[-1] == 'S':
             if isinstance(val, int):
                 self.add_status(key[:-1], val)
@@ -57,29 +59,29 @@ class SDP(object):
                 if val in ['0', '1', '2', '3']:
                     self.add_status(key[:-1], int(val))
                 else:
-                    raise Exception('Illegal Status value: ' + val)
+                    raise SDPException('Illegal Status value: ' + val)
             else:
-                raise Exception('Illegal Status type: ' + str(type(val)))
+                raise SDPException('Illegal Status type: ' + str(type(val)))
         elif key[-1] == 'V':
             if val and \
                not isinstance(val, int) and \
                not isinstance(val, float) and \
                not isinstance(val, str):
-                raise Exception('Value _MUST_BE_ str, int or float type')
+                raise SDPException('Value _MUST_BE_ str, int or float type')
             self.add_value(key[:-1], val)
         elif key[-1] == 'W':
             if not isinstance(val, str) and \
                not isinstance(val, list):
-                raise Exception('List of Values _MUST_BE_ string or list of numbers but ' + str(key) + ' is ' + str(type(val)))
+                raise SDPException('List of Values _MUST_BE_ string or list of numbers but ' + str(key) + ' is ' + str(type(val)))
             if isinstance(val, list):
                 val = ' '.join(list(map(self._list_value_to_str, val)))
             lst = list(map(self._list_str_to_value, val.split(' ')))
             if val != ' '.join(list(map(self._list_value_to_str, lst))):
-                raise Exception('Only integers allowed in List of Values: "' + val + '" != "' + ' '.join(list(map(self._list_value_to_str, lst))) + '"')
+                raise SDPException('Only integers allowed in List of Values: "' + val + '" != "' + ' '.join(list(map(self._list_value_to_str, lst))) + '"')
             self.add_value(key[:-1], lst)
         else:
             if not isinstance(val, str):
-                raise Exception('Data _MUST_BE_ string')
+                raise SDPException('Data _MUST_BE_ string')
             self.data['data'][key] = val
 
     def add_status(self, key, val):
@@ -89,9 +91,9 @@ class SDP(object):
         :param val: Status value (int 0..3)
         '''
         if not isinstance(val, int):
-            raise Exception('Status _MUST_BE_ int type')
+            raise SDPException('Status _MUST_BE_ int type')
         if val not in range(4):
-            raise Exception('Status _MUST_BE_ between 0 and 3')
+            raise SDPException('Status _MUST_BE_ between 0 and 3')
         self.data['status'][key] = int(val)
 
     def add_value(self, key, val):
@@ -105,7 +107,7 @@ class SDP(object):
            not isinstance(val, float) and \
            not isinstance(val, str) and \
            not isinstance(val, list):
-            raise Exception('Value _MUST_BE_ str, int, float or list type')
+            raise SDPException('Value _MUST_BE_ str, int, float or list type')
         self.data['value'][key] = val
 
     def get_data(self, key):
@@ -196,7 +198,7 @@ class SDP(object):
             self.add_keyvalue('id', id)
         if not 'id' in self.data['data']:
             log.error('id missing, cant encode')
-            raise Exception("id missing");
+            raise SDPException("id missing");
         for key in self.data['data'].keys():
             datagram += key + ':' + str(self.data['data'][key]) + '\n'
         for key in self.data['float'].keys():
@@ -223,22 +225,25 @@ class SDP(object):
                 continue
             if not ':' in line:
                 log.error('datagram line format error: no colon')
-                raise Exception('datagram line error: \"' + line + '\"')
+                raise SDPDecodeException('datagram line error: \"' + line + '\"')
             try:
                 (key, val) = line.split(':', 1)
             except:
                 log.error('datagram line format error: cant split')
-                raise Exception('error in line: \"' + line + '\"')
+                raise SDPDecodeException('error in line: \"' + line + '\"')
             if ':' in val:
                 log.error('datagram line format error: more than one colon')
-                raise Exception('colon in value: \"' + val + '\"')
+                raise SDPDecodeException('colon in value: \"' + val + '\"')
             if not val:
                 log.error('value mising for \"%s\"', key)
-                raise Exception('value mising for \"' + key + '\"')
-            self.add_keyvalue(key, val)
+                raise SDPDecodeException('value mising for \"' + key + '\"')
+            try:
+                self.add_keyvalue(key, val)
+            except SDPException as e:
+                raise SDPDecodeException(e)
         if self.get_data('id') is None:
             log.error('id missing in datagram')
-            raise Exception('id: _MUST_ exists in datagram')
+            raise SDPDecodeException('id: _MUST_ exists in datagram')
 
     @staticmethod
     def _list_str_to_value(s):
@@ -247,7 +252,7 @@ class SDP(object):
         try:
             return int(s)
         except ValueError as ex:
-            raise Exception('Illegal number in Value string: ' + s)
+            raise SDPException('Illegal number in Value string: ' + s)
 
     @staticmethod
     def _list_value_to_str(s):
