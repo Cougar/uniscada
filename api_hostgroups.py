@@ -1,5 +1,9 @@
 from sessionexception import SessionException
 
+import logging
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
+
 class API_hostgroups(object):
     def __init__(self, core):
         self._core = core
@@ -11,7 +15,7 @@ class API_hostgroups(object):
         if not filter:
             return self._output_all_hostgroups(user)
         else:
-            return self._output_one_hostgroups(user, filter)
+            return self._output_one_hostgroup(user, filter)
 
     def _output_all_hostgroups(self, user):
         userdata = self._usersessions.find_by_id(user).get_userdata()
@@ -21,7 +25,7 @@ class API_hostgroups(object):
                 r.append({ 'hostgroup': hostgroup, 'alias': userdata['hostgroups'][hostgroup].get('alias', '') })
         return r
 
-    def _output_one_hostgroups(self, user, hostgroup):
+    def _output_one_hostgroup(self, user, hostgroup):
         usersession = self._usersessions.find_by_id(user)
         userdata = usersession.get_userdata()
         if not 'hostgroups' in userdata:
@@ -34,11 +38,12 @@ class API_hostgroups(object):
         if 'members' in userdata['hostgroups'][hostgroup]:
             for host, alias in userdata['hostgroups'][hostgroup]['members'].items():
                 if usersession.check_access(host):
-                    self._controllers.get_id(host)
-                    servicegroup = self._controllers.get_id(host).get_setup().get('servicetable', '')
-                    r['hosts'].append({
-                        'id': host,
-                        'alias': alias,
-                        'servicegroup': servicegroup
-                        })
+                    r1 = { 'id': host, 'alias': alias }
+                    h = self._controllers.get_id(host)
+                    if h:
+                        servicegroup = h.get_setup().get('servicetable', '')
+                        r1['servicegroup'] = servicegroup
+                    else:
+                        log.warning('host "%s" with alias "%s" doesnt exists but is in user "%s" hostgroup "%s"', host, alias, user, hostgroup)
+                    r['hosts'].append(r1)
         return r
