@@ -29,7 +29,7 @@ class SDP(object):
 
         If val is "?", it is saved as a special query
         If key ends with "F", it is saved as a Float (hex str) - also TOV as legacy!
-        If key ends with "S", it is saved as a Status (int [0 .. 3])
+        If key ends with "S", it is saved as a Status (int [0 .. 3] or str ['0' .. '3'])
         If key ends with "V", it is saved as a Value (int, float or str)
         If key ends with "W", it is saved as a List of Values (str)
         All other keys are saved as Data (str)
@@ -51,7 +51,15 @@ class SDP(object):
             else:
                 raise Exception('Value _MUST_BE_ hex str type')
         elif key[-1] == 'S':
-            self.add_status(key[:-1], int(val))
+            if isinstance(val, int):
+                self.add_status(key[:-1], val)
+            elif isinstance(val, str):
+                if val in ['0', '1', '2', '3']:
+                    self.add_status(key[:-1], int(val))
+                else:
+                    raise Exception('Illegal Status value: ' + val)
+            else:
+                raise Exception('Illegal Status type: ' + str(type(val)))
         elif key[-1] == 'V':
             if val and \
                not isinstance(val, int) and \
@@ -236,7 +244,10 @@ class SDP(object):
     def _list_str_to_value(s):
         if s == 'null':
             return None
-        return int(s)
+        try:
+            return int(s)
+        except ValueError as ex:
+            raise Exception('Illegal number in Value string: ' + s)
 
     @staticmethod
     def _list_value_to_str(s):
