@@ -1,0 +1,3 @@
+[submodule "PyMySQL"]
+	path = PyMySQL
+	url = https://github.com/droid4control/PyMySQL.git
