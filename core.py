@@ -12,6 +12,8 @@ that are needed for the whole system:
 
 In addition of these instances, it also reads configuration
 file and provides access to the configuration dictionary
+
+This module has also wrapper for user authentication
 '''
 
 import configparser
@@ -22,6 +24,8 @@ from servicegroups import ServiceGroups
 from wsclients import WsClients
 from msgbus import MsgBus
 from hosts import Hosts
+
+from cookieauth import CookieAuth
 
 import logging
 log = logging.getLogger(__name__)
@@ -42,6 +46,7 @@ class Core(object):
         self._controllers = Controllers()
         self._servicegroups = ServiceGroups()
         self._hosts = Hosts()
+        self._auth = CookieAuth()
         self._config = {}
 
     def read_config(self, configfile):
@@ -51,6 +56,28 @@ class Core(object):
         '''
         self._config = configparser.ConfigParser()
         self._config.read(configfile)
+
+        self._config_cookieauth()
+
+    def _config_cookieauth(self):
+        config = self.config()
+        if 'CookieAuth' in config:
+            log.debug('CookieAuth setup')
+            try:
+                cookiename = config.get('CookieAuth', 'cookiename')
+                dbhost = config.get('CookieAuth', 'dbhost')
+                dbname = config.get('CookieAuth', 'dbname')
+                dbuser = config.get('CookieAuth', 'dbuser')
+                dbpass = config.get('CookieAuth', 'dbpass')
+                self.auth().setup(cookiename, dbhost, dbuser, dbpass, dbname)
+            except configparser.NoSectionError:
+                log.error('CookieAuth section is missing in config file')
+            except KeyError as e:
+                log.error('no %s defined for CookieAuth in config file', str(e))
+            except Exception as e:
+                log.critical('config error: %s', str(e))
+        else:
+            log.warning('CookieAuth configuration missing')
 
     def save_state(self, statefile):
         ''' Save Controllers to statefile
@@ -129,6 +156,13 @@ class Core(object):
         :returns: config dictionary
         '''
         return self._config
+
+    def auth(self):
+        ''' Get Auth instance
+
+        :returns: Auth instance
+        '''
+        return self._auth
 
     def __str__(self):
         return(str(self._id) + ': ' +

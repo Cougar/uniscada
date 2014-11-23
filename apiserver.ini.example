@@ -1,1 +1,7 @@
+[CookieAuth]
+cookiename = DefaultAuth
+dbhost = localhost
+dbname = cookie_auth
+dbuser = cookie_r
+dbpass = xxxxxx
 

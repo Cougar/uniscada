@@ -6,7 +6,6 @@ from functools import partial, wraps
 
 from sessionexception import SessionException
 
-from cookieauth import CookieAuth
 from api import API
 
 import logging
@@ -73,7 +72,7 @@ class RestHandler(tornado.web.RequestHandler):
         pass
 
     def get_current_user(self):
-        return CookieAuth(self).get_current_user()
+        return self._core.auth().get_user(self.get_cookie)
 
     @unblock
     def get(self, *args, **kwargs):
