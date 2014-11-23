@@ -156,12 +156,15 @@ if __name__ == '__main__':
     tornado.options.define("setup_table", default = "controller", help = "Table name", type = str)
     tornado.options.define("service_sqldir", default = "/srv/scada/sqlite/", help = "Directory of servicegroup definition SQLite dumps", type = str)
     tornado.options.define("register_field", default = "sta_reg", help = "Service id field name", type = str)
+    tornado.options.define("configfile", default = "./apiserver.ini", help = "Configuration file", type = str)
 
     args = sys.argv
     args.append("--logging=debug")
     tornado.options.parse_command_line(args)
 
     core = Core()
+    core.read_config(options.configfile)
+
     core.restore_state(options.statefile)
     controllers = core.controllers()
     servicegroups = core.servicegroups()

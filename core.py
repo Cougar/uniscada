@@ -9,7 +9,12 @@ that are needed for the whole system:
     WsClients - list of active WebSocket connections
     MsgBus - global message bus for webscoket client live updates
     Hosts - all known controller connections
+
+In addition of these instances, it also reads configuration
+file and provides access to the configuration dictionary
 '''
+
+import configparser
 
 from usersessions import UserSessions
 from controllers import Controllers
@@ -37,6 +42,15 @@ class Core(object):
         self._controllers = Controllers()
         self._servicegroups = ServiceGroups()
         self._hosts = Hosts()
+        self._config = {}
+
+    def read_config(self, configfile):
+        ''' Read configuration file
+
+        :param configfile: INI filename
+        '''
+        self._config = configparser.ConfigParser()
+        self._config.read(configfile)
 
     def save_state(self, statefile):
         ''' Save Controllers to statefile
@@ -108,6 +122,13 @@ class Core(object):
         :returns: Hosts instance
         '''
         return self._hosts
+
+    def config(self):
+        ''' Get config dictionary
+
+        :returns: config dictionary
+        '''
+        return self._config
 
     def __str__(self):
         return(str(self._id) + ': ' +
