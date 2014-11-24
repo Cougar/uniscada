@@ -49,24 +49,18 @@ class Service(object):
 
         :returns: service data in API v1 format
         '''
-        sta_reg = self._id
-        val_reg = self._setup.get('val_reg', '')
+        (show, key) = self._get_show_and_key()
+        if not show:
+            return {}
         unit = self._setup.get('out_unit', '')
         desc = [ self._setup.get('desc0', ''), self._setup.get('desc1', ''), self._setup.get('desc2', '') ]
-        multiperf = self._setup.get('multiperf', '')
-        multivalue = self._setup.get('multivalue', '')
+        multiperf = self._setup.get('multiperf')
+        if not multiperf:
+            multiperf = ''
+        multivalue = self._setup.get('multivalue')
+        if not multivalue:
+            multivalue = ''
         multicfg = self._setup.get('multicfg', '')
-        if ((val_reg[-1:] == 'V' or val_reg[-1:] == 'W') and sta_reg[-1:] =='S'):
-            show = True
-            key = val_reg
-        elif (val_reg == '' and sta_reg[-1:] == 'S'):
-            show = True
-            key = sta_reg
-        elif (val_reg != '' and sta_reg == ''):
-            show = False
-            key = val_reg
-        else:
-            return {}
 
         r = {}
         r['svc_name'] = self._setup.get('svc_name', '')
@@ -99,6 +93,22 @@ class Service(object):
                     multiperf['cfg'] = True
             r['multiperf'].append(multiperf)
         return r
+
+    def _get_show_and_key(self):
+        ''' Return Show and Key values
+
+        :returns: (show, key) tuple or (None, None)
+        '''
+        sta_reg = self._id
+        val_reg = self._setup.get('val_reg', '')
+        if ((val_reg[-1:] == 'V' or val_reg[-1:] == 'W') and sta_reg[-1:] =='S'):
+            return (True, val_reg)
+        elif (val_reg == '' and sta_reg[-1:] == 'S'):
+            return (True, sta_reg)
+        elif (val_reg != '' and sta_reg == ''):
+            return (False, val_reg)
+        else:
+            return (None, None)
 
     def __str__(self):
         return(str(self._id) + ': ' +
