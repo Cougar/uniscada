@@ -38,7 +38,7 @@ class ServiceGroup(object):
 
         :returns: Services instance
         '''
-        return self._id
+        return self._services
 
     def get_servicegroup_data_v1(self):
         ''' Return servicegroup data in API v1 format
