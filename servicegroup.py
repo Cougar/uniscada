@@ -48,10 +48,10 @@ class ServiceGroup(object):
         r = {}
         r['servicegroup'] = self._id
         r['services'] = []
-        for service in self._services.get_id_list():
-            r['services'].append(self._services.get_id(service).get_service_data_v1())
+        for service in self.get_services().get_id_list():
+            r['services'].append(self.get_services().get_id(service).get_service_data_v1())
         return r
 
     def __str__(self):
         return(str(self._id) + ': ' +
-               'services = ' + str(self._services))
+               'services = ' + str(self.get_services()))
