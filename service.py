@@ -70,14 +70,14 @@ class Service(object):
         mvalue = multivalue.split(' ')
         r['description'] = []
         for dm in range(len(desc)):
-            desc_dm = ''
+            desc_dm = desc[dm]
             description = {}
             description['status'] = dm
             if (len(mvalue) > 0 and len(mperf) > 0):
                 if ':' in desc[dm]:
                     for m in range(len(mperf)):
                         if str(m+1) in mvalue:
-                            desc_dm = desc[dm] + ' {{ ' + mperf[m] + '.val }}' + unit
+                            desc_dm = desc_dm + ' {{ ' + mperf[m] + '.val }}' + unit
             description['desc'] = desc_dm
             r['description'].append(description)
         r['multiperf'] = []
