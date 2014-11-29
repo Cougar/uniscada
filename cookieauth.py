@@ -137,7 +137,7 @@ class CookieAuth:
         '''
         log.debug('_connect_db()')
         if self._conn:
-            debug.info('close old db connection')
+            log.info('close old db connection')
             try:
                 self._conn.close()
             except Exception as e:
