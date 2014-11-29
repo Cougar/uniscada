@@ -124,7 +124,7 @@ class CookieAuth:
         if not cookie:
             log.info('cookie is missing')
             return None
-        log.debug('git cookie: %s', cookie)
+        log.debug('get cookie: %s', cookie)
         if not self.check_cookie_md5(cookie):
             log.warning('MD5 error for cookie=%s', cookie)
             return None
