@@ -54,4 +54,4 @@ class GlobalListTests(unittest.TestCase):
         id1 = self.globallist.find_by_id('A')
         id2 = self.globallist.find_by_id('B')
         id3 = self.globallist.find_by_id('A')
-        self.assertItemsEqual(['A', 'B'], list(self.globallist.get_id_list()))
+        self.assertListEqual(['A', 'B'], sorted(list(self.globallist.get_id_list())))

@@ -37,4 +37,4 @@ class ControllerTests(unittest.TestCase):
         self.controller.set_state_reg('ABC', 123, ts=100)
         self.controller.set_state_reg('DEF', 'abc', ts=200)
         self.controller.set_state_reg('GHI', [4, 5, 6], ts=300)
-        self.assertItemsEqual(list(self.controller.get_state_register_list()), [('ABC', 123, 100), ('DEF', 'abc', 200), ('GHI', [4, 5, 6], 300)])
+        self.assertListEqual(sorted(list(self.controller.get_state_register_list())), [('ABC', 123, 100), ('DEF', 'abc', 200), ('GHI', [4, 5, 6], 300)])
