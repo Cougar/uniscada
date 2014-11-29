@@ -155,6 +155,7 @@ class CookieAuth:
         log.debug('_update_secret_keys()')
         self._secret_keys = {}
         if not self._conn:
+            log.warning('no db connection')
             return
         tm = int(time.time())
         cur = self._conn.cursor()
