@@ -178,10 +178,13 @@ class CookieAuth:
         ''' Remove expired secret keys from the dictionary '''
         log.debug('expire_secrets()')
         tm = time.time()
+        expired_versions = []
         for version in self._secret_keys.keys():
             if self._secret_keys[version].get('expire', 9999999999) < tm:
                 log.info('expire secret %s at %s', str(self._secret_keys[version]), str(tm))
-                del(self._secret_keys[version])
+                expired_versions.append(version)
+        for version in expired_versions:
+            del(self._secret_keys[version])
 
     def _get_secret_key(self, version):
         ''' Get secret key based on version number
