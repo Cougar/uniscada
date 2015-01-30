@@ -87,7 +87,7 @@ class RestHandler(tornado.web.RequestHandler):
             return({ 'status': 200, 'bodydata': {'message': 'Not authenticated', 'login_url': 'https://login.itvilla.com/login'} })
 
         if len(args) != 3:
-            return({'message' : 'missing arguments'})
+            return({ 'status': 200, 'bodydata': {'message' : 'missing arguments'} })
 
         filter = None
         if args[2] != '':
