@@ -28,19 +28,7 @@ def unblock(f):
 
         def callback(future):
             result = future.result()
-
-            if 'status' in result:
-                self.set_status(result['status'])
-
-            self.set_header("Content-Type", "application/json; charset=utf-8")
-            self.set_header("Access-Control-Allow-Origin", "*")
-            if 'headers' in result:
-                for header in result['headers']:
-                    for key in header:
-                        self.set_header(key, header[key])
-
-            self.write(json.dumps(result['bodydata'], indent=4, sort_keys=True, cls=JSONBinEncoder))
-            self.finish()
+            self.write_response(result)
 
         EXECUTOR.submit(
             partial(f, *args, **kwargs)
@@ -73,6 +61,20 @@ class RestHandler(tornado.web.RequestHandler):
 
     def get_current_user(self):
         return self._core.auth().get_user(self.get_cookie)
+
+    def write_response(self, result):
+        if 'status' in result:
+            self.set_status(result['status'])
+
+        self.set_header("Content-Type", "application/json; charset=utf-8")
+        self.set_header("Access-Control-Allow-Origin", "*")
+        if 'headers' in result:
+            for header in result['headers']:
+                for key in header:
+                    self.set_header(key, header[key])
+
+        self.write(json.dumps(result['bodydata'], indent=4, sort_keys=True, cls=JSONBinEncoder))
+        self.finish()
 
     @unblock
     def get(self, *args, **kwargs):
