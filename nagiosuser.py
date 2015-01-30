@@ -50,6 +50,7 @@ class NagiosUser:
         if response.error:
             log.error('_async_handle_request(): Nagios data read error: %s', str(response.error))
             self._data_callback(None)
+            return
         try:
             userdata = json.loads(response.body.decode(encoding='UTF-8')).get('user_data', None)
             self._data_callback(userdata)
