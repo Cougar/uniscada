@@ -169,7 +169,11 @@ if __name__ == '__main__':
     controllers = core.controllers()
     servicegroups = core.servicegroups()
 
-    ControllerSetup().loadsql(controllers, options.setup_dump, options.setup_table, options.setup_field)
+    try:
+        ControllerSetup().loadsql(controllers, options.setup_dump, options.setup_table, options.setup_field)
+    except Exception as ex:
+        if not options.ignore_sql_errors:
+            raise Exception(ex)
 
     for controller in controllers.get_id_list():
         c = controllers.get_id(controller)
