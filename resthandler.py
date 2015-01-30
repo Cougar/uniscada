@@ -63,6 +63,9 @@ class RestHandler(tornado.web.RequestHandler):
         return self._core.auth().get_user(self.get_cookie)
 
     def write_response(self, result):
+        if self._finished:
+            return
+
         if 'status' in result:
             self.set_status(result['status'])
 
