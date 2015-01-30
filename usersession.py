@@ -63,6 +63,9 @@ class UserSession(object):
 
         :param userdata: userdata
         '''
+        if not userdata:
+            log.error('userdata missing')
+            raise Exception('userdata missing')
         try:
             if self._id != userdata.get('user_name', None):
                 self._userdata = None
