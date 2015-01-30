@@ -79,12 +79,26 @@ class RestHandler(tornado.web.RequestHandler):
         self.write(json.dumps(result['bodydata'], indent=4, sort_keys=True, cls=JSONBinEncoder))
         self.finish()
 
+    def precheck(self):
+        self.user = self.get_current_user()
+        if not self.user:
+            self.write_response({ 'status': 200, 'bodydata': {'message': 'Not authenticated', 'login_url': 'https://login.itvilla.com/login'} })
+            return False
+        self._usersession = self._usersessions.find_by_id(self.user)
+        if not self._usersession.get_userdata():
+            self._usersession.read_userdata_form_nagois()
+            # FIXME return right reload page with 307
+            # FIXME add delay to avoid race condition
+            # FIXME return right URL
+            self.write_response({ 'status': 200, 'headers': [ { 'Location': 'https://receiver.itvilla.com:4433/api/v1/hosts' } ], 'bodydata': {'message' : 'Authentication is in progress..'} })
+            return False
+        return True
+
     @unblock
     def get(self, *args, **kwargs):
 
-        self.user = self.get_current_user()
-        if self.user == None:
-            return({ 'status': 200, 'bodydata': {'message': 'Not authenticated', 'login_url': 'https://login.itvilla.com/login'} })
+        if not self.precheck():
+            return
 
         if len(args) != 3:
             return({ 'status': 200, 'bodydata': {'message' : 'missing arguments'} })
@@ -94,14 +108,6 @@ class RestHandler(tornado.web.RequestHandler):
             filter = args[2]
 
         try:
-            self._usersession = self._usersessions.find_by_id(self.user)
-            if not self._usersession.get_userdata():
-                self._usersession.read_userdata_form_nagois()
-                # FIXME return right reload page with 307
-                # FIXME add delay to avoid race condition
-                # FIXME return right URL
-                return({ 'status': 200, 'headers': [ { 'Location': 'https://receiver.itvilla.com:4433/api/v1/hosts' } ], 'bodydata': {'message' : 'Authentication in progress..'} })
-
             body = API(self._core).get(self.user, args[0], filter)
 
             headers = [
