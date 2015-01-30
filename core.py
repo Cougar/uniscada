@@ -25,7 +25,7 @@ from wsclients import WsClients
 from msgbus import MsgBus
 from hosts import Hosts
 
-from cookieauth import CookieAuth
+from auth import Auth
 
 import logging
 log = logging.getLogger(__name__)
@@ -46,7 +46,7 @@ class Core(object):
         self._controllers = Controllers()
         self._servicegroups = ServiceGroups()
         self._hosts = Hosts()
-        self._auth = CookieAuth()
+        self._auth = Auth()
         self._config = {}
 
     def read_config(self, configfile):
@@ -57,27 +57,11 @@ class Core(object):
         self._config = configparser.ConfigParser()
         self._config.read(configfile)
 
-        self._config_cookieauth()
+        self._config_auth()
 
-    def _config_cookieauth(self):
+    def _config_auth(self):
         config = self.config()
-        if 'CookieAuth' in config:
-            log.debug('CookieAuth setup')
-            try:
-                cookiename = config.get('CookieAuth', 'cookiename')
-                dbhost = config.get('CookieAuth', 'dbhost')
-                dbname = config.get('CookieAuth', 'dbname')
-                dbuser = config.get('CookieAuth', 'dbuser')
-                dbpass = config.get('CookieAuth', 'dbpass')
-                self.auth().setup(cookiename, dbhost, dbuser, dbpass, dbname)
-            except configparser.NoSectionError:
-                log.error('CookieAuth section is missing in config file')
-            except KeyError as e:
-                log.error('no %s defined for CookieAuth in config file', str(e))
-            except Exception as e:
-                log.critical('config error: %s', str(e))
-        else:
-            log.warning('CookieAuth configuration missing')
+        self._auth.setup(self.config())
 
     def save_state(self, statefile):
         ''' Save Controllers to statefile
