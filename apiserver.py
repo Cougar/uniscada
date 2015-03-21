@@ -146,8 +146,8 @@ if __name__ == '__main__':
 
     tornado.options.define("ignore_sql_errors", default = False, help = "do not validate config consistency and ignore sql errors", type = bool)
 
-    tornado.options.define("http_port", default = "8888", help = "HTTP port (0 to disable)", type = int)
-    tornado.options.define("https_port", default = "4433", help = "HTTPS port (0 to disable)", type = int)
+    tornado.options.define("http_port", default = "80", help = "HTTP port (0 to disable)", type = int)
+    tornado.options.define("https_port", default = "443", help = "HTTPS port (0 to disable)", type = int)
     tornado.options.define("listen_address", default = "0.0.0.0", help = "Listen this address only", type = str)
     tornado.options.define("udp_port", default = "44444", help = "UDP listen port", type = int)
     tornado.options.define("statefile", default = "/tmp/apiserver.pkl", help = "Read/write server state to/from this file during statup/shutdown", type = str)
