@@ -26,7 +26,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
     def open(self, *args):
         self.wsclient = self._wsclients.find_by_id(self)
-        self.user = self._core.auth().get_user(self.get_cookie)
+        self.user = self._core.auth().get_user(cookiehandler=self.get_cookie)
         self._api = API(self._core)
         if not self.user:
             self.write_message(json.dumps({'message': 'Not authenticated', 'login_url': 'https://login.itvilla.com/login'}, indent=4, sort_keys=True))

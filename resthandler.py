@@ -45,8 +45,9 @@ class JSONBinEncoder(json.JSONEncoder):
             return obj.decode(encoding='UTF-8')
         return json.JSONEncoder.default(self, obj)
 
+from tornado_content_negotiation import ContentNegotiation
 
-class RestHandler(tornado.web.RequestHandler):
+class RestHandler(ContentNegotiation, tornado.web.RequestHandler):
     def __init__(self, *args, **kwargs):
         self._core = kwargs.pop('core', None)
         self._usersessions = self._core.usersessions()
@@ -54,13 +55,14 @@ class RestHandler(tornado.web.RequestHandler):
         self._servicegroups = self._core.servicegroups()
         self._wsclients = self._core.wsclients()
         self._msgbus = self._core.msgbus()
-        super(RestHandler, self).__init__(*args, **kwargs)
+        content_types = ['application/json; charset=UTF-8']
+        super(RestHandler, self).__init__(negotiable_server_content_types=content_types, *args, **kwargs)
 
     def initialize(self):
         pass
 
     def get_current_user(self):
-        return self._core.auth().get_user(self.get_cookie)
+        return self._core.auth().get_user(cookiehandler=self.get_cookie)
 
     def write_response(self, result):
         if self._finished:
@@ -76,10 +78,15 @@ class RestHandler(tornado.web.RequestHandler):
                 for key in header:
                     self.set_header(key, header[key])
 
-        self.write(json.dumps(result['bodydata'], indent=4, sort_keys=True, cls=JSONBinEncoder))
+        if 'bodydata' in result:
+            self.write(json.dumps(result['bodydata'], indent=4, sort_keys=True, cls=JSONBinEncoder))
         self.finish()
 
     def precheck(self):
+        ct = self.negotiated_content_type(finish_on_error=False)
+        if not ct:
+            self.write_response({ 'status': 406, 'bodydata': {'message' : 'unsupportet content type'} })
+            return False
         self.user = self.get_current_user()
         if not self.user:
             self.write_response({ 'status': 200, 'bodydata': {'message': 'Not authenticated', 'login_url': 'https://login.itvilla.com/login'} })
@@ -93,6 +100,21 @@ class RestHandler(tornado.web.RequestHandler):
             self.write_response({ 'status': 200, 'headers': [ { 'Location': 'https://receiver.itvilla.com:4433/api/v1/hosts' } ], 'bodydata': {'message' : 'Authentication is in progress..'} })
             return False
         return True
+
+    @unblock
+    def post(self, *args, **kwargs):
+        log.debug('POST: args = %s, kwargs = %s self = %s' % (str(args), str(**kwargs), str(self.__dict__)))
+        return self._any_method(*args, **kwargs)
+
+    @unblock
+    def delete(self, *args, **kwargs):
+        log.debug('DELETE: args = %s, kwargs = %s self = %s' % (str(args), str(**kwargs), str(self.__dict__)))
+        return self._any_method(*args, **kwargs)
+
+    @unblock
+    def put(self, *args, **kwargs):
+        log.debug('PUT: args = %s, kwargs = %s self = %s' % (str(args), str(**kwargs), str(self.__dict__)))
+        return self._any_method(*args, **kwargs)
 
     @unblock
     def get(self, *args, **kwargs):
@@ -110,8 +132,16 @@ class RestHandler(tornado.web.RequestHandler):
         if args[2] != '':
             filter = args[2]
 
+        data = None
+        if self.request.body:
+            try:
+                data = json.loads(self.request.body.decode('UTF8'))
+            except Exception as e:
+                log.warning("JSON parse error: %s" % str(e))
+                pass
+
         try:
-            return API(self._core).get(user=self.user, resource=args[0], filter=filter, method=self.request.method)
+            return API(self._core).get(user=self.user, resource=args[0], filter=filter, method=self.request.method, data=data)
         except SessionException as e:
             return({ 'status': 500, 'bodydata': {'message' : str(e)} })
         except UserWarning as e:

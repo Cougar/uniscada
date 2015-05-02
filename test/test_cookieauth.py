@@ -36,16 +36,16 @@ class UserSessionTest(unittest.TestCase):
         self.assertEqual(self.cookieauth._conn, self.pymysql_connect_mock)
         ''' test user validation from valid cookie '''
         self.cookie = 'username:99:bfb929cf8851efd136e01da3eff36207'
-        self.assertEqual(self.cookieauth.get_user(self._getcookie), 'username')
+        self.assertEqual(self.cookieauth.get_user(cookiehandler=self._getcookie), 'username')
         self.assertEqual(self.cookiename, 'cookiename')
         ''' test user validation from invalid cookie '''
         self.cookie = 'username:99:00000000000000000000000000000000'
-        self.assertEqual(self.cookieauth.get_user(self._getcookie), None)
+        self.assertEqual(self.cookieauth.get_user(cookiehandler=self._getcookie), None)
         self.cookie = 'username'
-        self.assertEqual(self.cookieauth.get_user(self._getcookie), None)
+        self.assertEqual(self.cookieauth.get_user(cookiehandler=self._getcookie), None)
         ''' test user validation from missing cookie '''
         self.cookie = ''
-        self.assertEqual(self.cookieauth.get_user(self._getcookie), None)
+        self.assertEqual(self.cookieauth.get_user(cookiehandler=self._getcookie), None)
         ''' test md5 hashes '''
         self.assertTrue(self.cookieauth.check_cookie_md5('username:99:bfb929cf8851efd136e01da3eff36207'))
         self.assertFalse(self.cookieauth.check_cookie_md5('username:66:bfb929cf8851efd136e01da3eff36207'))
@@ -55,5 +55,5 @@ class UserSessionTest(unittest.TestCase):
         self.assertFalse(self.cookieauth.check_cookie_md5(''))
         ''' test expired secret keys '''
         time.sleep(1)
-        self.assertEqual(self.cookieauth.get_user(self._getcookie), None)
+        self.assertEqual(self.cookieauth.get_user(cookiehandler=self._getcookie), None)
         self.assertFalse(self.cookieauth.check_cookie_md5('username:99:bfb929cf8851efd136e01da3eff36207'))

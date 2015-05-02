@@ -84,7 +84,7 @@ __all__ = [
     'CookieAuth',
 ]
 
-class CookieAuth:
+class CookieAuth(object):
     def __init__(self):
         ''' CookieAuth authentication module '''
         self._conn = None
@@ -108,15 +108,20 @@ class CookieAuth:
 
         self._connect_db()
 
-    def get_user(self, cookiehandler):
+    def get_user(self, **kwargs):
         ''' Get authenticated username or None if missing
 
-        cookiehandler(cookiename) should return cookie value or None
+        parameters in **kwargs:
+            cookiehandler: cookie read handler function
 
-        :param cookiehandler: cookie read handler function
+        :param **kwargs: parameters
         :returns: authenticated username or None
         '''
-        log.debug('get_user()')
+        log.debug('get_user(%s)', str(kwargs))
+        cookiehandler = kwargs.get('cookiehandler', None)
+        if not cookiehandler:
+            log.critical('cookiehandler missing')
+            return None
         if not self._cookiename:
             log.error('cookiename is not set')
             return None

@@ -2,6 +2,7 @@
 Auth authentication module
 
 '''
+from systemauth import SystemAuth
 from cookieauth import CookieAuth
 
 import logging
@@ -47,17 +48,15 @@ class Auth(object):
         else:
             log.warning('CookieAuth configuration missing')
 
-    def get_user(self, cookiehandler):
+    def get_user(self, **kwargs):
         ''' Get authenticated username or None if missing
 
-        cookiehandler(cookiename) should return cookie value or None
-
-        :param cookiehandler: cookie read handler function
+        :param **kwargs: parameters
         :returns: authenticated username or None
         '''
-        log.debug('get_user()')
+        log.debug('get_user(%s)', str(kwargs))
         for auth in self._authmodules:
-            user = auth.get_user(cookiehandler)
+            user = auth.get_user(**kwargs)
             if user:
                 return user
         return None

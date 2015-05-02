@@ -45,7 +45,10 @@ class SDPReceiver(object):
             log.warning('invalid datagram, no id found!')
             raise Exception('invalid datagram, no id found!')
 
-        controller = self._controllers.find_by_id(id)
+        controller = self._controllers.get_id(id)
+        if not controller:
+            log.debug('Unknown controller: %s' % id)
+            return
         controller.set_host(host)
         try:
             controller.set_last_sdp(sdp, ts = time.time())
