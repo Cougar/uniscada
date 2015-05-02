@@ -89,7 +89,7 @@ class RestHandler(ContentNegotiation, tornado.web.RequestHandler):
             return False
         self.user = self.get_current_user()
         if not self.user:
-            self.write_response({ 'status': 200, 'bodydata': {'message': 'Not authenticated', 'login_url': 'https://login.itvilla.com/login'} })
+            self.write_response({ 'status': 200, 'bodydata': {'message': 'Not authenticated', 'login_url': 'https://login.uniscada.eu/login'} })
             return False
         self._usersession = self._usersessions.find_by_id(self.user)
         if not self._usersession.get_userdata():
@@ -97,7 +97,7 @@ class RestHandler(ContentNegotiation, tornado.web.RequestHandler):
             # FIXME return right reload page with 307
             # FIXME add delay to avoid race condition
             # FIXME return right URL
-            self.write_response({ 'status': 200, 'headers': [ { 'Location': 'https://receiver.itvilla.com:4433/api/v1/hosts' } ], 'bodydata': {'message' : 'Authentication is in progress..'} })
+            self.write_response({ 'status': 200, 'headers': [ { 'Location': 'https://api.uniscada.eu/api/v1/hosts' } ], 'bodydata': {'message' : 'Authentication is in progress..'} })
             return False
         return True
 

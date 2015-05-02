@@ -4,58 +4,58 @@
 Test URLs (default port, user=sdmarianne)
 
 GOOD
-    http://receiver.itvilla.com:8888/api/v1/hostgroups
-    http://receiver.itvilla.com:8888/api/v1/hostgroups/
-    http://receiver.itvilla.com:8888/api/v1/hostgroups/saared
-    http://receiver.itvilla.com:8888/api/v1/servicegroups
-    http://receiver.itvilla.com:8888/api/v1/servicegroups/
-    http://receiver.itvilla.com:8888/api/v1/servicegroups/service_pumplad_ee
-    http://receiver.itvilla.com:8888/api/v1/servicegroups/service_pumplad4_ee
-    http://receiver.itvilla.com:8888/api/v1/services/00204AB80D57
-    http://receiver.itvilla.com:8888/api/v1/services/00204AB80BF9
-    http://receiver.itvilla.com:8888/api/v1/services/00204AA95C56
-    http://receiver.itvilla.com:8888/api/v1/hosts/
-    http://receiver.itvilla.com:8888/api/v1/hosts/00204AA95C56
-    http://receiver.itvilla.com:8888/api/v1/controllers/
-    http://receiver.itvilla.com:8888/api/v1/controllers/00204AA95C56
+    http://api.uniscada.eu/api/v1/hostgroups
+    http://api.uniscada.eu/api/v1/hostgroups/
+    http://api.uniscada.eu/api/v1/hostgroups/saared
+    http://api.uniscada.eu/api/v1/servicegroups
+    http://api.uniscada.eu/api/v1/servicegroups/
+    http://api.uniscada.eu/api/v1/servicegroups/service_pumplad_ee
+    http://api.uniscada.eu/api/v1/servicegroups/service_pumplad4_ee
+    http://api.uniscada.eu/api/v1/services/00204AB80D57
+    http://api.uniscada.eu/api/v1/services/00204AB80BF9
+    http://api.uniscada.eu/api/v1/services/00204AA95C56
+    http://api.uniscada.eu/api/v1/hosts/
+    http://api.uniscada.eu/api/v1/hosts/00204AA95C56
+    http://api.uniscada.eu/api/v1/controllers/
+    http://api.uniscada.eu/api/v1/controllers/00204AA95C56
 
-    https://receiver.itvilla.com:4433/api/v1/hostgroups
-    https://receiver.itvilla.com:4433/api/v1/hostgroups/
-    https://receiver.itvilla.com:4433/api/v1/hostgroups/saared
-    https://receiver.itvilla.com:4433/api/v1/servicegroups
-    https://receiver.itvilla.com:4433/api/v1/servicegroups/
-    https://receiver.itvilla.com:4433/api/v1/servicegroups/service_pumplad_ee
-    https://receiver.itvilla.com:4433/api/v1/servicegroups/service_pumplad4_ee
-    https://receiver.itvilla.com:4433/api/v1/services/00204AB80D57
-    https://receiver.itvilla.com:4433/api/v1/services/00204AB80BF9
-    https://receiver.itvilla.com:4433/api/v1/services/00204AA95C56
-    https://receiver.itvilla.com:4433/api/v1/hosts/
-    https://receiver.itvilla.com:4433/api/v1/hosts/00204AA95C56
-    https://receiver.itvilla.com:4433/api/v1/controllers/
-    https://receiver.itvilla.com:4433/api/v1/controllers/00204AA95C56
+    https://api.uniscada.eu/api/v1/hostgroups
+    https://api.uniscada.eu/api/v1/hostgroups/
+    https://api.uniscada.eu/api/v1/hostgroups/saared
+    https://api.uniscada.eu/api/v1/servicegroups
+    https://api.uniscada.eu/api/v1/servicegroups/
+    https://api.uniscada.eu/api/v1/servicegroups/service_pumplad_ee
+    https://api.uniscada.eu/api/v1/servicegroups/service_pumplad4_ee
+    https://api.uniscada.eu/api/v1/services/00204AB80D57
+    https://api.uniscada.eu/api/v1/services/00204AB80BF9
+    https://api.uniscada.eu/api/v1/services/00204AA95C56
+    https://api.uniscada.eu/api/v1/hosts/
+    https://api.uniscada.eu/api/v1/hosts/00204AA95C56
+    https://api.uniscada.eu/api/v1/controllers/
+    https://api.uniscada.eu/api/v1/controllers/00204AA95C56
 
 BAD
-    http://receiver.itvilla.com:8888/
-    http://receiver.itvilla.com:8888/api/v1/
-    http://receiver.itvilla.com:8888/api/v1/hostgroups/x
-    http://receiver.itvilla.com:8888/api/v1/hostgroups/itvilla
-    http://receiver.itvilla.com:8888/api/v1/servicegroups/x
-    http://receiver.itvilla.com:8888/api/v1/servicegroups/hvvmon_ee
-    http://receiver.itvilla.com:8888/api/v1/services/x
-    http://receiver.itvilla.com:8888/api/v1/services/0008E101A8E9
-    http://receiver.itvilla.com:8888/api/v1/hosts/x
-    http://receiver.itvilla.com:8888/api/v1/controllers/x
+    http://api.uniscada.eu/
+    http://api.uniscada.eu/api/v1/
+    http://api.uniscada.eu/api/v1/hostgroups/x
+    http://api.uniscada.eu/api/v1/hostgroups/itvilla
+    http://api.uniscada.eu/api/v1/servicegroups/x
+    http://api.uniscada.eu/api/v1/servicegroups/hvvmon_ee
+    http://api.uniscada.eu/api/v1/services/x
+    http://api.uniscada.eu/api/v1/services/0008E101A8E9
+    http://api.uniscada.eu/api/v1/hosts/x
+    http://api.uniscada.eu/api/v1/controllers/x
 
-    https://receiver.itvilla.com:4433/
-    https://receiver.itvilla.com:4433/api/v1/
-    https://receiver.itvilla.com:4433/api/v1/hostgroups/x
-    https://receiver.itvilla.com:4433/api/v1/hostgroups/itvilla
-    https://receiver.itvilla.com:4433/api/v1/servicegroups/x
-    https://receiver.itvilla.com:4433/api/v1/servicegroups/hvvmon_ee
-    https://receiver.itvilla.com:4433/api/v1/services/x
-    https://receiver.itvilla.com:4433/api/v1/services/0008E101A8E9
-    https://receiver.itvilla.com:4433/api/v1/hosts/x
-    https://receiver.itvilla.com:4433/api/v1/controllers/x
+    https://api.uniscada.eu/
+    https://api.uniscada.eu/api/v1/
+    https://api.uniscada.eu/api/v1/hostgroups/x
+    https://api.uniscada.eu/api/v1/hostgroups/itvilla
+    https://api.uniscada.eu/api/v1/servicegroups/x
+    https://api.uniscada.eu/api/v1/servicegroups/hvvmon_ee
+    https://api.uniscada.eu/api/v1/services/x
+    https://api.uniscada.eu/api/v1/services/0008E101A8E9
+    https://api.uniscada.eu/api/v1/hosts/x
+    https://api.uniscada.eu/api/v1/controllers/x
 
 """
 
@@ -180,8 +180,9 @@ if __name__ == '__main__':
         print("HTTPS server listening on port " + str(options.https_port))
         import tornado.httpserver
         httpsserver = tornado.httpserver.HTTPServer(app, ssl_options = {
-                "certfile": "receiver.itvilla.com.crt",
-                "keyfile": "receiver.itvilla.com.key"
+                "certfile": "api.uniscada.eu.crt",
+                "keyfile": "api.uniscada.eu.key",
+                "ca_certs": "COMODORSAAddTrustCA.crt"
             })
         httpsserver.listen(options.https_port, address = options.listen_address)
         print("OK")

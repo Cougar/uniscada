@@ -29,7 +29,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         self.user = self._core.auth().get_user(cookiehandler=self.get_cookie)
         self._api = API(self._core)
         if not self.user:
-            self.write_message(json.dumps({'message': 'Not authenticated', 'login_url': 'https://login.itvilla.com/login'}, indent=4, sort_keys=True))
+            self.write_message(json.dumps({'message': 'Not authenticated', 'login_url': 'https://login.uniscada.eu/login'}, indent=4, sort_keys=True))
             return
         try:
             self._usersession = self._usersessions.find_by_id(self.user)
@@ -46,11 +46,11 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         userdata = self._usersessions.find_by_id(self.user).get_userdata()
         if not userdata:
             log.error('didnt get userdata')
-            self.write_message(json.dumps({'message': 'Authentication error', 'login_url': 'https://login.itvilla.com/login'}, indent=4, sort_keys=True))
+            self.write_message(json.dumps({'message': 'Authentication error', 'login_url': 'https://login.uniscada.eu/login'}, indent=4, sort_keys=True))
             self.close()
         elif userdata.get('user_name', None) != self.user:
             log.error('userdata username mismatch: %s : %s', str(userdata.get('user_name', None)), self.user)
-            self.write_message(json.dumps({'message': 'Authentication error', 'login_url': 'https://login.itvilla.com/login'}, indent=4, sort_keys=True))
+            self.write_message(json.dumps({'message': 'Authentication error', 'login_url': 'https://login.uniscada.eu/login'}, indent=4, sort_keys=True))
             self.close()
             # FIXME remove UserSession instance after such event
         else:
@@ -58,7 +58,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
     def on_message(self, message):
         if not self.user:
-           self.wsclient.send_data({'message': 'Not authenticated', 'login_url': 'https://login.itvilla.com/login'})
+           self.wsclient.send_data({'message': 'Not authenticated', 'login_url': 'https://login.uniscada.eu/login'})
            return
 
         if not self._authenticated:
