@@ -1,3 +1,6 @@
 [submodule "PyMySQL"]
 	path = PyMySQL
 	url = https://github.com/droid4control/PyMySQL.git
+[submodule "tornado_content_negotiation"]
+	path = tornado_content_negotiation
+	url = https://github.com/droid4control/tornado_content_negotiation
