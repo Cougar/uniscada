@@ -35,6 +35,8 @@ class API_servicegroups(object):
             srvgrps = {}
             for controller in usersession._controllerlist.keys():
                 c = self._controllers.get_id(controller)
+                if not c:
+                    continue
                 servicegroup = c.get_setup().get('servicetable', None)
                 if servicegroup and servicegroup != '':
                     srvgrps[servicegroup] = True
