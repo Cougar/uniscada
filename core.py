@@ -46,7 +46,7 @@ class Core(object):
         self._controllers = Controllers()
         self._servicegroups = ServiceGroups()
         self._hosts = Hosts()
-        self._auth = Auth()
+        self._auth = Auth(self)
         self._config = {}
 
     def read_config(self, configfile):

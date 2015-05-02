@@ -14,15 +14,25 @@ __all__ = [
 ]
 
 class Auth(object):
-    def __init__(self):
+    def __init__(self, core):
         ''' Auth authentication module '''
         self._authmodules = []
+        self._core = core
 
     def setup(self, config):
         ''' Auth configuration setup
         '''
         log.debug('setup()')
         self.setup_cookieauth(config)
+        self.setup_systemauth(config)
+
+    def setup_systemauth(self, config):
+        ''' Auth configuration setup for SystemAuth
+        '''
+        log.debug('setup_systemauth()')
+        _auth = SystemAuth()
+        _auth.setup(self._core)
+        self._authmodules.append(_auth)
 
     def setup_cookieauth(self, config):
         ''' Auth configuration setup for CookieAuth

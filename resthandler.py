@@ -62,7 +62,7 @@ class RestHandler(ContentNegotiation, tornado.web.RequestHandler):
         pass
 
     def get_current_user(self):
-        return self._core.auth().get_user(cookiehandler=self.get_cookie)
+        return self._core.auth().get_user(host=self.request.host, headers=self.request.headers, cookiehandler=self.get_cookie)
 
     def write_response(self, result):
         if self._finished:
