@@ -1,5 +1,9 @@
 from sessionexception import SessionException
 
+import logging
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
+
 class API_servicegroups(object):
     def __init__(self, core):
         self._core = core
