@@ -115,7 +115,8 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
         if method == 'get':
             try:
-                reply['body'] = self._api.get(self.user, query, filter)
+                r = self._api.get(user=self.user, resource=query, filter=filter, method='GET')
+                reply['body'] = r.get('bodydata', '')
             except Exception as e:
                 reply['message'] = 'error: ' + str(e)
         elif method == 'subscribe':

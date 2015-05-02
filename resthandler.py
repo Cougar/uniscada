@@ -96,7 +96,10 @@ class RestHandler(tornado.web.RequestHandler):
 
     @unblock
     def get(self, *args, **kwargs):
+        log.debug('GET: args = %s, kwargs = %s self = %s' % (str(args), str(**kwargs), str(self.__dict__)))
+        return self._any_method(*args, **kwargs)
 
+    def _any_method(self, *args, **kwargs):
         if not self.precheck():
             return
 
@@ -108,13 +111,13 @@ class RestHandler(tornado.web.RequestHandler):
             filter = args[2]
 
         try:
-            body = API(self._core).get(self.user, args[0], filter)
-
-            headers = [
-                    { 'X-Username': self.user }
-            ]
-            return({ 'status': 200, 'headers': headers, 'bodydata': body })
+            return API(self._core).get(user=self.user, resource=args[0], filter=filter, method=self.request.method)
         except SessionException as e:
             return({ 'status': 500, 'bodydata': {'message' : str(e)} })
+        except UserWarning as e:
+            return({ 'status': 500, 'bodydata': {'message' : 'error: %s' % str(e)} })
         except Exception as e:
+            log.critical("Exception: %s" % str(e))
+            import traceback
+            log.critical("Trace: %s" % traceback.format_exc())
             return({ 'status': 501, 'bodydata': {'message' : str(e)} })

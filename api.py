@@ -14,31 +14,30 @@ class API(object):
     def __init__(self, core):
         self._core = core
 
-    def get(self, user, resource, filter=None):
+    def get(self, **kwargs):
         ''' Return API call result
 
-        :param user: username
-        :param resource: resource (command)
-        :param filter: optional filter
+        :param **kwargs: parameters
 
         :returns: resource
         '''
-        log.debug('resource: %s, filter: %s', resource, str(filter))
+        log.debug('kwargs: %s', str(kwargs))
+        resource = kwargs.get('resource', None)
         if resource == 'hosts':
             from api_hosts import API_hosts
-            data = API_hosts(self._core).output(user, filter)
+            data = API_hosts(self._core).output(**kwargs)
         elif resource == 'controllers':
             from api_controllers import API_controllers
-            data = API_controllers(self._core).output(user, filter)
+            data = API_controllers(self._core).output(**kwargs)
         elif resource == 'hostgroups':
             from api_hostgroups import API_hostgroups
-            data = API_hostgroups(self._core).output(user, filter)
+            data = API_hostgroups(self._core).output(**kwargs)
         elif resource == 'servicegroups':
             from api_servicegroups import API_servicegroups
-            data = API_servicegroups(self._core).output(user, filter)
+            data = API_servicegroups(self._core).output(**kwargs)
         elif resource == 'services':
             from api_services import API_services
-            data = API_services(self._core).output(user, filter)
+            data = API_services(self._core).output(**kwargs)
         else:
-            data = { 'message': 'unknown resource' }
+            data = { 'status': 501, 'message': 'unknown resource: %s' % str(kwargs.get('resource', None)) }
         return data

@@ -11,11 +11,14 @@ class API_servicegroups(object):
         self._controllers = self._core.controllers()
         self._servicegroups = self._core.servicegroups()
 
-    def output(self, user, filter):
-        if not filter:
-            return self._output_all_servicegroups(user)
+    def output(self, **kwargs):
+        if kwargs.get('method', None) == 'GET':
+            if kwargs.get('filter', None):
+                return self._output_one_servicegroup(kwargs.get('user', None), kwargs.get('filter', None))
+            else:
+                return self._output_all_servicegroups(kwargs.get('user', None))
         else:
-            return self._output_one_servicegroup(user, filter)
+            return({ 'status': 405 })
 
     def _get_servicegroupids(self, user):
         usersession = self._usersessions.find_by_id(user)
@@ -36,7 +39,7 @@ class API_servicegroups(object):
         r = []
         for servicegroup in servicegroupids:
             r.append({ 'servicegroup': servicegroup })
-        return r
+        return({ 'status': 200, 'bodydata': r })
 
     def _output_one_servicegroup(self, user, servicegroup):
         servicegroupids = self._get_servicegroupids(user)
@@ -46,4 +49,4 @@ class API_servicegroups(object):
         if not sg:
             log.error('servicegroup data inconsistency user=%s, servicegroup=%s', str(user), str(servicegroup))
             raise SessionException('servicegroup data inconsistency')
-        return sg.get_servicegroup_data_v1()
+        return({ 'status': 200, 'bodydata': sg.get_servicegroup_data_v1() })

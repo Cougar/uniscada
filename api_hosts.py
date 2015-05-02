@@ -7,11 +7,14 @@ class API_hosts(object):
         self._controllers = self._core.controllers()
         self._hosts = self._core.hosts()
 
-    def output(self, user, filter):
-        if not filter:
-            return self._output_all_hosts(user)
+    def output(self, **kwargs):
+        if kwargs.get('method', None) == 'GET':
+            if kwargs.get('filter', None):
+                return self._output_one_controller(kwargs.get('user', None), kwargs.get('filter', None))
+            else:
+                return self._output_all_hosts(kwargs.get('user', None))
         else:
-            return self._output_one_controller(user, filter)
+            return({ 'status': 405 })
 
     def _output_all_hosts(self, user):
         usersession = self._usersessions.find_by_id(user)
@@ -31,7 +34,7 @@ class API_hosts(object):
                     })
             elif len(entry):
                 r.append({ 'host': h, 'controllers': entry })
-        return r
+        return({ 'status': 200, 'bodydata': r })
 
     def _output_one_controller(self, user, host):
         usersession = self._usersessions.find_by_id(user)
@@ -39,5 +42,5 @@ class API_hosts(object):
             raise SessionException('unknown host')
         h = self._controllers.get_id(host)
         if not h:
-            return {}
-        return h.get_host_data_v1(usersession.is_admin())
+            return({ 'status': 404 })
+        return({ 'status': 200, 'bodydata': h.get_host_data_v1(usersession.is_admin()) })
