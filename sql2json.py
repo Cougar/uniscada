@@ -90,7 +90,7 @@ class JSONdumper(object):
     def __init__(self):
         pass
 
-    def dump(self, rows, field, value, dir, skipempty, skipfields, jsonmin, array):
+    def dump(self, rows, field, value, dir, skipempty, skipfields, jsonmin, array, output):
         ''' Dump database rows in JSON format
 
         :param rows: generator or database rows
@@ -101,6 +101,7 @@ class JSONdumper(object):
         :param skipfields: Comma separated field names to skip
         :param jsonmin: Minimal JSON format
         :param array: Display as JSON array
+        :param output: Write ouptut to file
         '''
         a = []
         for row in rows:
@@ -133,17 +134,26 @@ class JSONdumper(object):
                     s= json.dumps(row, indent=4, sort_keys=True)
 
                 if dir:
+                    print("WRITE: %s/%s" % (dir, row[field]))
                     with open("%s/%s" % (dir, row[field]) , "w") as f:
                         f.write(s)
                 else:
-                    print(s)
+                    if output:
+                        with open(output, "w") as f:
+                            f.write(s)
+                    else:
+                        print(s)
 
         if array:
             if jsonmin:
                 s = json.dumps(a)
             else:
                 s= json.dumps(a, indent=4, sort_keys=True)
-            print(s)
+            if output:
+                with open(output, "w") as f:
+                    f.write(s)
+            else:
+                print(s)
 
 
 if __name__ == '__main__':
@@ -159,6 +169,7 @@ if __name__ == '__main__':
     define("skipempty", default = False, help = "Do not dump empty fields", type = bool)
     define("skipfields", default = "", help = "Comma separated field names to skip", type = str)
     define("array", default = False, help = "Display as JSON array", type = bool)
+    define("output", default = "", help = "Write ouptut to file", type = str)
 
     args = sys.argv
     args.append("--logging=error")
@@ -190,4 +201,8 @@ if __name__ == '__main__':
         log.error('--array CAN NOT be used with --dir')
         sys.exit(1)
 
-    JSONdumper().dump(db.gettablelines(options.table), options.field, options.value, options.dir, options.skipempty, options.skipfields, options.jsonmin, options.array)
+    if options.dir and options.output:
+        log.error('--output CAN NOT be used with --dir')
+        sys.exit(1)
+
+    JSONdumper().dump(db.gettablelines(options.table), options.field, options.value, options.dir, options.skipempty, options.skipfields, options.jsonmin, options.array, options.output)
