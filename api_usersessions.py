@@ -8,6 +8,7 @@ class API_usersessions(object):
     def __init__(self, core):
         self._core = core
         self._usersessions = self._core.usersessions()
+        self._wsclients = self._core.wsclients()
 
     def output(self, **kwargs):
         if not kwargs.get('user', None) == '_system_':
@@ -81,5 +82,10 @@ class API_usersessions(object):
 
     def _delete_one_usersession(self, user):
         assert self._usersessions.get_id(user)
+        for ws in list(self._wsclients.get_id_list()):
+            if ws.user == user:
+                log.debug('close ws session: %s', str(ws))
+                ws.on_close()
+                ws.close()
         # FIXME implement usersession.remove()
         self._usersessions.remove_by_id(user)
