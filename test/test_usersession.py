@@ -37,15 +37,17 @@ class UserSessionTest(unittest.TestCase):
 
     def test_load_data_callback(self):
         x = []
-        self.usersession._userdata_callback = lambda: x.append('test')
+        def _cb(usersession):
+                x.append(usersession)
+        self.usersession._userdata_callback = _cb
         self.usersession._userdata_from_nagios(self.userdata)
-        self.assertEqual(x[0], 'test')
+        self.assertEqual(x[0], self.usersession)
         self.assertEqual(self.usersession.get_userdata(), self.userdata)
 
     def test_load_wrong_data(self):
         wronguserdata = self.userdata
         wronguserdata['user_name'] = 'WRONGUSER'
-        self.assertRaises(Exception, self.usersession._userdata_from_nagios, wronguserdata)
+        self.usersession._userdata_from_nagios(wronguserdata)
         self.assertEqual(self.usersession.get_userdata(), None)
 
     def test_user_access_ok(self):

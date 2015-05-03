@@ -64,11 +64,17 @@ class UserSession(object):
         :param userdata: userdata from Nagios
         '''
         if userdata:
-            self._set_userdata(userdata)
+            if self._id != userdata.get('user_name', None):
+                log.error('Nagios didnt return right user data')
+            else:
+                self._set_userdata(userdata)
         else:
             log.error('userdata missing')
         if self._userdata_callback:
-            self._userdata_callback()
+            try:
+                self._userdata_callback(self)
+            except Exception as e:
+                log.error('callback exception: %s', str(e))
             self._userdata_callback = None
         self._isauthinprogress = False
 
@@ -77,15 +83,6 @@ class UserSession(object):
 
         :param userdata: userdata
         '''
-        try:
-            if self._id != userdata.get('user_name', None):
-                self._userdata = None
-                log.error('Nagios didnt return right user data')
-                raise Exception('Nagios didnt return right user data')
-        except Exception as ex:
-            self._userdata = None
-            log.error('userdata check error: %s', str(ex))
-            raise Exception('userdata check error: %s' % str(ex))
         self._userdata = userdata
         self._update_controllerlist()
 

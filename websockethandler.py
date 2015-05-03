@@ -20,60 +20,69 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         self._servicegroups = self._core.servicegroups()
         self._wsclients = self._core.wsclients()
         self._msgbus = self._core.msgbus()
-        self._authenticated = False
         self._args = args
+        self._isopen = False
         super(WebSocketHandler, self).__init__(*args, **kwargs)
+
+    def get_current_user(self):
+        return self._core.auth().get_user(host=self.request.host, headers=self.request.headers, cookiehandler=self.get_cookie)
 
     def open(self, *args):
         self.wsclient = self._wsclients.find_by_id(self)
-        self.user = self._core.auth().get_user(cookiehandler=self.get_cookie)
         self._api = API(self._core)
+        self.user = self.get_current_user()
         if not self.user:
             self.write_message(json.dumps({'message': 'Not authenticated', 'login_url': 'https://login.uniscada.eu/login'}, indent=4, sort_keys=True))
-            return
-        try:
-            self._usersession = self._usersessions.find_by_id(self.user)
-            if self._usersession.get_userdata():
-                self._userauth_done()
-            else:
-                self._usersession.read_userdata_form_nagios(callback = self._userauth_done)
-        except Exception as e:
-            self.write_message(json.dumps({'message': 'error: ' + str(e)}))
-            return
-
-    def _userauth_done(self):
-        log.info('_userauth_done()')
-        userdata = self._usersessions.find_by_id(self.user).get_userdata()
-        if not userdata:
-            log.error('didnt get userdata')
-            self.write_message(json.dumps({'message': 'Authentication error', 'login_url': 'https://login.uniscada.eu/login'}, indent=4, sort_keys=True))
             self.close()
-        elif userdata.get('user_name', None) != self.user:
-            log.error('userdata username mismatch: %s : %s', str(userdata.get('user_name', None)), self.user)
-            self.write_message(json.dumps({'message': 'Authentication error', 'login_url': 'https://login.uniscada.eu/login'}, indent=4, sort_keys=True))
+            self.on_close()
+            return
+        self._usersession = self._usersessions.find_by_id(self.user)
+        if not self._usersession.get_userdata():
+            self._usersession.read_userdata_form_nagios()
+            log.debug('open: Authentication in progress...')
+            self.write_message(json.dumps({'message': 'Authentication is in progress..'}, indent=4, sort_keys=True))
             self.close()
-            # FIXME remove UserSession instance after such event
-        else:
-            self._authenticated = True
+            self.on_close()
+            return
+        self._isopen = True
 
     def on_message(self, message):
+        log.debug('on_message(%s)', str(message))
+        if not self._isopen:
+            log.debug('not open')
+            return
+        if not message:
+            log.debug('no message')
+            return
         if not self.user:
-           self.wsclient.send_data({'message': 'Not authenticated', 'login_url': 'https://login.uniscada.eu/login'})
-           return
+            log.info('Not authenticated')
+            self.wsclient.send_data({'message': 'Not authenticated', 'login_url': 'https://login.uniscada.eu/login'})
+            self.close()
+            self.on_close()
+            return
 
-        if not self._authenticated:
-            self.wsclient.send_data({'message': 'Authentication in progress...'})
+        self._usersession = self._usersessions.find_by_id(self.user)
+        if not self._usersession.get_userdata():
+            log.debug('on_message: Authentication in progress...')
+            try:
+                self.write_message(json.dumps({'message': 'Authentication is in progress..'}, indent=4, sort_keys=True))
+            except tornado.websocket.WebSocketClosedError as ex:
+                log.debug('WebSocketClosedError: %s', str(ex))
+            self.close()
+            self.on_close()
             return
 
         try:
             jsondata = json.loads(message)
         except:
+            log.debug('wsclient data error')
             self.wsclient.send_data({'message': str(sys.exc_info()[1])})
             return
 
         method = jsondata.get('method', None)
         token = jsondata.get('token', None)
         resource = jsondata.get('resource', None)
+        log.info('%s %s %s', str(method), str(token), str(resource))
 
         reply = {}
 
@@ -143,12 +152,14 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         self.wsclient.send_data(reply)
 
     def _on_bus_message(self, token, subject, data):
-        log.info("_on_bus_message(%s, %s, %s)", str(token), str(subject), str(data))
+        log.debug("_on_bus_message(%s, %s, %s)", str(token), str(subject), str(data))
         if token:
             data['token'] = token
         self.wsclient.send_data(data)
 
     def on_close(self):
+        log.debug('on_close')
+        self._isopen = False
         self._msgbus.unsubscribe_all(self)
         self._wsclients.remove_by_id(self)
 
