@@ -170,7 +170,7 @@ if __name__ == '__main__':
 
     app = tornado.web.Application([
         (r'/files/(wstest.html|wstest.js)', FileHandler),
-        (r'/api/v1/(servicegroups|hostgroups|services|hosts|controllers)(/(.*))?', RestHandler, handler_settings),
+        (r'/api/v1/(servicegroups|hostgroups|services|hosts|controllers|usersessions)(/(.*))?', RestHandler, handler_settings),
         (r'/api/v1/ws', WebSocketHandler, handler_settings),
         (r'/api/v1/', RootHandler),
         (r'/.*', UnknownHandler)

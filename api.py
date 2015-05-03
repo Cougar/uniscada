@@ -38,6 +38,9 @@ class API(object):
         elif resource == 'services':
             from api_services import API_services
             data = API_services(self._core).output(**kwargs)
+        elif resource == 'usersessions':
+            from api_usersessions import API_usersessions
+            data = API_usersessions(self._core).output(**kwargs)
         else:
             data = { 'status': 501, 'message': 'unknown resource: %s' % str(kwargs.get('resource', None)) }
         return data

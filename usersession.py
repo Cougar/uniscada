@@ -129,6 +129,19 @@ class UserSession(object):
             return True
         return False
 
+    def get_usersession_data_v1(self):
+        ''' Get usersession data
+
+        :returns usersession data
+        '''
+        return {
+            "id": self._id,
+            "admin": self._isadmin,
+            "userdata": self._userdata,
+            "controllerlist": self._controllerlist,
+            "servicegroupids": self._servicegroupids,
+        }
+
     def __str__(self):
         return(str(self._id) + ': ' +
             'userdata = ' + str(self._userdata))
