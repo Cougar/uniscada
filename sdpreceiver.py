@@ -67,7 +67,7 @@ class SDPReceiver(object):
 
         r = {}
         r['resource'] = '/hosts/' + str(controller.get_id())
-        r['body'] = controller.get_host_data_v1()
+        r['body'] = controller.get_host_data_v1(False)
         self._msgbus.publish(r['resource'], r)
 
         r = {}
