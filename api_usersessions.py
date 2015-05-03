@@ -52,7 +52,7 @@ class API_usersessions(object):
         for u in data:
             user = self._usersessions.find_by_id(u.get('user_name', None))
             log.info('new usersession created: %s' % user)
-            user.read_userdata_form_nagois()
+            user.read_userdata_form_nagios()
         return({ 'status': 201, 'headers': [ { 'Location' : '/api/v1/usersessions/' } ] })
 
     def _delete_usersession(self, **kwargs):

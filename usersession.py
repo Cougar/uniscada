@@ -37,7 +37,7 @@ class UserSession(object):
         '''
         return self._id
 
-    def read_userdata_form_nagois(self, callback = None):
+    def read_userdata_form_nagios(self, callback = None):
         ''' Read userdata from Nagios
 
             Call callback() when response from Nagios is received

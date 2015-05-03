@@ -36,7 +36,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             if self._usersession.get_userdata():
                 self._userauth_done()
             else:
-                self._usersession.read_userdata_form_nagois(callback = self._userauth_done)
+                self._usersession.read_userdata_form_nagios(callback = self._userauth_done)
         except Exception as e:
             self.write_message(json.dumps({'message': 'error: ' + str(e)}))
             return
