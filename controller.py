@@ -168,16 +168,46 @@ class Controller(object):
         r = {}
         r['host'] = self._id
         r['services'] = []
-        for (reg, val, ts) in self.get_state_register_list():
-            if last_sdp_keys and not reg in last_sdp_keys:
+        if not servicegroup:
+            return r
+        services = servicegroup.get_services()
+        if not services:
+            return r
+        for sta_reg in services.get_id_list():
+            service = services.get_id(sta_reg)
+            val_reg = None
+            setup = service.get_setup()
+            val_reg = setup.get('val_reg', None)
+            if val_reg and val_reg != "":
+                reg = val_reg
+            else:
+                reg = sta_reg
+            log.debug('service sta_reg: %s, val_reg: %s, reg: %s' % (sta_reg, val_reg, reg))
+            val_s, ts_s = self.get_state_reg(sta_reg)
+            if val_s == None:
+                log.debug('sta_reg=%s value is missing' % sta_reg)
+                continue
+            val, ts = self.get_state_reg(reg)
+            if val == None:
+                log.debug('reg=%s value is missing' % reg)
+                continue
+            if last_sdp_keys and not sta_reg in last_sdp_keys and not reg in last_sdp_keys:
                 continue
             r1 = {}
             r1['key'] = reg
-            if isinstance(val, list):
-                r1['value'] = list(map(str, val))
+            conv_coef = setup.get('conv_coef', '')
+            if conv_coef == '':
+                if isinstance(val, list):
+                    r1['value'] = list(map(str, val))
+                else:
+                    r1['value'] = str(val)
             else:
-                r1['value'] = [ str(val) ]
-            r1['status'] = '0'  # FIXME
+                conv_coef = int(conv_coef)
+                if isinstance(val, list):
+                    r1['value'] = [x / conv_coef for x in val]
+                else:
+                    r1['value'] = str(int(val) / conv_coef)
+            r1['status'] = val_s
             r['services'].append(r1)
         if self._last_sdp_ts:
             r['timestamp'] = self._last_sdp_ts
