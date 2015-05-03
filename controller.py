@@ -143,28 +143,14 @@ class Controller(object):
             r['stats'] = self._stats.get()
         return [r]
 
-    def get_service_data_v1(self):
+    def get_service_data_v1(self, servicegroup):
         ''' Return service data in API v1 format
 
         :returns: service data in API v1 format
         '''
-        r = {}
-        r['host'] = self._id
-        r['services'] = []
-        for (reg, val, ts) in self.get_state_register_list():
-            r1 = {}
-            r1['key'] = reg
-            if isinstance(val, list):
-                r1['value'] = list(map(str, val))
-            else:
-                r1['value'] = [ str(val) ]
-            r1['status'] = '0'  # FIXME
-            r['services'].append(r1)
-        if self._last_sdp_ts:
-            r['timestamp'] = self._last_sdp_ts
-        return r
+        return self._get_service_data_v1(servicegroup)
 
-    def get_service_data_v1_last_sdp(self):
+    def get_service_data_v1_last_sdp(self, servicegroup):
         ''' Return service data in API v1 format
 
         Only changes by last incoming SDP datagramm will be returned
@@ -176,11 +162,14 @@ class Controller(object):
         last_sdp_keys = []
         for reg in self._last_sdp.get_data_list():
                 last_sdp_keys.append(reg[0])
+        return self._get_service_data_v1(servicegroup, last_sdp_keys)
+
+    def _get_service_data_v1(self, servicegroup, last_sdp_keys=None):
         r = {}
         r['host'] = self._id
         r['services'] = []
         for (reg, val, ts) in self.get_state_register_list():
-            if not reg in last_sdp_keys:
+            if last_sdp_keys and not reg in last_sdp_keys:
                 continue
             r1 = {}
             r1['key'] = reg

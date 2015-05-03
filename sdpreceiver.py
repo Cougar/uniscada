@@ -23,6 +23,7 @@ class SDPReceiver(object):
         '''
         self._core = core
         self._controllers = self._core.controllers()
+        self._servicegroups = self._core.servicegroups()
         self._msgbus = self._core.msgbus()
 
     def datagram_from_controller(self, host, datagram):
@@ -71,5 +72,11 @@ class SDPReceiver(object):
 
         r = {}
         r['resource'] = '/services/' + str(controller.get_id())
-        r['body'] = controller.get_service_data_v1_last_sdp()
+        servicegroup = None
+        setup = controller.get_setup()
+        if setup:
+            servicetable = setup.get('servicetable', None)
+            if servicetable:
+                servicegroup = self._servicegroups.get_id(servicetable)
+        r['body'] = controller.get_service_data_v1_last_sdp(servicetable)
         self._msgbus.publish(r['resource'], r)

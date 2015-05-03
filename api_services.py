@@ -5,6 +5,7 @@ class API_services(object):
         self._core = core
         self._usersessions = self._core.usersessions()
         self._controllers = self._core.controllers()
+        self._servicegroups = self._core.servicegroups()
 
     def output(self, **kwargs):
         if kwargs.get('method', None) == 'GET':
@@ -22,4 +23,10 @@ class API_services(object):
         c = self._controllers.get_id(controller)
         if not c:
             return({ 'status': 404 })
-        return({ 'status': 200, 'bodydata': c.get_service_data_v1() })
+        servicegroup = None
+        setup = c.get_setup()
+        if setup:
+            servicetable = setup.get('servicetable', None)
+            if servicetable:
+                servicegroup = self._servicegroups.get_id(servicetable)
+        return({ 'status': 200, 'bodydata': c.get_service_data_v1(servicegroup) })
