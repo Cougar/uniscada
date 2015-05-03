@@ -95,7 +95,6 @@ class RestHandler(ContentNegotiation, tornado.web.RequestHandler):
         if not self._usersession.get_userdata():
             self._usersession.read_userdata_form_nagois()
             # FIXME return right reload page with 307
-            # FIXME add delay to avoid race condition
             # FIXME return right URL
             self.write_response({ 'status': 200, 'headers': [ { 'Location': 'https://api.uniscada.eu/api/v1/hosts' } ], 'bodydata': {'message' : 'Authentication is in progress..'} })
             return False

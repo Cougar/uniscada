@@ -24,6 +24,7 @@ class UserSession(object):
         log.debug('Create a new user (%s)', str(id))
         self._id = id
         self._isadmin = False
+        self._isauthinprogress = False
         self._userdata = None
         self._userdata_callback = None
         self._controllerlist = {}
@@ -43,8 +44,17 @@ class UserSession(object):
 
             :param callback: optional callback function
         '''
+        if self._isauthinprogress:
+            log.debug('Nagios auth already in progress')
+            return
+        self._isauthinprogress = True
         self._userdata_callback = callback
-        NagiosUser().async_load_userdata(self._id, self._userdata_from_nagios)
+        try:
+            NagiosUser().async_load_userdata(self._id, self._userdata_from_nagios)
+        except Exception as e:
+            log.error('Nagios check error')
+            self._isauthinprogress = False
+            raise e
 
     def _userdata_from_nagios(self, userdata):
         ''' Process Nagios reply with userdata
@@ -53,19 +63,20 @@ class UserSession(object):
 
         :param userdata: userdata from Nagios
         '''
-        self._set_userdata(userdata)
+        if userdata:
+            self._set_userdata(userdata)
+        else:
+            log.error('userdata missing')
         if self._userdata_callback:
             self._userdata_callback()
             self._userdata_callback = None
+        self._isauthinprogress = False
 
     def _set_userdata(self, userdata):
-        ''' Set userdata. This method can be used as a callback
+        ''' Set userdata
 
         :param userdata: userdata
         '''
-        if not userdata:
-            log.error('userdata missing')
-            raise Exception('userdata missing')
         try:
             if self._id != userdata.get('user_name', None):
                 self._userdata = None
@@ -140,6 +151,7 @@ class UserSession(object):
             "userdata": self._userdata,
             "controllerlist": self._controllerlist,
             "servicegroupids": self._servicegroupids,
+            "authinprogress": self._isauthinprogress,
         }
 
     def __str__(self):
