@@ -65,7 +65,11 @@ sys.path.append('/root/tornado-3.2/')
 sys.path.append('/root/backports.ssl_match_hostname-3.4.0.2/src')
 
 import logging
-import sys
+try:
+    import chromalog
+    chromalog.basicConfig(level=logging.DEBUG)
+except Exception:
+    pass
 logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 
 import datetime

@@ -4,3 +4,6 @@
 [submodule "tornado_content_negotiation"]
 	path = tornado_content_negotiation
 	url = https://github.com/droid4control/tornado_content_negotiation
+[submodule "chromalog"]
+	path = chromalog
+	url = https://github.com/droid4control/chromalog
