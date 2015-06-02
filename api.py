@@ -1,46 +1,44 @@
-''' API call dispatcher
-'''
+""" API call dispatcher
+"""
 
 import logging
-log = logging.getLogger(__name__)
+log = logging.getLogger(__name__)   # pylint: disable=invalid-name
 log.addHandler(logging.NullHandler())
 
-__all__ = [
-    'API', 'get',
-]
+from api_hosts import APIhosts
+from api_controllers import APIcontrollers
+from api_hostgroups import APIhostgroups
+from api_servicegroups import APIservicegroups
+from api_services import APIservices
+from api_usersessions import APIusersessions
 
 class API(object):
-    ''' Call API endpoints '''
+    """ Call API endpoints """
     def __init__(self, core):
         self._core = core
 
     def get(self, **kwargs):
-        ''' Return API call result
+        """ Return API call result
 
         :param **kwargs: parameters
 
         :returns: resource
-        '''
-        log.debug('kwargs: %s', str(kwargs))
+        """
+        log.debug('get(%s)', str(kwargs))
         resource = kwargs.get('resource', None)
         if resource == 'hosts':
-            from api_hosts import API_hosts
-            data = API_hosts(self._core).output(**kwargs)
+            return APIhosts(self._core).output(**kwargs)
         elif resource == 'controllers':
-            from api_controllers import API_controllers
-            data = API_controllers(self._core).output(**kwargs)
+            return APIcontrollers(self._core).output(**kwargs)
         elif resource == 'hostgroups':
-            from api_hostgroups import API_hostgroups
-            data = API_hostgroups(self._core).output(**kwargs)
+            return APIhostgroups(self._core).output(**kwargs)
         elif resource == 'servicegroups':
-            from api_servicegroups import API_servicegroups
-            data = API_servicegroups(self._core).output(**kwargs)
+            return APIservicegroups(self._core).output(**kwargs)
         elif resource == 'services':
-            from api_services import API_services
-            data = API_services(self._core).output(**kwargs)
+            return APIservices(self._core).output(**kwargs)
         elif resource == 'usersessions':
-            from api_usersessions import API_usersessions
-            data = API_usersessions(self._core).output(**kwargs)
+            return APIusersessions(self._core).output(**kwargs)
         else:
-            data = { 'status': 501, 'message': 'unknown resource: %s' % str(kwargs.get('resource', None)) }
-        return data
+            return {'status': 501, \
+                'message': 'unknown resource: %s' % \
+                    str(kwargs.get('resource', None))}

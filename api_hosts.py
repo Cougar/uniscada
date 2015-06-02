@@ -1,22 +1,15 @@
+from apibase import APIBase
 from sessionexception import SessionException
 
-class API_hosts(object):
-    def __init__(self, core):
-        self._core = core
-        self._usersessions = self._core.usersessions()
-        self._controllers = self._core.controllers()
-        self._hosts = self._core.hosts()
+import logging
+log = logging.getLogger(__name__)   # pylint: disable=invalid-name
+log.addHandler(logging.NullHandler())
 
-    def output(self, **kwargs):
-        if kwargs.get('method', None) == 'GET':
-            if kwargs.get('filter', None):
-                return self._output_one_controller(kwargs.get('user', None), kwargs.get('filter', None))
-            else:
-                return self._output_all_hosts(kwargs.get('user', None))
-        else:
-            return({ 'status': 405 })
-
-    def _output_all_hosts(self, user):
+class APIhosts(APIBase):
+    def _request_get(self, **kwargs):
+        """ Return list of all hosts """
+        log.debug('_request_get(%s)', str(kwargs))
+        user = kwargs.get('user', None)
         usersession = self._usersessions.find_by_id(user)
         r = []
         for h in self._hosts.get_id_list():
@@ -31,16 +24,21 @@ class API_hosts(object):
                     'host': h,
                     'controllers': entry,
                     'stats': host.get_stats()
-                    })
+                })
             elif len(entry):
-                r.append({ 'host': h, 'controllers': entry })
-        return({ 'status': 200, 'bodydata': r })
+                r.append({'host': h, 'controllers': entry})
+        return {'status': 200, 'bodydata': r}
 
-    def _output_one_controller(self, user, host):
+    def _request_get_with_filter(self, **kwargs):
+        """ Return details of one host """
+        log.debug('_request_get_with_filter(%s)', str(kwargs))
+        user = kwargs.get('user', None)
+        host = kwargs.get('filter', None)
         usersession = self._usersessions.find_by_id(user)
         if not usersession.check_access(host):
             raise SessionException('unknown host')
         h = self._controllers.get_id(host)
-        if not h:
-            return({ 'status': 404 })
-        return({ 'status': 200, 'bodydata': h.get_host_data_v1(usersession.is_admin()) })
+        if h:
+            return {'status': 200, \
+                'bodydata': h.get_host_data_v1(usersession.is_admin())}
+        return {'status': 404}

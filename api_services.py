@@ -1,32 +1,31 @@
+from apibase import APIBase
 from sessionexception import SessionException
 
-class API_services(object):
-    def __init__(self, core):
-        self._core = core
-        self._usersessions = self._core.usersessions()
-        self._controllers = self._core.controllers()
-        self._servicegroups = self._core.servicegroups()
+import logging
+log = logging.getLogger(__name__)   # pylint: disable=invalid-name
+log.addHandler(logging.NullHandler())
 
-    def output(self, **kwargs):
-        if kwargs.get('method', None) == 'GET':
-            if kwargs.get('filter', None):
-                return self._output_one_service(kwargs.get('user', None), kwargs.get('filter', None))
-            else:
-                raise SessionException('missing parameter')
-        else:
-            return({ 'status': 405 })
+class APIservices(APIBase):
+    def _request_get(self, **kwargs):
+        """ Process 'GET' request """
+        raise SessionException('missing parameter')
 
-    def _output_one_service(self, user, controller):
+    def _request_get_with_filter(self, **kwargs):
+        """ Return details of one controller services """
+        log.debug('_request_get_with_filter(%s)', str(kwargs))
+        user = kwargs.get('user', None)
+        controller = kwargs.get('filter', None)
         usersession = self._usersessions.find_by_id(user)
         if not usersession.check_access(controller):
             raise SessionException('unknown controller')
         c = self._controllers.get_id(controller)
         if not c:
-            return({ 'status': 404 })
+            return {'status': 404}
         servicegroup = None
         setup = c.get_setup()
         if setup:
             servicetable = setup.get('servicetable', None)
             if servicetable:
                 servicegroup = self._servicegroups.get_id(servicetable)
-        return({ 'status': 200, 'bodydata': c.get_service_data_v1(servicegroup) })
+        return {'status': 200, \
+            'bodydata': c.get_service_data_v1(servicegroup)}

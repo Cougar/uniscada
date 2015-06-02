@@ -1,44 +1,33 @@
-from sessionexception import SessionException
+from apibase import APIBase
 
 import logging
-log = logging.getLogger(__name__)
+log = logging.getLogger(__name__)   # pylint: disable=invalid-name
 log.addHandler(logging.NullHandler())
 
-class API_usersessions(object):
-    def __init__(self, core):
-        self._core = core
-        self._usersessions = self._core.usersessions()
-        self._wsclients = self._core.wsclients()
-
-    def output(self, **kwargs):
-        if not kwargs.get('user', None) == '_system_':
-            raise UserWarning('not system user')
-        if kwargs.get('method', None) == 'GET':
-            if kwargs.get('filter', None):
-                return self._output_one_usersession(kwargs.get('filter', None))
-            else:
-                return self._output_all_usersessions()
-        elif kwargs.get('method', None) == 'POST':
-            return self._create_usersessions(**kwargs)
-        elif kwargs.get('method', None) == 'DELETE':
-            return self._delete_usersession(**kwargs)
-        else:
-            return({ 'status': 405 })
-
-    def _output_all_usersessions(self):
+class APIusersessions(APIBase):
+    def _request_get(self, **kwargs):
+        """ Return list of all usersessions """
+        log.debug('_request_get(%s)', str(kwargs))
+        self._error_if_not_systemuser(**kwargs)
         r = []
         for usersession in self._usersessions.get_id_list():
-                r.append({ 'usersession': str(usersession) })
-        return({ 'status': 200, 'bodydata': r })
+            r.append({'usersession': str(usersession)})
+        return {'status': 200, 'bodydata': r}
 
-    def _output_one_usersession(self, user):
+    def _request_get_with_filter(self, **kwargs):
+        """ Return details of one usersession """
+        log.debug('_request_get_with_filter(%s)', str(kwargs))
+        self._error_if_not_systemuser(**kwargs)
+        user = kwargs.get('filter', None)
         u = self._usersessions.get_id(user)
         if not u:
-            return({ 'status': 404 })
-        return({ 'status': 200, 'bodydata': u.get_usersession_data_v1() })
+            return {'status': 404}
+        return {'status': 200, 'bodydata': u.get_usersession_data_v1()}
 
-    def _create_usersessions(self, **kwargs):
-        log.debug('_create_usersessions(%s)' % str(kwargs))
+    def _request_post(self, **kwargs):
+        """ Create new usersession """
+        log.debug('_request_post(%s)', str(kwargs))
+        self._error_if_not_systemuser(**kwargs)
         data = kwargs.get('data', None)
         if not data:
             raise UserWarning('missing data')
@@ -52,35 +41,39 @@ class API_usersessions(object):
                 raise UserWarning('user %s already exists' % user)
         for u in data:
             user = self._usersessions.find_by_id(u.get('user_name', None))
-            log.info('new usersession created: %s' % user)
+            log.info('new usersession created: %s', user)
             user.read_userdata_form_nagios()
-        return({ 'status': 201, 'headers': [ { 'Location' : '/api/v1/usersessions/' } ] })
+        return {'status': 201, \
+            'headers': [{'Location' : '/api/v1/usersessions/'}]}
 
-    def _delete_usersession(self, **kwargs):
-        log.debug('_delete_usersession(%s)' % str(kwargs))
+    def _request_delete(self, **kwargs):
+        """ Delete existing usersession """
+        log.debug('_request_delete(%s)', str(kwargs))
+        self._error_if_not_systemuser(**kwargs)
         data = kwargs.get('data', None)
         if data:
             raise UserWarning('unknown data')
-        filter = kwargs.get('filter', None)
-        if not filter:
+        fltr = kwargs.get('filter', None)
+        if not fltr:
             raise UserWarning('user id expected')
-        if filter == "_system_":
+        if fltr == "_system_":
             raise UserWarning('system user can not be deleted')
-        if filter == "*":
-            deleted = 0
+        deleted = 0
+        if fltr == "*":
             for user in list(self._usersessions.get_id_list()):
                 if user != "_system_":
-                    deleted += 1
-                    self._delete_one_usersession(user)
-                if not deleted:
-                    raise UserWarning('no usersession to delete')
-        elif self._usersessions.get_id(filter):
-            self._delete_one_usersession(filter)
+                    deleted += self._delete_one_usersession(user)
+            if not deleted:
+                raise UserWarning('no usersession to delete')
+        elif self._usersessions.get_id(fltr):
+            deleted += self._delete_one_usersession(fltr)
         else:
             raise UserWarning('no such usersession')
-        return({ 'status': 200 })
+        return {'status': 200, \
+            'bodydata': {'message': 'usersessions deleted: %d' % deleted}}
 
     def _delete_one_usersession(self, user):
+        """ Delete existing usersession """
         assert self._usersessions.get_id(user)
         for ws in list(self._wsclients.get_id_list()):
             if ws.user == user:
@@ -89,3 +82,4 @@ class API_usersessions(object):
                 ws.close()
         # FIXME implement usersession.remove()
         self._usersessions.remove_by_id(user)
+        return {'status': 200}
