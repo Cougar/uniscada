@@ -11,6 +11,7 @@ class SDPTests(unittest.TestCase):
         self.sdp = SDP()
 
     def test_get_data_missing(self):
+        ''' Test getting missing keys '''
         self.assertEqual(self.sdp.get_data('AAS'), None)
         self.assertEqual(self.sdp.get_data('ABV'), None)
         self.assertEqual(self.sdp.get_data('id'), None)
@@ -105,7 +106,8 @@ class SDPTests(unittest.TestCase):
         self.assertTrue(isinstance(d, list))
         self.assertEqual(d, [1, None, 2])
 
-        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AXV', [0, None, 3.5])
+        self.assertRaises(SDPException, self.sdp.add_keyvalue, \
+            'AXV', [0, None, 3.5])
 
     def test_add_keyvalue_values(self):
         ''' Test setting/getting key:val for List of Values '''
@@ -116,22 +118,22 @@ class SDPTests(unittest.TestCase):
         self.assertEqual(self.sdp.get_data('AAw'), None)
         self.assertEqual(self.sdp.get_data('aaW'), None)
 
-        self.sdp.add_keyvalue('ABW', '1 2 3.5')
+        self.sdp.add_keyvalue('ABW', '1 2 35')
         d = self.sdp.get_data('ABW')
         self.assertTrue(isinstance(d, list))
-        self.assertEqual(d, [1, 2, 3.5])
+        self.assertEqual(d, [1, 2, 35])
 
-        self.sdp.add_keyvalue('ACW', '0 null 3.5')
+        self.sdp.add_keyvalue('ACW', '0 null 35')
         d = self.sdp.get_data('ACW')
         self.assertTrue(isinstance(d, list))
-        self.assertEqual(d, [0, None, 3.5])
+        self.assertEqual(d, [0, None, 35])
 
         self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AXW', 1)
         self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AYW', 1.5)
         self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AZW', 'a')
         self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AQW', '')
         self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AWW', None)
-        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AVW', [ 1.5 ])
+        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AVW', [1.5])
 
     def test_add_value(self):
         ''' Test setting/getting Value and List of Values key:val '''
@@ -223,28 +225,6 @@ class SDPTests(unittest.TestCase):
         self.sdp.add_keyvalue('in', '5,67.8.9')
         self.assertEqual(self.sdp.get_timestamp(), None)
 
-    def test_add_keyvalue_values(self):
-        ''' Test setting/getting key:val for List of Values '''
-        self.sdp.add_keyvalue('AAW', '1')
-        d = self.sdp.get_data('AAW')
-        self.assertTrue(isinstance(d, list))
-        self.assertEqual(d, [1])
-
-        self.sdp.add_keyvalue('ABW', '1 2 35')
-        d = self.sdp.get_data('ABW')
-        self.assertTrue(isinstance(d, list))
-        self.assertEqual(d, [1, 2, 35])
-
-        self.sdp.add_keyvalue('ACW', '1 null 35')
-        d = self.sdp.get_data('ACW')
-        self.assertTrue(isinstance(d, list))
-        self.assertEqual(d, [1, None, 35])
-
-        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AXW', 1)
-        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AYW', 1.5)
-        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AZW', 'a')
-        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AQW', '1.5 2.2')
-
     def test_encode_with_id(self):
         ''' Test encoder for full packet'''
         self.sdp.add_keyvalue('id', 'abc123')
@@ -331,7 +311,24 @@ class SDPTests(unittest.TestCase):
 
     def test_decode_valid(self):
         ''' Test decoder with valid datagram '''
-        self.sdp.decode('id:abc123\nAAS:1\nABV:2\nACV:3.5\nADV:4\nAEV:5.5\nAFV:abc\nAGW:4\nAHW:5 6 75\nAIS:?\nAJV:?\nAKW:?\niq:?\nip:10.0.0.10\nALF:4000D3349FEBBEAE\nTOV:4000D3349FEBBEAE\nAMW:8 null 9\n')
+        self.sdp.decode( \
+            'id:abc123\n' \
+            'AAS:1\n' \
+            'ABV:2\n' \
+            'ACV:3.5\n' \
+            'ADV:4\n' \
+            'AEV:5.5\n' \
+            'AFV:abc\n' \
+            'AGW:4\n' \
+            'AHW:5 6 75\n' \
+            'AIS:?\n' \
+            'AJV:?\n' \
+            'AKW:?\n' \
+            'iq:?\n' \
+            'ip:10.0.0.10\n' \
+            'ALF:4000D3349FEBBEAE\n' \
+            'TOV:4000D3349FEBBEAE\n' \
+            'AMW:8 null 9\n')
 
         d = self.sdp.get_data('id')
         self.assertTrue(isinstance(d, str))
@@ -405,9 +402,15 @@ class SDPTests(unittest.TestCase):
         ''' Test decoder with invalid datagram '''
         self.assertRaises(SDPDecodeException, self.sdp.decode, '')
         self.assertRaises(SDPDecodeException, self.sdp.decode, '\n')
-        self.assertRaises(SDPDecodeException, self.sdp.decode, 'id:abc\nABC')
-        self.assertRaises(SDPDecodeException, self.sdp.decode, 'id:abc\nABS:abc')
-        self.assertRaises(SDPDecodeException, self.sdp.decode, 'id:abc\nACW:123 bcd')
-        self.assertRaises(SDPDecodeException, self.sdp.decode, 'id:abc\nADW:1.0 2.2')
-        self.assertRaises(SDPDecodeException, self.sdp.decode, 'id:abc\nxyz:123 : 456')
-        self.assertRaises(SDPDecodeException, self.sdp.decode, 'id:abc\nxyz:\n')
+        self.assertRaises(SDPDecodeException, self.sdp.decode, \
+            'id:abc\nABC')
+        self.assertRaises(SDPDecodeException, self.sdp.decode, \
+            'id:abc\nABS:abc')
+        self.assertRaises(SDPDecodeException, self.sdp.decode, \
+            'id:abc\nACW:123 bcd')
+        self.assertRaises(SDPDecodeException, self.sdp.decode, \
+            'id:abc\nADW:1.0 2.2')
+        self.assertRaises(SDPDecodeException, self.sdp.decode, \
+            'id:abc\nxyz:123 : 456')
+        self.assertRaises(SDPDecodeException, self.sdp.decode, \
+            'id:abc\nxyz:\n')
