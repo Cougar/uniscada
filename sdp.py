@@ -186,16 +186,16 @@ class SDP(object):
             return None
         return float(m.group(1))
 
-    def encode(self, id=None):
+    def encode(self, controllerid=None):
         ''' Encodes SDP packet to datagram
 
-        :param id: Optional paramater for id:<val> Data (str)
+        :param controllerid: Optional paramater for id:<val> Data (str)
 
         :returns: The string representation of SDP datagram
         '''
         datagram = ''
-        if id:
-            self.add_keyvalue('id', id)
+        if controllerid:
+            self.add_keyvalue('id', controllerid)
         if not 'id' in self.data['data']:
             log.error('id missing, cant encode')
             raise SDPException("id missing");

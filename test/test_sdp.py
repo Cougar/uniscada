@@ -304,7 +304,7 @@ class SDPTests(unittest.TestCase):
         self.sdp.add_keyvalue('iq', '?')
         self.sdp.add_keyvalue('TOV', '4000D3349FEBBEAE') # legacy
         self.sdp.add_keyvalue('ALF', '4000D3349FEBBEAE')
-        datagram = self.sdp.encode(id = 'def456')
+        datagram = self.sdp.encode(controllerid='def456')
         self.assertTrue(isinstance(datagram, str))
         self.assertEqual(sorted(datagram.splitlines()), [
             'AAS:1',
