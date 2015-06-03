@@ -5,15 +5,25 @@ import logging
 log = logging.getLogger(__name__)   # pylint: disable=invalid-name
 log.addHandler(logging.NullHandler())
 
-from api_hosts import APIhosts
 from api_controllers import APIcontrollers
 from api_hostgroups import APIhostgroups
+from api_hosts import APIhosts
 from api_servicegroups import APIservicegroups
 from api_services import APIservices
 from api_usersessions import APIusersessions
 
 class API(object):
     """ Call API endpoints """
+
+    RESOURCES = {
+        'controllers': APIcontrollers,
+        'hostgroups': APIhostgroups,
+        'hosts': APIhosts,
+        'servicegroups': APIservicegroups,
+        'services': APIservices,
+        'usersessions': APIusersessions
+    }
+
     def __init__(self, core):
         self._core = core
 
@@ -26,18 +36,8 @@ class API(object):
         """
         log.debug('get(%s)', str(kwargs))
         resource = kwargs.get('resource', None)
-        if resource == 'hosts':
-            return APIhosts(self._core).output(**kwargs)
-        elif resource == 'controllers':
-            return APIcontrollers(self._core).output(**kwargs)
-        elif resource == 'hostgroups':
-            return APIhostgroups(self._core).output(**kwargs)
-        elif resource == 'servicegroups':
-            return APIservicegroups(self._core).output(**kwargs)
-        elif resource == 'services':
-            return APIservices(self._core).output(**kwargs)
-        elif resource == 'usersessions':
-            return APIusersessions(self._core).output(**kwargs)
+        if resource in self.RESOURCES:
+            return self.RESOURCES[resource](self._core).output(**kwargs)
         else:
             return {'status': 501, \
                 'message': 'unknown resource: %s' % \
