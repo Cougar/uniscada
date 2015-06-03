@@ -1,5 +1,8 @@
 ''' Physical host or device data structure for Comm module
 '''
+import zlib
+import base64
+
 from stats import Stats
 
 import logging
@@ -29,6 +32,7 @@ class Host(object):
         self._receiver = None
         self._sender = None
         self._addr = None
+        self._compressed = False
         self._controllers = []
         self._stats = Stats()
 
@@ -63,6 +67,15 @@ class Host(object):
         log.debug('set_addr(%s, %s)', str(self._id), str(addr))
         self._addr = addr
 
+    def set_compressed(self, compressed):
+        """ Set compressor/decompressor for host data stream
+
+        :param compressed: True or False
+        """
+        log.debug('set_compressed(%s, %s)', \
+            str(self._id), str(compressed))
+        self._compressed = compressed
+
     def receiver(self, receivedmessage):
         ''' Process data received from the host/controller
 
@@ -74,8 +87,20 @@ class Host(object):
         :param receivedmessage: data received from the host/controller
         '''
         if not self._receiver:
-            log.error('receiver(%s, "%s"): callback not set', str(self._id), str(receivedmessage))
+            log.error('receiver(%s): callback not set', str(self._id))
             return
+        if self._compressed:
+            self._stats.add('rx/bytes_raw', len(receivedmessage))
+            try:
+                receivedmessage = zlib.decompress(receivedmessage)
+            except zlib.error as ex:
+                self._stats.add('rx/errors', 1)
+                self._stats.set('rx/last_error/datagram_raw_b64', \
+                    base64.b64encode(receivedmessage))
+                self._stats.set('rx/last_error/reason', \
+                    'zlib.decompress() exception: ' + str(ex))
+                self._stats.set_timestamp('rx/last_error/timestamp')
+                return
         if not isinstance(receivedmessage, str):
             receivedmessage = receivedmessage.decode("UTF-8")
         log.debug('receiver(%s, "%s")', str(self._id), str(receivedmessage))
@@ -111,6 +136,9 @@ class Host(object):
         self._stats.set_timestamp('tx/last/timestamp')
         if isinstance(sendmessage, str):
             sendmessage = sendmessage.encode("UTF-8")
+        if self._compressed:
+            sendmessage = zlib.compress(sendmessage)
+            self._stats.add('tx/bytes_raw', len(sendmessage))
         self._sender(self, self._addr, sendmessage)
 
     def add_controller(self, controller):
@@ -164,6 +192,13 @@ class Host(object):
         :returns: statistics
         '''
         return self._stats.get()
+
+    def is_compressed(self):
+        """ Is data transmission compressed or not
+
+        :returns: True or False
+        """
+        return self._compressed
 
     def __eq__(self, host):
         return self.get_id() == host.get_id()

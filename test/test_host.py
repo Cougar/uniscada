@@ -1,4 +1,5 @@
 import unittest
+import zlib
 from mock import Mock
 
 from host import Host
@@ -9,6 +10,7 @@ class HostTests(unittest.TestCase):
     '''
     def setUp(self):
         self.host = Host(('1.2.3.4', 12345))
+        self.assertFalse(self.host.is_compressed())
 
     def test_id(self):
         ''' Test host id '''
@@ -23,6 +25,14 @@ class HostTests(unittest.TestCase):
         self.host.receiver(b'message')
         receiver.assert_called_once_with(self.host, 'message')
 
+    def test_receiver_zip(self):
+        self.host.set_compressed(True)
+        self.assertTrue(self.host.is_compressed())
+        receiver = Mock()
+        self.host.set_receiver(receiver)
+        self.host.receiver(zlib.compress('message'.encode("UTF-8")))
+        receiver.assert_called_once_with(self.host, 'message')
+
     def test_missing_sender(self):
         self.host.send('message')
 
@@ -32,6 +42,15 @@ class HostTests(unittest.TestCase):
         self.host.set_addr('addr')
         self.host.send('message')
         sender.assert_called_once_with(self.host, 'addr', b'message')
+
+    def test_sender_zip(self):
+        self.host.set_compressed(True)
+        self.assertTrue(self.host.is_compressed())
+        sender = Mock()
+        self.host.set_sender(sender)
+        self.host.set_addr('addr')
+        self.host.send('message')
+        sender.assert_called_once_with(self.host, 'addr', zlib.compress('message'.encode("UTF-8")))
 
     def test_remove_independent_instance(self):
         self.host._remove()
