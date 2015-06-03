@@ -25,6 +25,7 @@ class APIhosts(APIBase):
             if  usersession.is_admin():
                 r.append({
                     'host': h,
+                    'compressed': host.is_compressed(),
                     'controllers': entry,
                     'stats': host.get_stats()
                 })
