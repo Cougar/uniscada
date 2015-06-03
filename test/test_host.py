@@ -20,7 +20,7 @@ class HostTests(unittest.TestCase):
     def test_receiver(self):
         receiver = Mock()
         self.host.set_receiver(receiver)
-        self.host.receiver('message')
+        self.host.receiver(b'message')
         receiver.assert_called_once_with(self.host, 'message')
 
     def test_missing_sender(self):
@@ -31,7 +31,7 @@ class HostTests(unittest.TestCase):
         self.host.set_sender(sender)
         self.host.set_addr('addr')
         self.host.send('message')
-        sender.assert_called_once_with(self.host, 'addr', 'message')
+        sender.assert_called_once_with(self.host, 'addr', b'message')
 
     def test_remove_independent_instance(self):
         self.host._remove()

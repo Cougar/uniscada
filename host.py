@@ -76,6 +76,8 @@ class Host(object):
         if not self._receiver:
             log.error('receiver(%s, "%s"): callback not set', str(self._id), str(receivedmessage))
             return
+        if not isinstance(receivedmessage, str):
+            receivedmessage = receivedmessage.decode("UTF-8")
         log.debug('receiver(%s, "%s")', str(self._id), str(receivedmessage))
         self._stats.add('rx/bytes', len(receivedmessage))
         self._stats.add('rx/packets', 1)
@@ -107,6 +109,8 @@ class Host(object):
         self._stats.add('tx/packets', 1)
         self._stats.set('tx/last/datagram', sendmessage)
         self._stats.set_timestamp('tx/last/timestamp')
+        if isinstance(sendmessage, str):
+            sendmessage = sendmessage.encode("UTF-8")
         self._sender(self, self._addr, sendmessage)
 
     def add_controller(self, controller):

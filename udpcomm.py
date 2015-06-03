@@ -60,8 +60,6 @@ class UDPComm(object):
         host.set_receiver(self._handler)  # FIXME set it only once
         host.set_sender(self._send)  # FIXME set it only once
         host.set_addr(addr) # FIXME set it only once
-        if not isinstance(data, str):
-            data = data.decode("UTF-8")
         host.receiver(data)
 
     def _send(self, host, addr, sendstring):
