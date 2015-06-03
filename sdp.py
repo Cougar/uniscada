@@ -3,6 +3,10 @@
 Message datagram composition and decomposition
 according to the Uniscada Service Description Protocol.
 """
+import hmac
+import hashlib
+import base64
+
 import re
 
 from sdpexception import SDPException, SDPDecodeException
@@ -22,6 +26,20 @@ class SDP(object):
         self.data['status'] = {}
         self.data['value'] = {}
         self.data['query'] = {}
+        self.data['signed'] = False
+        self.data['signature_valid'] = False
+        self._datagram_before_signature = None
+        self._secret_key = None
+
+    def set_secret_key(self, secret_key):
+        """ Set secret key for HMAC
+
+        :param secret_key: secret key for HMAC
+        """
+        self._secret_key = secret_key.encode("UTF-8")
+
+    def is_signed(self):
+        return self.data['signed']
 
     def add_keyvalue(self, key, val):
         """ Add key:val pair to the packet
@@ -34,6 +52,7 @@ class SDP(object):
         * if key ends with "V", it is saved as a Value (int, float or str)
         * if key ends with "W", it is saved as a List of Values (str)
         * all other keys are saved as Data (str)
+          * 'sha256' is reserved key for signature
 
         String 'null' is allowed in "V" and "W" keys and will be changed
         to None
@@ -132,6 +151,8 @@ class SDP(object):
         """
         if not isinstance(val, str):
             raise SDPException('Data _MUST_BE_ string')
+        if key == 'sha256':
+            raise SDPException('"sha256" is not valid key')
         self.data['data'][key] = val
 
     def add_status(self, key, val):
@@ -253,7 +274,8 @@ class SDP(object):
             log.error('id missing, cant encode')
             raise SDPException("id missing")
         for key in self.data['data'].keys():
-            datagram += key + ':' + str(self.data['data'][key]) + '\n'
+            if not key == 'sha256':
+                datagram += key + ':' + str(self.data['data'][key]) + '\n'
         for key in self.data['float'].keys():
             datagram += key + ':' + str(self.data['float'][key]) + '\n'
         for key in self.data['status'].keys():
@@ -267,6 +289,14 @@ class SDP(object):
                 datagram += key + 'V:' + str(self.data['value'][key]) + '\n'
         for key in self.data['query'].keys():
             datagram += key + ':?\n'
+        if self._secret_key:
+            digest = hmac.new(self._secret_key, msg=datagram.encode("UTF-8"), \
+                digestmod=hashlib.sha256).digest()
+            signature = base64.b64encode(digest).decode()
+            self.data['data']['sha256'] = signature
+            datagram += 'sha256:' + signature + '\n'
+            self.data['signed'] = True
+            self.data['signature_valid'] = True
         return datagram
 
     def decode(self, datagram):
@@ -274,6 +304,7 @@ class SDP(object):
 
         :param datagram: The string representation of SDP datagram
         """
+        datagram_before_sig = ''
         for line in datagram.splitlines():
             if line == '':
                 log.warning('empty line in datagram')
@@ -293,13 +324,48 @@ class SDP(object):
             if not val:
                 log.error('value mising for \"%s\"', key)
                 raise SDPDecodeException('value mising for \"' + key + '\"')
-            try:
-                self.add_keyvalue(key, val)
-            except SDPException as ex:
-                raise SDPDecodeException(ex)
+            if key == 'sha256':
+                self._datagram_before_signature = datagram_before_sig
+                self.data['data']['sha256'] = val
+                self.data['signed'] = True
+                if self._secret_key:
+                    if not self.check_signature():
+                        self.data['data'] = {}
+                        self.data['float'] = {}
+                        self.data['status'] = {}
+                        self.data['value'] = {}
+                        self.data['query'] = {}
+                        return
+            else:
+                datagram_before_sig += line + '\n'
+                try:
+                    self.add_keyvalue(key, val)
+                except SDPException as ex:
+                    raise SDPDecodeException(ex)
         if self.get_data('id') is None:
             log.error('id missing in datagram')
             raise SDPDecodeException('id: _MUST_ exists in datagram')
+
+    def check_signature(self):
+        if not self.data['signed']:
+            return False
+        if not 'sha256' in self.data['data']:
+            log.warning('SDP is not signed')
+            return False
+        if not self._secret_key:
+            log.error('secret key is not configured')
+            raise SDPDecodeException('datagram is signed but secret key is not configured')
+        if not self._datagram_before_signature:
+            log.warning('no datagram body')
+            return False
+        sdp_signature = self.data['data']['sha256']
+        digest = hmac.new(self._secret_key, \
+            msg=self._datagram_before_signature.encode("UTF-8"), \
+            digestmod=hashlib.sha256).digest()
+        signature = base64.b64encode(digest).decode()
+        self.data['signature_valid'] = hmac.compare_digest( \
+            sdp_signature, signature)
+        return self.data['signature_valid']
 
     def __str__(self):
         """ Returns data dictionary """
