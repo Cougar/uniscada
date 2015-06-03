@@ -6,6 +6,9 @@ log = logging.getLogger(__name__)   # pylint: disable=invalid-name
 log.addHandler(logging.NullHandler())
 
 class APIservices(APIBase):
+
+    API_PATH = APIBase.API_BASE_PATH + '/services/'
+
     def _request_get(self, **kwargs):
         """ Process 'GET' request """
         raise SessionException('missing parameter')

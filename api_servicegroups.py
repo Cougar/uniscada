@@ -6,6 +6,9 @@ log = logging.getLogger(__name__)   # pylint: disable=invalid-name
 log.addHandler(logging.NullHandler())
 
 class APIservicegroups(APIBase):
+
+    API_PATH = APIBase.API_BASE_PATH + '/servicegroups/'
+
     def _get_servicegroupids(self, user):
         if user == '_system_':
             return list(self._servicegroups.get_id_list())
@@ -71,7 +74,7 @@ class APIservicegroups(APIBase):
                 find_by_id(sg.get('servicegroup', None))
             log.info('new servicegroup created: %s', servicegroup)
         return {'status': 201, \
-            'headers': [{'Location': '/api/v1/servicegroups/'}]}
+            'headers': [{'Location': self.API_PATH}]}
 
     def _request_delete(self, **kwargs):
         """ Delete existing servicegroup """

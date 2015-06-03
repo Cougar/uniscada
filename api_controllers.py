@@ -6,6 +6,9 @@ log = logging.getLogger(__name__)   # pylint: disable=invalid-name
 log.addHandler(logging.NullHandler())
 
 class APIcontrollers(APIBase):
+
+    API_PATH = APIBase.API_BASE_PATH + '/controllers/'
+
     def _request_get(self, **kwargs):
         """ Return list of all controllers """
         log.debug('_request_get(%s)', str(kwargs))
@@ -47,7 +50,7 @@ class APIcontrollers(APIBase):
             controller = self._controllers.find_by_id(c.get('controller', None))
             log.info('new controller created: %s', controller)
         return {'status': 201, \
-            'headers': [{'Location': '/api/v1/controllers/'}]}
+            'headers': [{'Location': self.API_PATH}]}
 
     def _request_delete(self, **kwargs):
         """ Delete existing controller """

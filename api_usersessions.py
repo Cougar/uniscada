@@ -5,6 +5,9 @@ log = logging.getLogger(__name__)   # pylint: disable=invalid-name
 log.addHandler(logging.NullHandler())
 
 class APIusersessions(APIBase):
+
+    API_PATH = APIBase.API_BASE_PATH + '/usersessions/'
+
     def _request_get(self, **kwargs):
         """ Return list of all usersessions """
         log.debug('_request_get(%s)', str(kwargs))
@@ -44,7 +47,7 @@ class APIusersessions(APIBase):
             log.info('new usersession created: %s', user)
             user.read_userdata_form_nagios()
         return {'status': 201, \
-            'headers': [{'Location' : '/api/v1/usersessions/'}]}
+            'headers': [{'Location' : self.API_PATH}]}
 
     def _request_delete(self, **kwargs):
         """ Delete existing usersession """

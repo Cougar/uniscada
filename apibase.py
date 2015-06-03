@@ -3,6 +3,9 @@
 class APIBase(object):
     """ Defaults for API classes
     """
+
+    API_BASE_PATH = '/api/v1'
+
     def __init__(self, core):
         self._core = core
         self._usersessions = self._core.usersessions()

@@ -6,6 +6,9 @@ log = logging.getLogger(__name__)   # pylint: disable=invalid-name
 log.addHandler(logging.NullHandler())
 
 class APIhostgroups(APIBase):
+
+    API_PATH = APIBase.API_BASE_PATH + '/hostgroups/'
+
     def _request_get(self, **kwargs):
         """ Return list of all hostgroups """
         log.debug('_request_get(%s)', str(kwargs))
