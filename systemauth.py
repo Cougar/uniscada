@@ -8,8 +8,10 @@ import logging
 log = logging.getLogger(__name__)   # pylint: disable=invalid-name
 log.addHandler(logging.NullHandler())
 
-
 class SystemAuth(object):
+    """ System access authentication module """
+
+    SYSTEMUSER = '_system_'
 
     def __init__(self):
         """ SystemAuth authentication module """
@@ -20,8 +22,8 @@ class SystemAuth(object):
         :param core: Core instance
         """
         log.debug('setup()')
-        _usersession = core.usersessions().find_by_id('_system_')
-        _usersession._set_userdata({'user_name': '_system_'})
+        _usersession = core.usersessions().find_by_id(self.SYSTEMUSER)
+        _usersession._set_userdata({'user_name': self.SYSTEMUSER})
         _usersession.set_admin()
 
     def get_user(self, **kwargs):
@@ -37,5 +39,5 @@ class SystemAuth(object):
         # FIXME X-ApiKey check missing
         host = kwargs.get('host', None)
         if host == "127.0.0.1":
-            return '_system_'
+            return self.SYSTEMUSER
         return None
