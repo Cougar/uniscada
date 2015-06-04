@@ -1,28 +1,22 @@
-''' User data structure
-'''
+""" User data structure
+"""
 
 from nagiosuser import NagiosUser
 
 import logging
-log = logging.getLogger(__name__)
+log = logging.getLogger(__name__)   # pylint: disable=invalid-name
 log.addHandler(logging.NullHandler())
 
-__all__ = [
-    'UserSession',
-    'get_id',
-    'get_userdata',
-]
-
 class UserSession(object):
-    ''' One user '''
-    def __init__(self, id, listinstance = None):
-        ''' Create new user instance
+    """ One user """
+    def __init__(self, userid, listinstance=None):
+        """ Create new user instance
 
-        :param id: user id (username)
+        :param userid: user id (username)
         :param listinstance: optional UserSessions instance
-        '''
-        log.debug('Create a new user (%s)', str(id))
-        self._id = id
+        """
+        log.debug('Create a new user (%s)', str(userid))
+        self._id = userid
         self._isadmin = False
         self._isauthinprogress = False
         self._userdata = None
@@ -31,38 +25,39 @@ class UserSession(object):
         self._servicegroupids = None
 
     def get_id(self):
-        ''' Get id of user (username)
+        """ Get id of user (username)
 
         :returns: user id (username)
-        '''
+        """
         return self._id
 
-    def read_userdata_form_nagios(self, callback = None):
-        ''' Read userdata from Nagios
+    def read_userdata_form_nagios(self, callback=None):
+        """ Read userdata from Nagios
 
             Call callback() when response from Nagios is received
 
             :param callback: optional callback function
-        '''
+        """
         if self._isauthinprogress:
             log.debug('Nagios auth already in progress')
             return
         self._isauthinprogress = True
         self._userdata_callback = callback
         try:
-            NagiosUser().async_load_userdata(self._id, self._userdata_from_nagios)
-        except Exception as e:
+            NagiosUser().async_load_userdata(self._id, \
+                self._userdata_from_nagios)
+        except Exception as ex:
             log.error('Nagios check error')
             self._isauthinprogress = False
-            raise e
+            raise ex
 
     def _userdata_from_nagios(self, userdata):
-        ''' Process Nagios reply with userdata
+        """ Process Nagios reply with userdata
 
         After setting userdata, call _userdata_callback() if set
 
         :param userdata: userdata from Nagios
-        '''
+        """
         if userdata:
             if self._id != userdata.get('user_name', None):
                 log.error('Nagios didnt return right user data')
@@ -73,16 +68,16 @@ class UserSession(object):
         if self._userdata_callback:
             try:
                 self._userdata_callback(self)
-            except Exception as e:
-                log.error('callback exception: %s', str(e))
+            except Exception as ex:
+                log.error('callback exception: %s', str(ex))
             self._userdata_callback = None
         self._isauthinprogress = False
 
     def _set_userdata(self, userdata):
-        ''' Set userdata
+        """ Set userdata
 
         :param userdata: userdata
-        '''
+        """
         self._userdata = userdata
         self._update_controllerlist()
 
@@ -91,7 +86,8 @@ class UserSession(object):
         if not self._userdata:
             return
         if not 'user_groups' in self._userdata:
-            log.warning('user %s does not have any user_groups defined', self._id)
+            log.warning('user %s does not have any user_groups defined', \
+                self._id)
             return
         for group in self._userdata.get('user_groups'):
             for mac in self._userdata.get('user_groups').get(group):
@@ -104,31 +100,31 @@ class UserSession(object):
         return self._servicegroupids
 
     def get_userdata(self):
-        ''' Return userdata or None if not initialised
+        """ Return userdata or None if not initialised
 
         :returns: userdata or None
-        '''
+        """
         return self._userdata
 
     def set_admin(self):
-        ''' Set admin privilege
-        '''
+        """ Set admin privilege
+        """
         self._isadmin = True
 
     def is_admin(self):
-        ''' Check if user has admin privilege
+        """ Check if user has admin privilege
 
         :returns: True if user has admin privilege
-        '''
+        """
         return self._isadmin
 
     def check_access(self, mac):
-        ''' Check user access to the controller
+        """ Check user access to the controller
 
         :param mac: mac address of controller
 
         :returns: True if access is granted, False otherwise
-        '''
+        """
         if self.is_admin():
             return True
         if not self._userdata:
@@ -138,10 +134,10 @@ class UserSession(object):
         return False
 
     def get_usersession_data_v1(self):
-        ''' Get usersession data
+        """ Get usersession data
 
-        :returns usersession data
-        '''
+        :returns: usersession data
+        """
         return {
             "id": self._id,
             "admin": self._isadmin,
@@ -152,5 +148,5 @@ class UserSession(object):
         }
 
     def __str__(self):
-        return(str(self._id) + ': ' +
-            'userdata = ' + str(self._userdata))
+        return str(self._id) + ': ' + \
+            'userdata = ' + str(self._userdata)
