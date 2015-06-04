@@ -51,6 +51,19 @@ class SDPReceiver(object):
             log.debug('Unknown controller: %s', ctrid)
             return
         controller.set_host(host)
+        secret_key = controller.get_secret_key()
+        if secret_key:
+            if not sdp.is_signed():
+                log.error('controller: %s datagram not signed', ctrid)
+                raise Exception('sdp signature missing')
+            sdp.set_secret_key(secret_key)
+            if not sdp.check_signature():
+                log.error('controller: %s signature error', ctrid)
+                raise Exception('sdp signature error')
+        else:
+            if sdp.is_signed():
+                log.error('controller: %s secret_key not configured', id)
+                raise Exception('controller secret_key not configured')
         try:
             controller.set_last_sdp(sdp, ts=time.time())
         except Exception as ex:
