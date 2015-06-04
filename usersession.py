@@ -23,6 +23,7 @@ class UserSession(object):
         self._userdata_callback = None
         self._controllerlist = {}
         self._servicegroupids = None
+        self._scopes = []
 
     def get_id(self):
         """ Get id of user (username)
@@ -130,6 +131,30 @@ class UserSession(object):
         if not self._userdata:
             return False
         if mac in self._controllerlist:
+            return True
+        return False
+
+    def add_scope(self, scope):
+        """ Add access permission
+
+        :param scope: grant access in specific scope
+        """
+        self._scopes.append(scope)
+
+    def check_scope(self, scope):
+        """ Check if access in specific scope is granted
+
+        :param scope: main scope
+
+        :returns: True or False
+        """
+        try:
+            mainscope = scope.split(':')[0]
+            if mainscope in self._scopes:
+                return True
+        except ValueError:
+            pass
+        if scope in self._scopes:
             return True
         return False
 
