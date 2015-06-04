@@ -22,7 +22,7 @@ class APIhosts(APIBase):
                 c = controller.get_id()
                 if usersession.check_access(c):
                     entry.append(c)
-            if  usersession.is_admin():
+            if  usersession.check_scope('stats:host'):
                 r.append({
                     'host': h,
                     'compressed': host.is_compressed(),
@@ -44,5 +44,5 @@ class APIhosts(APIBase):
         h = self._controllers.get_id(host)
         if h:
             return {'status': 200, \
-                'bodydata': h.get_host_data_v1(usersession.is_admin())}
+                'bodydata': h.get_host_data_v1(usersession.check_scope)}
         return {'status': 404}

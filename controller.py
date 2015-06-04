@@ -127,7 +127,7 @@ class Controller(object):
                 {'register': reg, 'value': val, 'timestamp': ts})
         return r
 
-    def get_host_data_v1(self, isadmin):
+    def get_host_data_v1(self, check_scope):
         """ Return host data in API v1 format
 
         :returns: host data in API v1 format
@@ -145,7 +145,7 @@ class Controller(object):
                 r['registers'].append(r1)
         if self._last_sdp_ts:
             r['timestamp'] = self._last_sdp_ts
-        if isadmin:
+        if check_scope and check_scope('stats:controller'):
             r['stats'] = self._stats.get()
         return [r]
 

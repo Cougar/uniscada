@@ -61,15 +61,11 @@ class UserSessionTest(unittest.TestCase):
         self.usersession._userdata_from_nagios(self.userdata)
         self.assertEqual(False, self.usersession.check_access('0A1B2C3D4E5F'))
         self.assertEqual(False, self.usersession.check_access('000000000000'))
-    def test_adminuser(self):
-        self.usersession._userdata_from_nagios(self.userdata)
-        self.assertEqual(False, self.usersession.is_admin())
-        self.usersession.set_admin()
-        self.assertEqual(True, self.usersession.is_admin())
 
-    def test_adminuser_access(self):
+    def test_all_controller_access(self):
         self.usersession._userdata_from_nagios(self.userdata)
-        self.usersession.set_admin()
+        self.assertEqual(False, self.usersession.check_access('000000000000'))
+        self.usersession.add_scope('all:controllers')
         self.assertEqual(True, self.usersession.check_access('112233445566'))
         self.assertEqual(True, self.usersession.check_access('0A1B2C3D4E5F'))
         self.assertEqual(True, self.usersession.check_access('000000000000'))

@@ -107,18 +107,6 @@ class UserSession(object):
         """
         return self._userdata
 
-    def set_admin(self):
-        """ Set admin privilege
-        """
-        self._isadmin = True
-
-    def is_admin(self):
-        """ Check if user has admin privilege
-
-        :returns: True if user has admin privilege
-        """
-        return self._isadmin
-
     def check_access(self, mac):
         """ Check user access to the controller
 
@@ -126,7 +114,7 @@ class UserSession(object):
 
         :returns: True if access is granted, False otherwise
         """
-        if self.is_admin():
+        if self.check_scope('all:controllers'):
             return True
         if not self._userdata:
             return False
