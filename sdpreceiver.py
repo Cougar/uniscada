@@ -1,60 +1,60 @@
-''' Process datagrams from controllers
-'''
+""" Process datagrams from controllers
+"""
 import time
 
 from sdp import SDP
-from controllers import Controllers
 
 import logging
-log = logging.getLogger(__name__)
+log = logging.getLogger(__name__)   # pylint: disable=invalid-name
 log.addHandler(logging.NullHandler())
 
 class SDPReceiver(object):
-    ''' Keep Controller instances updated with incoming data.
+    """ Keep Controller instances updated with incoming data.
 
     When data arrives as a datagram (from UDP socket for instance),
     convert it to the SDP structure, find out sender Controller and
     update its internal state. Finally send ACK back to the Controller.
-    '''
+    """
     def __init__(self, core):
-        ''' SDP receiver instance.
+        """ SDP receiver instance.
 
         :param core: global Core instance
-        '''
+        """
         self._core = core
         self._controllers = self._core.controllers()
         self._servicegroups = self._core.servicegroups()
         self._msgbus = self._core.msgbus()
 
     def datagram_from_controller(self, host, datagram):
-        ''' Process incoming datagram
+        """ Process incoming datagram
 
         :param host: Host instance of the sender
         :param datagram: datagram (str)
-        '''
-        log.info('datagram_from_controller(%s): %s', str(host), str(datagram))
+        """
+        log.info('datagram_from_controller(%s): %s', \
+            str(host), str(datagram))
         sdp = SDP()
         try:
             sdp.decode(datagram)
-        except Exception as e:
-            log.error('sdp.decode() exception: %s', str(e))
-            raise Exception('sdp.decode() exception: ' + str(e))
+        except Exception as ex:
+            log.error('sdp.decode() exception: %s', str(ex))
+            raise Exception('sdp.decode() exception: ' + str(ex))
 
-        id = sdp.get_data('id')
+        ctrid = sdp.get_data('id')
 
-        if id is None:
+        if ctrid is None:
             log.warning('invalid datagram, no id found!')
             raise Exception('invalid datagram, no id found!')
 
-        controller = self._controllers.get_id(id)
+        controller = self._controllers.get_id(ctrid)
         if not controller:
-            log.debug('Unknown controller: %s' % id)
+            log.debug('Unknown controller: %s', ctrid)
             return
         controller.set_host(host)
         try:
-            controller.set_last_sdp(sdp, ts = time.time())
-        except Exception as e:
-            raise Exception('sdp set error: ' + str(e))
+            controller.set_last_sdp(sdp, ts=time.time())
+        except Exception as ex:
+            raise Exception('sdp set error: ' + str(ex))
 
         log.debug('Controller: %s', str(controller))
         controller.ack_last_sdp()
