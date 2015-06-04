@@ -85,4 +85,4 @@ class APIusersessions(APIBase):
                 ws.close()
         # FIXME implement usersession.remove()
         self._usersessions.remove_by_id(user)
-        return {'status': 200}
+        return 1
