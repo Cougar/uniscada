@@ -17,7 +17,7 @@ log.addHandler(logging.NullHandler())
 
 class SDP(object):
     """ Convert to and from SDP protocol datagram """
-    def __init__(self):
+    def __init__(self, secret_key=None):
         """ Create new empty in-memory ``SDP`` datagram
         """
         self.data = {}
@@ -30,6 +30,8 @@ class SDP(object):
         self.data['signature_valid'] = False
         self._datagram_before_signature = None
         self._secret_key = None
+        if secret_key:
+            self.set_secret_key(secret_key)
 
     def set_secret_key(self, secret_key):
         """ Set secret key for HMAC

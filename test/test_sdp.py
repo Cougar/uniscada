@@ -436,6 +436,20 @@ class SDPTests(unittest.TestCase):
             'sha256:SCsXfGSviAfs7IBzRjoj5kJVODXsSDpueWGQDbFhVy4=',
         ])
 
+    def test_encode_with_signature2(self):
+        ''' Test encoder for full packet with SHA1 HMAC signature'''
+        self.sdp = SDP(secret_key='my-secret-key')
+        self.sdp.add_keyvalue('id', 'abc123')
+        self.assertFalse(self.sdp.is_signed())
+        datagram = self.sdp.encode()
+        self.assertTrue(self.sdp.is_signed())
+        self.assertFalse(self.sdp.check_signature())
+        self.assertTrue(isinstance(datagram, str))
+        self.assertEqual(sorted(datagram.splitlines()), [
+            'id:abc123',
+            'sha256:SCsXfGSviAfs7IBzRjoj5kJVODXsSDpueWGQDbFhVy4=',
+        ])
+
     def test_decode_with_valid_signature(self):
         ''' Test decoder with valid SHA1 HMAC signature '''
         self.sdp.decode( \
