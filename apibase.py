@@ -52,8 +52,10 @@ class APIBase(object):
 
     def _error_if_not_systemuser(self, **kwargs):
         """ Check if request came from 'system' user """
-        if not kwargs.get('user', None) == '_system_':
-            raise UserWarning('not system user')
+        usersession = self._usersessions.get_id(kwargs.get('user', None))
+        assert usersession
+        if not usersession.check_scope('system'):
+            raise UserWarning('no system user permissions')
 
     def _get_data_or_error(self, **kwargs):
         """ Return required data or raise Error """

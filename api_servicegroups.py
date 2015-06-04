@@ -10,9 +10,10 @@ class APIservicegroups(APIBase):
     API_PATH = APIBase.API_BASE_PATH + '/servicegroups/'
 
     def _get_servicegroupids(self, user):
-        if user == '_system_':
-            return list(self._servicegroups.get_id_list())
         usersession = self._usersessions.find_by_id(user)
+        assert usersession
+        if usersession.check_scope('system'):
+            return list(self._servicegroups.get_id_list())
         servicegroupids = usersession.get_servicegroupids()
         if not servicegroupids:
             srvgrps = {}
@@ -55,8 +56,7 @@ class APIservicegroups(APIBase):
     def _request_post(self, **kwargs):
         """ Create new servicegroup(s) """
         log.debug('_request_post(%s)', str(kwargs))
-        if not kwargs.get('user', None) == '_system_':
-            raise UserWarning('not system user')
+        self._error_if_not_systemuser(**kwargs)
         data = kwargs.get('data', None)
         if not data:
             raise UserWarning('missing data')
@@ -79,8 +79,7 @@ class APIservicegroups(APIBase):
     def _request_delete(self, **kwargs):
         """ Delete existing servicegroup """
         log.debug('_request_delete(%s)', str(kwargs))
-        if not kwargs.get('user', None) == '_system_':
-            raise UserWarning('not system user')
+        self._error_if_not_systemuser(**kwargs)
         data = kwargs.get('data', None)
         if data:
             raise UserWarning('unknown data')
@@ -97,8 +96,7 @@ class APIservicegroups(APIBase):
     def _request_put(self, **kwargs):
         """ Setup existing servicegroup """
         log.debug('_request_put(%s)', str(kwargs))
-        if not kwargs.get('user', None) == '_system_':
-            raise UserWarning('not system user')
+        self._error_if_not_systemuser(**kwargs)
         data = kwargs.get('data', None)
         if not data:
             raise UserWarning('missing data')

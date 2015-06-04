@@ -59,17 +59,15 @@ class APIusersessions(APIBase):
         fltr = kwargs.get('filter', None)
         if not fltr:
             raise UserWarning('user id expected')
-        if fltr == "_system_":
-            raise UserWarning('system user can not be deleted')
         deleted = 0
         if fltr == "*":
             for user in list(self._usersessions.get_id_list()):
-                if user != "_system_":
-                    deleted += self._delete_one_usersession(user)
+                deleted += self._delete_one_usersession(user)
             if not deleted:
                 raise UserWarning('no usersession to delete')
         elif self._usersessions.get_id(fltr):
-            deleted += self._delete_one_usersession(fltr)
+            if not self._delete_one_usersession(fltr):
+                raise UserWarning('system user can not be deleted')
         else:
             raise UserWarning('no such usersession')
         return {'status': 200, \
@@ -77,7 +75,10 @@ class APIusersessions(APIBase):
 
     def _delete_one_usersession(self, user):
         """ Delete existing usersession """
-        assert self._usersessions.get_id(user)
+        usersession = self._usersessions.get_id(user)
+        assert usersession
+        if usersession.check_scope('system'):
+            return 0
         for ws in list(self._wsclients.get_id_list()):
             if ws.user == user:
                 log.debug('close ws session: %s', str(ws))
