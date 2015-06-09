@@ -17,7 +17,7 @@ log.addHandler(logging.NullHandler())
 
 class SDP(object):
     """ Convert to and from SDP protocol datagram """
-    def __init__(self, secret_key=None):
+    def __init__(self, secret_key=None, nonce=None):
         """ Create new empty in-memory ``SDP`` datagram
         """
         self.data = {}
@@ -30,8 +30,11 @@ class SDP(object):
         self.data['signature_valid'] = False
         self._datagram_before_signature = None
         self._secret_key = None
+        self._nonce = None
         if secret_key:
             self.set_secret_key(secret_key)
+        if nonce:
+            self.set_nonce(nonce)
 
     def set_secret_key(self, secret_key):
         """ Set secret key for HMAC
@@ -39,6 +42,13 @@ class SDP(object):
         :param secret_key: secret key for HMAC
         """
         self._secret_key = secret_key.encode("UTF-8")
+
+    def set_nonce(self, nonce):
+        """ Set nonce key for HMAC
+
+        :param nonce: nonce for HMAC calculation
+        """
+        self._nonce = nonce.encode("UTF-8")
 
     def is_signed(self):
         return self.data['signed']
@@ -306,8 +316,11 @@ class SDP(object):
             datagram += key + ':?\n'
         if not self._secret_key:
             return datagram
+        if not self._nonce:
+            raise SDPDecodeException("nonce is required for HMAC")
+
         digest = hmac.new(self._secret_key, \
-            msg=datagram.encode("UTF-8"), \
+            msg=self._nonce+datagram.encode("UTF-8"), \
             digestmod=hashlib.sha256).digest()
         signature = base64.b64encode(digest).decode()
         self.data['data']['sha256'] = signature
@@ -371,13 +384,19 @@ class SDP(object):
             return False
         if not self._secret_key:
             log.error('secret key is not configured')
-            raise SDPDecodeException('datagram is signed but secret key is not configured')
+            raise SDPDecodeException('datagram is signed but ' \
+                'secret key is not configured')
+        if not self._nonce:
+            log.error('nonce is not configured')
+            raise SDPDecodeException('datagram is signed but ' \
+                'nonce is not configured')
         if not self._datagram_before_signature:
             log.warning('no datagram body')
             return False
         sdp_signature = self.data['data']['sha256']
         digest = hmac.new(self._secret_key, \
-            msg=self._datagram_before_signature.encode("UTF-8"), \
+            msg=self._nonce+ \
+                self._datagram_before_signature.encode("UTF-8"), \
             digestmod=hashlib.sha256).digest()
         signature = base64.b64encode(digest).decode()
         self.data['signature_valid'] = hmac.compare_digest( \
