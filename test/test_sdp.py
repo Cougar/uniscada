@@ -225,6 +225,20 @@ class SDPTests(unittest.TestCase):
         self.sdp.add_keyvalue('in', '5,67.8.9')
         self.assertEqual(self.sdp.get_timestamp(), None)
 
+    def test_seq(self):
+        ''' Test get_in_seq() method '''
+        self.assertEqual(self.sdp.get_in_seq(), None)
+        self.sdp.add_keyvalue('in', '1')
+        self.assertEqual(self.sdp.get_in_seq(), 1)
+        self.sdp.add_keyvalue('in', '2,123')
+        self.assertEqual(self.sdp.get_in_seq(), 2)
+        self.sdp.add_keyvalue('in', '3,456.7')
+        self.assertEqual(self.sdp.get_in_seq(), 3)
+        self.sdp.add_keyvalue('in', '4,567,89')
+        self.assertEqual(self.sdp.get_in_seq(), None)
+        self.sdp.add_keyvalue('in', '5,67.8.9')
+        self.assertEqual(self.sdp.get_in_seq(), None)
+
     def test_encode_with_id(self):
         ''' Test encoder for full packet'''
         self.sdp.add_keyvalue('id', 'abc123')

@@ -246,6 +246,19 @@ class SDP(object):
         for key in self.data['query'].keys():
             yield (key, '?')
 
+    def get_in_seq(self):
+        """ Read SDP sequence number from "in:<num>"
+
+        :returns: sequence number or 'None' if not exists
+        """
+        inn = str(self.get_data('in'))
+        if not inn:
+            return None
+        in_seq = re.compile(r'^(\d+)(,\d+(\.\d+)?)?$').match(inn)
+        if not in_seq:
+            return None
+        return float(in_seq.group(1))
+
     def get_timestamp(self):
         """ Read SDP timestamp from "in:<num>,<timestamp>"
 
