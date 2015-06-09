@@ -304,14 +304,16 @@ class SDP(object):
                 datagram += key + 'V:' + str(self.data['value'][key]) + '\n'
         for key in self.data['query'].keys():
             datagram += key + ':?\n'
-        if self._secret_key:
-            digest = hmac.new(self._secret_key, msg=datagram.encode("UTF-8"), \
-                digestmod=hashlib.sha256).digest()
-            signature = base64.b64encode(digest).decode()
-            self.data['data']['sha256'] = signature
-            datagram += 'sha256:' + signature + '\n'
-            self.data['signed'] = True
-            self.data['signature_valid'] = True
+        if not self._secret_key:
+            return datagram
+        digest = hmac.new(self._secret_key, \
+            msg=datagram.encode("UTF-8"), \
+            digestmod=hashlib.sha256).digest()
+        signature = base64.b64encode(digest).decode()
+        self.data['data']['sha256'] = signature
+        datagram += 'sha256:' + signature + '\n'
+        self.data['signed'] = True
+        self.data['signature_valid'] = True
         return datagram
 
     def decode(self, datagram):
