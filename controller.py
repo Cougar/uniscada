@@ -27,6 +27,8 @@ class Controller(object):
         self._send_queue = {}
         self._setup = {}
         self._stats = Stats()
+        self._nonce = None
+        self._seq = None
 
     def get_id(self):
         """ Get id of controller
@@ -57,6 +59,39 @@ class Controller(object):
         if not self._setup:
             return None
         return self._setup.get('secret_key', None)
+
+    def get_nonce(self):
+        """ Get controller nonce used for SHA256 HMAC signature
+
+        :returns: nonce
+        """
+        return self._nonce
+
+    def set_nonce(self, nonce):
+        """ Set controller nonce used for SHA256 HMAC signature
+
+        :param nonce: nonce
+        """
+        self._nonce = nonce
+
+    def get_seq(self):
+        """ Get sequence num for HMAC calculation
+
+        Sequence numbers MUST BE always increasing as long 'nonce' is
+        unchanged.
+
+        :returns: sequence num
+        """
+        if not self._seq:
+            self._seq = 0
+        return self._seq
+
+    def set_seq(self, seq):
+        """ Set controller packet sequence num
+
+        :param seq: sequence num
+        """
+        self._seq = seq
 
     def set_host(self, host):
         """ Assign Host instance to the controller
@@ -308,6 +343,23 @@ class Controller(object):
                     ts=ts)
                 self.send_queue_remove_reg(register, value)
 
+    def send_nonce(self):
+        """ Send nonce to controller
+
+        Nonce packet consists only "id" and "nonce" fields
+        """
+        log.debug('send_nonce(%s)', str(self._id))
+
+        nonce = self.get_nonce()
+        if not nonce:
+            log.error('Cant send nonce if it is missing')
+            return
+        sdp = SDP(secret_key=self.get_secret_key(), nonce=nonce)
+        sdp.add_keyvalue('id', self._id)
+        sdp.add_keyvalue('nonce', nonce)
+        self._host.send(sdp.encode())
+        self._stats.add('tx/nonce', 1)
+
     def ack_last_sdp(self):
         """ Send ACK based on the last SDP packet.
 
@@ -329,6 +381,7 @@ class Controller(object):
             ack.add_keyvalue(reg, self._send_queue[reg])
             self._stats.add('tx/sdp/updates', 1)
         ack.set_secret_key(self.get_secret_key())
+        ack.set_nonce(self.get_nonce())
         self._host.send(ack.encode())
         self._stats.add('tx/ack', 1)
 

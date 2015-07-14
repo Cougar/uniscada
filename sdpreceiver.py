@@ -25,6 +25,17 @@ class SDPReceiver(object):
         self._servicegroups = self._core.servicegroups()
         self._msgbus = self._core.msgbus()
 
+    def new_nonce(self, controller):
+        """ Set new nonce and send to the controller
+
+        :param controller: controller id
+        """
+        log.debug('new_nonce()')
+        controller.set_nonce(str(int(time.time())))
+        controller.set_seq(0)
+        controller.send_nonce()
+        return
+
     def datagram_from_controller(self, host, datagram):
         """ Process incoming datagram
 
@@ -53,13 +64,31 @@ class SDPReceiver(object):
         controller.set_host(host)
         secret_key = controller.get_secret_key()
         if secret_key:
+            nonce = controller.get_nonce()
+            if not nonce:
+                log.info('controller: %s new_nonce', ctrid)
+                self.new_nonce(controller)
+                return
             if not sdp.is_signed():
                 log.error('controller: %s datagram not signed', ctrid)
                 raise Exception('sdp signature missing')
             sdp.set_secret_key(secret_key)
+            sdp.set_nonce(nonce)
+            seq = sdp.get_in_seq()
+            if seq == None:
+                log.error('packet seq is required for HMAC')
+                self.new_nonce(controller)
+                raise Exception('packet seq is required for HMAC')
             if not sdp.check_signature():
                 log.error('controller: %s signature error', ctrid)
+                self.new_nonce(controller)
                 raise Exception('sdp signature error')
+            prev_seq = controller.get_seq()
+            if prev_seq:
+                if not prev_seq < seq:
+                    log.error('seq is not growing')
+                    raise Exception('seq is not growing')
+                controller.set_seq(seq)
         else:
             if sdp.is_signed():
                 log.error('controller: %s secret_key not configured', id)
@@ -67,6 +96,7 @@ class SDPReceiver(object):
         try:
             controller.set_last_sdp(sdp, ts=time.time())
         except Exception as ex:
+            log.error('sdp set error: ', str(ex))
             raise Exception('sdp set error: ' + str(ex))
 
         log.debug('Controller: %s', str(controller))

@@ -33,7 +33,7 @@ class SDP(object):
         self._nonce = None
         if secret_key:
             self.set_secret_key(secret_key)
-        if nonce:
+        if nonce or nonce == '':
             self.set_nonce(nonce)
 
     def set_secret_key(self, secret_key):
@@ -316,7 +316,7 @@ class SDP(object):
             datagram += key + ':?\n'
         if not self._secret_key:
             return datagram
-        if not self._nonce:
+        if self._nonce == None:
             raise SDPDecodeException("nonce is required for HMAC")
 
         digest = hmac.new(self._secret_key, \
