@@ -25,7 +25,7 @@ class SDP(object):
         self._nonce = None
         if secret_key:
             self.set_secret_key(secret_key)
-        if nonce or nonce == '':
+        if nonce:
             self.set_nonce(nonce)
 
     def _empty_sdp(self):
