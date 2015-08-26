@@ -18,7 +18,18 @@ log.addHandler(logging.NullHandler())
 class SDP(object):
     """ Convert to and from SDP protocol datagram """
     def __init__(self, secret_key=None, nonce=None):
-        """ Create new empty in-memory ``SDP`` datagram
+        """ Create a new empty in-memory ``SDP`` datagram
+        """
+        self._empty_sdp()
+        self._secret_key = None
+        self._nonce = None
+        if secret_key:
+            self.set_secret_key(secret_key)
+        if nonce or nonce == '':
+            self.set_nonce(nonce)
+
+    def _empty_sdp(self):
+        """ Clear all data from this SDP instance
         """
         self.data = {}
         self.data['data'] = {}
@@ -28,13 +39,7 @@ class SDP(object):
         self.data['query'] = {}
         self.data['signed'] = False
         self.data['signature_valid'] = False
-        self._datagram_before_signature = None
-        self._secret_key = None
-        self._nonce = None
-        if secret_key:
-            self.set_secret_key(secret_key)
-        if nonce or nonce == '':
-            self.set_nonce(nonce)
+        return
 
     def set_secret_key(self, secret_key):
         """ Set secret key for HMAC
@@ -314,20 +319,26 @@ class SDP(object):
                 datagram += key + 'V:' + str(self.data['value'][key]) + '\n'
         for key in self.data['query'].keys():
             datagram += key + ':?\n'
-        if not self._secret_key:
-            return datagram
+        if self._secret_key:
+            self.add_signature(datagram)
+            datagram += 'sha256:' + self.data['data']['sha256'] + '\n'
+        return datagram
+
+    def add_signature(self, datagram):
+        """ Add signature to SDP instance based on datagram string
+
+        :param datagram: unsigned SDP datagram
+        """
         if self._nonce == None:
             raise SDPDecodeException("nonce is required for HMAC")
 
         digest = hmac.new(self._secret_key, \
             msg=self._nonce+datagram.encode("UTF-8"), \
             digestmod=hashlib.sha256).digest()
-        signature = base64.b64encode(digest).decode()
-        self.data['data']['sha256'] = signature
-        datagram += 'sha256:' + signature + '\n'
+        self.data['data']['sha256'] = base64.b64encode(digest).decode()
         self.data['signed'] = True
         self.data['signature_valid'] = True
-        return datagram
+        return
 
     def decode(self, datagram):
         """ Decodes SDP datagram to packet
@@ -339,6 +350,9 @@ class SDP(object):
             if line == '':
                 log.warning('empty line in datagram')
                 continue
+            if self.data['signed']:
+                log.error('no data is allowed after signature')
+                raise SDPDecodeException('no data is allowed after signature')
             if not ':' in line:
                 log.error('datagram line format error: no colon')
                 raise SDPDecodeException('datagram line error: \"' + \
@@ -355,17 +369,15 @@ class SDP(object):
                 log.error('value mising for \"%s\"', key)
                 raise SDPDecodeException('value mising for \"' + key + '\"')
             if key == 'sha256':
-                self._datagram_before_signature = datagram_before_sig
                 self.data['data']['sha256'] = val
                 self.data['signed'] = True
-                if self._secret_key:
-                    if not self.check_signature():
-                        self.data['data'] = {}
-                        self.data['float'] = {}
-                        self.data['status'] = {}
-                        self.data['value'] = {}
-                        self.data['query'] = {}
-                        return
+                if not self._secret_key:
+                    log.error('signed datagram from unsecure controller')
+                    self._empty_sdp()
+                    raise SDPDecodeException('signed datagram from unsecure controller')
+                if not self.check_signature(datagram_before_sig):
+                    self._empty_sdp()
+                    return
             else:
                 datagram_before_sig += line + '\n'
                 try:
@@ -376,7 +388,7 @@ class SDP(object):
             log.error('id missing in datagram')
             raise SDPDecodeException('id: _MUST_ exists in datagram')
 
-    def check_signature(self):
+    def check_signature(self, datagram):
         if not self.data['signed']:
             return False
         if not 'sha256' in self.data['data']:
@@ -390,13 +402,10 @@ class SDP(object):
             log.error('nonce is not configured')
             raise SDPDecodeException('datagram is signed but ' \
                 'nonce is not configured')
-        if not self._datagram_before_signature:
-            log.warning('no datagram body')
-            return False
         sdp_signature = self.data['data']['sha256']
         digest = hmac.new(self._secret_key, \
             msg=self._nonce+ \
-                self._datagram_before_signature.encode("UTF-8"), \
+                datagram.encode("UTF-8"), \
             digestmod=hashlib.sha256).digest()
         signature = base64.b64encode(digest).decode()
         self.data['signature_valid'] = hmac.compare_digest( \

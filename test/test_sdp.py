@@ -280,7 +280,7 @@ class SDPTests(unittest.TestCase):
             'iq:?',
         ])
         self.assertFalse(self.sdp.is_signed())
-        self.assertFalse(self.sdp.check_signature())
+        self.assertFalse(self.sdp.check_signature(datagram))
 
     def test_encode_with_id_param(self):
         ''' Test encoder with id for full packet'''
@@ -321,7 +321,7 @@ class SDPTests(unittest.TestCase):
             'iq:?',
         ])
         self.assertFalse(self.sdp.is_signed())
-        self.assertFalse(self.sdp.check_signature())
+        self.assertFalse(self.sdp.check_signature(datagram))
 
     def test_encode_without_id(self):
         ''' Test encoder without id'''
@@ -329,7 +329,7 @@ class SDPTests(unittest.TestCase):
 
     def test_decode_valid(self):
         ''' Test decoder with valid datagram '''
-        self.sdp.decode( \
+        datagram = \
             'id:abc123\n' \
             'AAS:1\n' \
             'ABV:2\n' \
@@ -346,7 +346,9 @@ class SDPTests(unittest.TestCase):
             'ip:10.0.0.10\n' \
             'ALF:4000D3349FEBBEAE\n' \
             'TOV:4000D3349FEBBEAE\n' \
-            'AMW:8 null 9\n')
+            'AMW:8 null 9\n'
+
+        self.sdp.decode(datagram)
 
         d = self.sdp.get_data('id')
         self.assertTrue(isinstance(d, str))
@@ -417,7 +419,7 @@ class SDPTests(unittest.TestCase):
         self.assertEqual(d, '?')
 
         self.assertFalse(self.sdp.is_signed())
-        self.assertFalse(self.sdp.check_signature())
+        self.assertFalse(self.sdp.check_signature(datagram))
 
     def test_decode_invalid(self):
         ''' Test decoder with invalid datagram '''
@@ -444,7 +446,6 @@ class SDPTests(unittest.TestCase):
         self.assertFalse(self.sdp.is_signed())
         datagram = self.sdp.encode()
         self.assertTrue(self.sdp.is_signed())
-        self.assertFalse(self.sdp.check_signature())
         self.assertTrue(isinstance(datagram, str))
         self.assertEqual(sorted(datagram.splitlines()), [
             'id:abc123',
@@ -458,7 +459,6 @@ class SDPTests(unittest.TestCase):
         self.assertFalse(self.sdp.is_signed())
         datagram = self.sdp.encode()
         self.assertTrue(self.sdp.is_signed())
-        self.assertFalse(self.sdp.check_signature())
         self.assertTrue(isinstance(datagram, str))
         self.assertEqual(sorted(datagram.splitlines()), [
             'id:abc123',
@@ -467,9 +467,11 @@ class SDPTests(unittest.TestCase):
 
     def test_decode_with_valid_signature(self):
         ''' Test decoder with valid SHA1 HMAC signature '''
-        self.sdp.decode( \
-            'id:abc123\n' \
-            'sha256:wWYN9u1zKY+zqo0Z0xHxDL38tYsJBv+Mk5UAvN7hr5k=\n')
+        datagram = 'id:abc123\n'
+        signature = 'sha256:wWYN9u1zKY+zqo0Z0xHxDL38tYsJBv+Mk5UAvN7hr5k=\n'
+        self.sdp.set_secret_key('my-secret-key')
+        self.sdp.set_nonce('12345')
+        self.sdp.decode(datagram + signature)
 
         self.assertTrue(self.sdp.is_signed())
 
@@ -477,48 +479,50 @@ class SDPTests(unittest.TestCase):
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, 'abc123')
 
-        self.assertRaises(SDPDecodeException, self.sdp.check_signature)
-        self.sdp.set_secret_key('my-secret-key')
-        self.sdp.set_nonce('12345')
-        self.assertTrue(self.sdp.check_signature())
+        self.assertTrue(self.sdp.check_signature(datagram))
 
     def test_decode_with_invalid_signature1(self):
         ''' Test decoder with invalid SHA1 HMAC signature (1) '''
         self.sdp.set_secret_key('wrong-secret-key')
         self.sdp.set_nonce('12345')
-        self.sdp.decode( \
-            'id:abc123\n' \
-            'sha256:wWYN9u1zKY+zqo0Z0xHxDL38tYsJBv+Mk5UAvN7hr5k=\n')
+        datagram = 'id:abc123\n'
+        signature = 'sha256:wWYN9u1zKY+zqo0Z0xHxDL38tYsJBv+Mk5UAvN7hr5k=\n'
+        self.sdp.decode(datagram + signature)
 
         self.assertEqual(self.sdp.get_data('id'), None)
 
-        self.assertTrue(self.sdp.is_signed())
-        self.assertFalse(self.sdp.check_signature())
+        self.assertFalse(self.sdp.is_signed())
+        self.assertFalse(self.sdp.check_signature(datagram))
 
     def test_decode_with_invalid_signature2(self):
         ''' Test decoder with invalid SHA1 HMAC signature (2)'''
-        self.sdp.decode( \
-            'id:abc123\n' \
-            'sha256:wWYN9u1zKY+zqo0Z0xHxDL38tYsJBv+Mk5UAvN7hr5k=\n')
-
-        d = self.sdp.get_data('id')
-        self.assertTrue(isinstance(d, str))
-        self.assertEqual(d, 'abc123')
-
-        self.assertTrue(self.sdp.is_signed())
+        datagram = 'id:abc123\n'
+        signature = 'sha256:wWYN9u1zKY+zqo0Z0xHxDL38tYsJBv+Mk5UAvN7hr5k=\n'
         self.sdp.set_secret_key('wrong-secret-key')
         self.sdp.set_nonce('12345')
-        self.assertFalse(self.sdp.check_signature())
+        self.sdp.decode(datagram + signature)
+
+        self.assertIsNone(self.sdp.get_data('id'))
+
+        self.assertFalse(self.sdp.is_signed())
+        self.assertFalse(self.sdp.check_signature(datagram))
 
     def test_decode_with_invalid_signature3(self):
         ''' Test decoder with invalid SHA1 HMAC signature (3) '''
         self.sdp.set_secret_key('my-secret-key')
         self.sdp.set_nonce('54321')
-        self.sdp.decode( \
+        datagram = 'id:abc123\n'
+        signature = 'sha256:wWYN9u1zKY+zqo0Z0xHxDL38tYsJBv+Mk5UAvN7hr5k=\n'
+        self.sdp.decode(datagram + signature)
+
+        self.assertIsNone(self.sdp.get_data('id'))
+
+        self.assertFalse(self.sdp.is_signed())
+        self.assertFalse(self.sdp.check_signature(datagram))
+
+    def test_decode_invalid_packet_with_valid_signature(self):
+        ''' Test decoder with valid SHA1 HMAC signature '''
+        self.assertRaises(SDPException, self.sdp.decode, \
             'id:abc123\n' \
-            'sha256:wWYN9u1zKY+zqo0Z0xHxDL38tYsJBv+Mk5UAvN7hr5k=\n')
-
-        self.assertEqual(self.sdp.get_data('id'), None)
-
-        self.assertTrue(self.sdp.is_signed())
-        self.assertFalse(self.sdp.check_signature())
+            'sha256:wWYN9u1zKY+zqo0Z0xHxDL38tYsJBv+Mk5UAvN7hr5k=\n' \
+            'zx:123\n')
