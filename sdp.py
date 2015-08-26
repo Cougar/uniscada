@@ -332,10 +332,8 @@ class SDP(object):
         if self._nonce == None:
             raise SDPDecodeException("nonce is required for HMAC")
 
-        digest = hmac.new(self._secret_key, \
-            msg=self._nonce+datagram.encode("UTF-8"), \
-            digestmod=hashlib.sha256).digest()
-        self.data['data']['sha256'] = base64.b64encode(digest).decode()
+        signature = self._calculate_signature(datagram)
+        self.data['data']['sha256'] = signature
         self.data['signed'] = True
         self.data['signature_valid'] = True
         return
@@ -394,6 +392,19 @@ class SDP(object):
         if not 'sha256' in self.data['data']:
             log.warning('SDP is not signed')
             return False
+        sdp_signature = self.data['data']['sha256']
+        signature = self._calculate_signature(datagram)
+        self.data['signature_valid'] = hmac.compare_digest( \
+            sdp_signature, signature)
+        return self.data['signature_valid']
+
+    def _calculate_signature(self, datagram):
+        """ Return signature for given datagram
+
+        :param datagram: Unsigned datagram
+
+        :returns: BASE64 encoded signature
+        """
         if not self._secret_key:
             log.error('secret key is not configured')
             raise SDPDecodeException('datagram is signed but ' \
@@ -402,15 +413,10 @@ class SDP(object):
             log.error('nonce is not configured')
             raise SDPDecodeException('datagram is signed but ' \
                 'nonce is not configured')
-        sdp_signature = self.data['data']['sha256']
-        digest = hmac.new(self._secret_key, \
-            msg=self._nonce+ \
-                datagram.encode("UTF-8"), \
-            digestmod=hashlib.sha256).digest()
-        signature = base64.b64encode(digest).decode()
-        self.data['signature_valid'] = hmac.compare_digest( \
-            sdp_signature, signature)
-        return self.data['signature_valid']
+        return base64.b64encode( \
+            hmac.new(self._secret_key, \
+                msg=self._nonce+datagram.encode("UTF-8"), \
+                digestmod=hashlib.sha256).digest()).decode()
 
     def __str__(self):
         """ Returns data dictionary """
