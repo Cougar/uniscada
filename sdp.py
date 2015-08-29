@@ -15,18 +15,12 @@ import logging
 log = logging.getLogger(__name__)   # pylint: disable=invalid-name
 log.addHandler(logging.NullHandler())
 
-class SDP(object):
+class UnsecureSDP(object):
     """ Convert to and from SDP protocol datagram """
     def __init__(self, secret_key=None, nonce=None):
         """ Create a new empty in-memory ``SDP`` datagram
         """
         self._empty_sdp()
-        self._secret_key = None
-        self._nonce = None
-        if secret_key:
-            self.set_secret_key(secret_key)
-        if nonce:
-            self.set_nonce(nonce)
 
     def _empty_sdp(self):
         """ Clear all data from this SDP instance
@@ -37,25 +31,6 @@ class SDP(object):
         self.data['status'] = {}
         self.data['value'] = {}
         self.data['query'] = {}
-        self._signed = False
-        return
-
-    def set_secret_key(self, secret_key):
-        """ Set secret key for HMAC
-
-        :param secret_key: secret key for HMAC
-        """
-        self._secret_key = secret_key.encode("UTF-8")
-
-    def set_nonce(self, nonce):
-        """ Set nonce key for HMAC
-
-        :param nonce: nonce for HMAC calculation
-        """
-        self._nonce = nonce.encode("UTF-8")
-
-    def is_signed(self):
-        return self._signed
 
     def add_keyvalue(self, key, val):
         """ Add key:val pair to the packet
@@ -68,7 +43,6 @@ class SDP(object):
         * if key ends with "V", it is saved as a Value (int, float or str)
         * if key ends with "W", it is saved as a List of Values (str)
         * all other keys are saved as Data (str)
-          * 'sha256' is reserved key for signature
 
         String 'null' is allowed in "V" and "W" keys and will be changed
         to None
@@ -167,8 +141,6 @@ class SDP(object):
         """
         if not isinstance(val, str):
             raise SDPException('Data _MUST_BE_ string')
-        if key == 'sha256':
-            raise SDPException('"sha256" is not valid key')
         self.data['data'][key] = val
 
     def add_status(self, key, val):
@@ -317,6 +289,101 @@ class SDP(object):
                 datagram += key + 'V:' + str(self.data['value'][key]) + '\n'
         for key in self.data['query'].keys():
             datagram += key + ':?\n'
+        return datagram
+
+    def decode(self, datagram):
+        """ Decodes SDP datagram to packet
+
+        :param datagram: The string representation of SDP datagram
+        """
+        for line in datagram.splitlines():
+            if line == '':
+                log.warning('empty line in datagram')
+                continue
+            if not ':' in line:
+                log.error('datagram line format error: no colon')
+                raise SDPDecodeException('datagram line error: \"' + \
+                    line + '\"')
+            try:
+                (key, val) = line.split(':', 1)
+            except:
+                log.error('datagram line format error: cant split')
+                raise SDPDecodeException('error in line: \"' + line + '\"')
+            if ':' in val:
+                log.error('datagram line format error: more than one colon')
+                raise SDPDecodeException('colon in value: \"' + val + '\"')
+            if not val:
+                log.error('value mising for \"%s\"', key)
+                raise SDPDecodeException('value mising for \"' + key + '\"')
+            if not self.get_data('id') and key != 'id':
+                raise SDPDecodeException('id MUST BE first line but read: %s\n%s' % (key, datagram))
+            try:
+                self.add_keyvalue(key, val)
+            except SDPException as ex:
+                self._empty_sdp()
+                raise SDPDecodeException(ex)
+        if self.get_data('id') is None:
+            log.error('id missing in datagram')
+            raise SDPDecodeException('id: _MUST_ exists in datagram')
+
+    def __str__(self):
+        """ Returns data dictionary """
+        return str(self.data)
+
+class SDP(UnsecureSDP):
+    """ Convert to and from signed SDP protocol datagram """
+    def __init__(self, secret_key=None, nonce=None):
+        """ Create a new empty in-memory ``SDP`` datagram
+        """
+        super(SDP, self).__init__()
+        self._secret_key = None
+        self._nonce = None
+        if secret_key:
+            self.set_secret_key(secret_key)
+        if nonce:
+            self.set_nonce(nonce)
+
+    def _empty_sdp(self):
+        """ Clear all data from this SDP instance
+        """
+        super(SDP, self)._empty_sdp()
+        self._signed = False
+
+    def set_secret_key(self, secret_key):
+        """ Set secret key for HMAC
+
+        :param secret_key: secret key for HMAC
+        """
+        self._secret_key = secret_key.encode("UTF-8")
+
+    def set_nonce(self, nonce):
+        """ Set nonce key for HMAC
+
+        :param nonce: nonce for HMAC calculation
+        """
+        self._nonce = nonce.encode("UTF-8")
+
+    def is_signed(self):
+        return self._signed
+
+    def _add_keyvalue_string(self, key, val):
+        """ Add single value key:val pair to the packet
+
+        :param key: data key
+        :param val: data values as string
+        """
+        if key == 'sha256':
+            raise SDPException('"sha256" is not a valid key')
+        super(SDP, self)._add_keyvalue_string(key, val)
+
+    def encode(self, controllerid=None):
+        """ Encodes SDP packet to datagram
+
+        :param controllerid: Optional paramater for id:<val> Data (str)
+
+        :returns: The string representation of SDP datagram
+        """
+        datagram = super(SDP, self).encode(controllerid)
         if self._secret_key:
             self.add_signature(datagram)
             datagram += 'sha256:' + self._sha256 + '\n'
@@ -341,9 +408,6 @@ class SDP(object):
         """
         datagram_before_sig = ''
         for line in datagram.splitlines():
-            if line == '':
-                log.warning('empty line in datagram')
-                continue
             if self._signed:
                 log.error('no data is allowed after signature')
                 raise SDPDecodeException('no data is allowed after signature')
@@ -372,15 +436,9 @@ class SDP(object):
                 if not self.check_signature(datagram_before_sig):
                     self._empty_sdp()
                     return
-            else:
-                datagram_before_sig += line + '\n'
-                try:
-                    self.add_keyvalue(key, val)
-                except SDPException as ex:
-                    raise SDPDecodeException(ex)
-        if self.get_data('id') is None:
-            log.error('id missing in datagram')
-            raise SDPDecodeException('id: _MUST_ exists in datagram')
+                continue
+            datagram_before_sig += line + '\n'
+        super(SDP, self).decode(datagram_before_sig)
 
     def check_signature(self, datagram):
         if not self._signed:
@@ -410,10 +468,6 @@ class SDP(object):
             hmac.new(self._secret_key, \
                 msg=self._nonce+datagram.encode("UTF-8"), \
                 digestmod=hashlib.sha256).digest()).decode()
-
-    def __str__(self):
-        """ Returns data dictionary """
-        return str(self.data)
 
 def _list_str_to_value(string):
     """ Return int of string or None if string is "null" """
