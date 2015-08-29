@@ -194,6 +194,10 @@ class SDPTests(unittest.TestCase):
         self.assertRaises(SDPException, self.sdp.add_keyvalue, 'ay', 1.5)
         self.assertRaises(SDPException, self.sdp.add_keyvalue, 'az', [1, 2])
 
+    def test_add_keyvalue_illegal_data(self):
+        ''' Test setting illegal key:val '''
+        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'sha256', 1)
+
     def test_add_keyvalue_request_data(self):
         ''' Test setting/getting key:val where val == '?' '''
         self.sdp.add_keyvalue('AAS', '?')
