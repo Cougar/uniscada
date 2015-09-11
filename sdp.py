@@ -261,6 +261,27 @@ class UnsecureSDP(object):
             return None
         return float(is_ts.group(1))
 
+    def remove_data(self, key):    # pylint: disable=too-many-return-statements
+        """ Remove entry of saved data
+
+        :param key: data key to remove
+        """
+        if not self.get_data(key):
+            raise SDPException('no such key exists')
+
+        if key in self.data['query']:
+            del self.data['query'][key]
+        elif key[-1] == 'F' or key == 'TOV':
+            del self.data['float'][key]
+        elif key[-1] == 'S':
+            del self.data['status'][key[:-1]]
+        elif key[-1] == 'V':
+            del self.data['value'][key[:-1]]
+        elif key[-1] == 'W':
+            del self.data['value'][key[:-1]]
+        else:
+            del self.data['data'][key]
+
     def encode(self, controllerid=None):
         """ Encodes SDP packet to datagram
 

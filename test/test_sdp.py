@@ -25,10 +25,18 @@ class SDPTests(unittest.TestCase):
         self.assertEqual(self.sdp.get_data('AAs'), None)
         self.assertEqual(self.sdp.get_data('aaS'), None)
 
+        self.sdp.remove_data('AAS')
+        self.assertIsNone(self.sdp.get_data('AAS'))
+        self.assertRaises(SDPException, self.sdp.remove_data, 'AAS')
+
         self.sdp.add_keyvalue('ABS', '3')
         d = self.sdp.get_data('ABS')
         self.assertTrue(isinstance(d, int))
         self.assertEqual(d, 3)
+
+        self.sdp.remove_data('ABS')
+        self.assertIsNone(self.sdp.get_data('ABS'))
+        self.assertRaises(SDPException, self.sdp.remove_data, 'ABS')
 
         self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AxS', -1)
         self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AyS', 4)
@@ -46,6 +54,10 @@ class SDPTests(unittest.TestCase):
         self.assertEqual(self.sdp.get_data('AAs'), None)
         self.assertEqual(self.sdp.get_data('aaS'), None)
 
+        self.sdp.remove_data('AAS')
+        self.assertIsNone(self.sdp.get_data('AAS'))
+        self.assertRaises(SDPException, self.sdp.remove_data, 'AAS')
+
         self.assertRaises(SDPException, self.sdp.add_status, 'AX', 'a')
         self.assertRaises(SDPException, self.sdp.add_status, 'AY', [1, 2])
         self.assertRaises(SDPException, self.sdp.add_status, 'AZ', None)
@@ -58,6 +70,10 @@ class SDPTests(unittest.TestCase):
         self.assertEqual(d, 1234)
         self.assertEqual(self.sdp.get_data('AAv'), None)
         self.assertEqual(self.sdp.get_data('aaV'), None)
+
+        self.sdp.remove_data('AAV')
+        self.assertIsNone(self.sdp.get_data('AAV'))
+        self.assertRaises(SDPException, self.sdp.remove_data, 'AAV')
 
         self.sdp.add_keyvalue('ABV', 1.5)
         d = self.sdp.get_data('ABV')
@@ -100,6 +116,10 @@ class SDPTests(unittest.TestCase):
         self.assertEqual(d, [1])
         self.assertEqual(self.sdp.get_data('AAw'), None)
         self.assertEqual(self.sdp.get_data('aaW'), None)
+
+        self.sdp.remove_data('AAW')
+        self.assertIsNone(self.sdp.get_data('AAW'))
+        self.assertRaises(SDPException, self.sdp.remove_data, 'AAW')
 
         self.sdp.add_keyvalue('ABW', [1, None, 2])
         d = self.sdp.get_data('ABW')
@@ -146,6 +166,10 @@ class SDPTests(unittest.TestCase):
         self.assertEqual(self.sdp.get_data('AAS'), None)
         self.assertEqual(self.sdp.get_data('AAW'), None)
 
+        self.sdp.remove_data('AAV')
+        self.assertIsNone(self.sdp.get_data('AAV'))
+        self.assertRaises(SDPException, self.sdp.remove_data, 'AAV')
+
         self.sdp.add_value('AB', 1.5)
         d = self.sdp.get_data('ABV')
         self.assertTrue(isinstance(d, float))
@@ -185,6 +209,10 @@ class SDPTests(unittest.TestCase):
         self.assertEqual(self.sdp.get_data('T'), None)
         self.assertEqual(self.sdp.get_data('tov'), None)
 
+        self.sdp.remove_data('TOV')
+        self.assertIsNone(self.sdp.get_data('TOV'))
+        self.assertRaises(SDPException, self.sdp.remove_data, 'TOV')
+
         self.sdp.add_keyvalue('ALF', '4000D3349FEBBEAE')
         d = self.sdp.get_data('ALF')
         self.assertTrue(isinstance(d, str))
@@ -192,6 +220,10 @@ class SDPTests(unittest.TestCase):
         self.assertEqual(self.sdp.get_data('Tov'), None)
         self.assertEqual(self.sdp.get_data('T'), None)
         self.assertEqual(self.sdp.get_data('tov'), None)
+
+        self.sdp.remove_data('ALF')
+        self.assertIsNone(self.sdp.get_data('ALF'))
+        self.assertRaises(SDPException, self.sdp.remove_data, 'ALF')
 
         self.assertRaises(SDPException, self.sdp.add_keyvalue, 'ALF', 1)
         self.assertRaises(SDPException, self.sdp.add_keyvalue, 'ALF', 1.5)
@@ -206,6 +238,10 @@ class SDPTests(unittest.TestCase):
         self.assertEqual(self.sdp.get_data('AA'), None)
         self.assertEqual(self.sdp.get_data('a'), None)
         self.assertEqual(self.sdp.get_data('aaa'), None)
+
+        self.sdp.remove_data('aa')
+        self.assertIsNone(self.sdp.get_data('aa'))
+        self.assertRaises(SDPException, self.sdp.remove_data, 'aa')
 
         self.sdp.add_keyvalue('ab', 'null')
         d = self.sdp.get_data('ab')
