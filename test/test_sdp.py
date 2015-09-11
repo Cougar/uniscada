@@ -175,6 +175,28 @@ class SDPTests(unittest.TestCase):
         self.assertTrue(isinstance(d, list))
         self.assertEqual(d, [1, None, 3])
 
+    def test_add_keyvalue_float(self):
+        ''' Test setting/getting Float key:val '''
+        self.sdp.add_keyvalue('TOV', '4000D3349FEBBEAE')
+        d = self.sdp.get_data('TOV')
+        self.assertTrue(isinstance(d, str))
+        self.assertEqual(d, '4000D3349FEBBEAE')
+        self.assertEqual(self.sdp.get_data('Tov'), None)
+        self.assertEqual(self.sdp.get_data('T'), None)
+        self.assertEqual(self.sdp.get_data('tov'), None)
+
+        self.sdp.add_keyvalue('ALF', '4000D3349FEBBEAE')
+        d = self.sdp.get_data('ALF')
+        self.assertTrue(isinstance(d, str))
+        self.assertEqual(d, '4000D3349FEBBEAE')
+        self.assertEqual(self.sdp.get_data('Tov'), None)
+        self.assertEqual(self.sdp.get_data('T'), None)
+        self.assertEqual(self.sdp.get_data('tov'), None)
+
+        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'ALF', 1)
+        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'ALF', 1.5)
+        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'ALF', [1, 2])
+
     def test_add_keyvalue_data(self):
         ''' Test setting/getting key:val for Other Data '''
         self.sdp.add_keyvalue('aa', '123')
