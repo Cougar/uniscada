@@ -317,8 +317,11 @@ class UnsecureSDP(object):
         :returns: The string representation of SDP datagram data part
         """
         datagram = ''
+        if 'in' in self.data['data']:
+            datagram += 'in:' + str(self.data['data']['in']) + '\n'
         for key in self.data['data'].keys():
-            datagram += key + ':' + str(self.data['data'][key]) + '\n'
+            if key != 'in':
+                datagram += key + ':' + str(self.data['data'][key]) + '\n'
         for key in self.data['float'].keys():
             datagram += key + ':' + str(self.data['float'][key]) + '\n'
         for key in self.data['status'].keys():
