@@ -308,6 +308,15 @@ class UnsecureSDP(object):
             raise SDPException("id missing")
         if self.data['id']:
             datagram += 'id:' + str(self.data['id']) + '\n'
+        datagram += self._encode_data()
+        return datagram
+
+    def _encode_data(self):
+        """ Encodes SDP packet data part
+
+        :returns: The string representation of SDP datagram data part
+        """
+        datagram = ''
         for key in self.data['data'].keys():
             datagram += key + ':' + str(self.data['data'][key]) + '\n'
         for key in self.data['float'].keys():
