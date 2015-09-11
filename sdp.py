@@ -26,6 +26,7 @@ class UnsecureSDP(object):
         """ Clear all data from this SDP instance
         """
         self.data = {}
+        self.data['id'] = None
         self.data['data'] = {}
         self.data['float'] = {}
         self.data['status'] = {}
@@ -53,7 +54,9 @@ class UnsecureSDP(object):
         :param key: data key
         :param val: data value
         """
-        if val == '?':
+        if key == 'id':
+            self.data['id'] = val
+        elif val == '?':
             self._add_keyvalue_query(key)
         elif key[-1] == 'F' or key == 'TOV':
             self._add_keyvalue_floathex(key, val)
@@ -185,7 +188,9 @@ class UnsecureSDP(object):
         :returns: Status, Value, List of Values, Data or
         None if key is missing
         """
-        if key in self.data['query']:
+        if key == 'id':
+            return self.data.get('id', None)
+        elif key in self.data['query']:
             return '?'
         elif key[-1] == 'F' or key == 'TOV':
             return self.data['float'].get(key, None)
@@ -217,6 +222,8 @@ class UnsecureSDP(object):
 
         Both key and value are always str type.
         """
+        if self.data['id']:
+            yield ('id', self.data['id'])
         for key in self.data['status'].keys():
             yield (key + 'S', str(self.data['status'][key]))
         for key in self.data['value'].keys():
@@ -266,6 +273,10 @@ class UnsecureSDP(object):
 
         :param key: data key to remove
         """
+        if key == 'id':
+            self.data['id'] = None
+            return
+
         if not self.get_data(key):
             raise SDPException('no such key exists')
 
@@ -292,9 +303,11 @@ class UnsecureSDP(object):
         datagram = ''
         if controllerid:
             self.add_keyvalue('id', controllerid)
-        if not 'id' in self.data['data']:
+        if not self.data['id']:
             log.error('id missing, cant encode')
             raise SDPException("id missing")
+        if self.data['id']:
+            datagram += 'id:' + str(self.data['id']) + '\n'
         for key in self.data['data'].keys():
             datagram += key + ':' + str(self.data['data'][key]) + '\n'
         for key in self.data['float'].keys():

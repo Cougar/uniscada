@@ -322,6 +322,7 @@ class SDPTests(unittest.TestCase):
         self.sdp.add_keyvalue('AMW', '8 null 9')
         datagram = self.sdp.encode()
         self.assertTrue(isinstance(datagram, str))
+        self.assertEqual(datagram.splitlines()[0], 'id:abc123')
         self.assertEqual(sorted(datagram.splitlines()), [
             'AAS:1',
             'ABV:2',
@@ -364,6 +365,7 @@ class SDPTests(unittest.TestCase):
         self.sdp.add_keyvalue('ALF', '4000D3349FEBBEAE')
         datagram = self.sdp.encode(controllerid='def456')
         self.assertTrue(isinstance(datagram, str))
+        self.assertEqual(datagram.splitlines()[0], 'id:def456')
         self.assertEqual(sorted(datagram.splitlines()), [
             'AAS:1',
             'ABV:2',
