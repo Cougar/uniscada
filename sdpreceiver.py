@@ -44,9 +44,8 @@ class SDPReceiver(object):
         """
         log.info('datagram_from_controller(%s): %s', \
             str(host), str(datagram))
-        sdp = SDP()
         try:
-            sdp.decode(datagram)
+            sdp = SDP.decode(datagram)
         except Exception as ex:
             log.error('sdp.decode() exception: %s', str(ex))
             raise Exception('sdp.decode() exception: ' + str(ex))

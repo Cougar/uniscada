@@ -337,7 +337,8 @@ class UnsecureSDP(object):
             datagram += key + ':?\n'
         return datagram
 
-    def _decode_line(self, line):
+    @staticmethod
+    def _decode_line(line):
         """ Decodes one line from SDP packet
 
         :param line: one line from SDP packet
@@ -362,29 +363,32 @@ class UnsecureSDP(object):
 
         return (key, val)
 
-    def decode(self, datagram):
+    @staticmethod
+    def decode(datagram, sdp=None):
         """ Decodes SDP datagram to packet
 
         :param datagram: The string representation of SDP datagram
         """
         controllerid = None
+        if not sdp:
+            sdp = UnsecureSDP()
         for line in datagram.splitlines():
             if line == '':
                 log.warning('empty line in datagram')
                 continue
-            (key, val) = self._decode_line(line)
+            (key, val) = UnsecureSDP._decode_line(line)
             if key == 'id':
                 controllerid = val
             try:
-                self.add_keyvalue(key, val)
+                sdp.add_keyvalue(key, val)
             except SDPException as ex:
-                self._empty_sdp()
                 raise SDPDecodeException(ex)
             if not controllerid:
                 raise SDPDecodeException('id MUST BE first line but read: %s\n%s' % (key, datagram))
         if not controllerid:
             log.error('id missing in datagram')
             raise SDPDecodeException('id: _MUST_ exists in datagram')
+        return sdp
 
     def __str__(self):
         """ Returns data dictionary """
@@ -414,14 +418,14 @@ class SDP(UnsecureSDP):
 
         :param secret_key: secret key for HMAC
         """
-        self._secret_key = secret_key.encode("UTF-8")
+        self._secret_key = secret_key
 
     def set_nonce(self, nonce):
         """ Set nonce key for HMAC
 
         :param nonce: nonce for HMAC calculation
         """
-        self._nonce = nonce.encode("UTF-8")
+        self._nonce = nonce
 
     def is_signed(self):
         return self._signed
@@ -457,65 +461,79 @@ class SDP(UnsecureSDP):
         if self._nonce == None:
             raise SDPDecodeException("nonce is required for HMAC")
 
-        self._sha256 = self._calculate_signature(datagram)
+        self._sha256 = SDP._calculate_signature(datagram, self._secret_key, self._nonce)
         self._signed = True
         return
 
-    def decode(self, datagram):
+    @staticmethod
+    def decode(datagram, secret_key=None, nonce=None):
         """ Decodes SDP datagram to packet
 
         :param datagram: The string representation of SDP datagram
         """
         datagram_before_sig = ''
+        sha256 = None
         for line in datagram.splitlines():
-            if self._signed:
+            if sha256:
                 log.error('no data is allowed after signature')
                 raise SDPDecodeException('no data is allowed after signature')
             if line == '':
                 log.warning('empty line in datagram')
                 continue
-            (key, val) = self._decode_line(line)
+            (key, val) = SDP._decode_line(line)
             if key == 'sha256':
-                self._sha256 = val
-                self._signed = True
-                if not self._secret_key:
-                    log.error('signed datagram from unsecure controller')
-                    self._empty_sdp()
-                    raise SDPDecodeException('signed datagram from unsecure controller')
-                if not self.check_signature(datagram_before_sig):
-                    self._empty_sdp()
-                    return
+                sha256 = val
+                if secret_key:
+                    if not SDP._check_signature(datagram_before_sig, sha256, secret_key, nonce):
+                        raise SDPDecodeException('signature check error')
                 continue
             datagram_before_sig += line + '\n'
-        super(SDP, self).decode(datagram_before_sig)
+        sdp = SDP()
+        sdp = UnsecureSDP.decode(datagram_before_sig, sdp)
+        if sha256:
+            sdp.set_secret_key(secret_key)
+            sdp.set_nonce(nonce)
+            sdp._sha256 = sha256
+            sdp._signed = True
+        return sdp
 
     def check_signature(self, datagram):
         if not self._signed:
             return False
         if not self._sha256:
+            log.warning('SDP signature is not known')
+            return False
+        return SDP._check_signature(datagram, self._sha256, self._secret_key, self._nonce)
+
+    @staticmethod
+    def _check_signature(datagram, sha256, secret_key=None, nonce=None):
+        if not sha256:
             log.warning('SDP is not signed')
             return False
-        signature = self._calculate_signature(datagram)
-        return hmac.compare_digest(self._sha256, signature)
+        signature = SDP._calculate_signature(datagram, secret_key, nonce)
+        return hmac.compare_digest(sha256, signature)
 
-    def _calculate_signature(self, datagram):
+    @staticmethod
+    def _calculate_signature(datagram, secret_key, nonce):
         """ Return signature for given datagram
 
-        :param datagram: Unsigned datagram
+        :param datagram: unsigned datagram
+        :param secret_key: secret key
+        :param nonce: nonce
 
         :returns: BASE64 encoded signature
         """
-        if not self._secret_key:
-            log.error('secret key is not configured')
+        if not secret_key:
+            log.error('secret key is missing')
             raise SDPDecodeException('datagram is signed but ' \
-                'secret key is not configured')
-        if not self._nonce:
-            log.error('nonce is not configured')
+                'secret key is missing')
+        if nonce == None:
+            log.error('nonce is missing')
             raise SDPDecodeException('datagram is signed but ' \
-                'nonce is not configured')
+                'nonce is missing')
         return base64.b64encode( \
-            hmac.new(self._secret_key, \
-                msg=self._nonce+datagram.encode("UTF-8"), \
+            hmac.new(secret_key.encode("UTF-8"), \
+                msg=nonce.encode("UTF-8")+datagram.encode("UTF-8"), \
                 digestmod=hashlib.sha256).digest()).decode()
 
 def _list_str_to_value(string):

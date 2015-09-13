@@ -418,94 +418,94 @@ class SDPTests(unittest.TestCase):
             'TOV:4000D3349FEBBEAE\n' \
             'AMW:8 null 9\n'
 
-        self.sdp.decode(datagram)
+        sdp = SDP.decode(datagram)
 
-        d = self.sdp.get_data('id')
+        d = sdp.get_data('id')
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, 'abc123')
 
-        d = self.sdp.get_data('ip')
+        d = sdp.get_data('ip')
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, '10.0.0.10')
 
-        d = self.sdp.get_data('AAS')
+        d = sdp.get_data('AAS')
         self.assertTrue(isinstance(d, int))
         self.assertEqual(d, 1)
 
-        d = self.sdp.get_data('ABV')
+        d = sdp.get_data('ABV')
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, '2')
 
-        d = self.sdp.get_data('ACV')
+        d = sdp.get_data('ACV')
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, '3.5')
 
-        d = self.sdp.get_data('ADV')
+        d = sdp.get_data('ADV')
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, '4')
 
-        d = self.sdp.get_data('AEV')
+        d = sdp.get_data('AEV')
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, '5.5')
 
-        d = self.sdp.get_data('AFV')
+        d = sdp.get_data('AFV')
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, 'abc')
 
-        d = self.sdp.get_data('AGW')
+        d = sdp.get_data('AGW')
         self.assertTrue(isinstance(d, list))
         self.assertEqual(d, [4])
 
-        d = self.sdp.get_data('AHW')
+        d = sdp.get_data('AHW')
         self.assertTrue(isinstance(d, list))
         self.assertEqual(d, [5, 6, 75])
 
-        d = self.sdp.get_data('AMW')
+        d = sdp.get_data('AMW')
         self.assertTrue(isinstance(d, list))
         self.assertEqual(d, [8, None, 9])
 
-        d = self.sdp.get_data('ALF')
+        d = sdp.get_data('ALF')
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, '4000D3349FEBBEAE')
 
-        d = self.sdp.get_data('TOV')
+        d = sdp.get_data('TOV')
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, '4000D3349FEBBEAE')
 
-        d = self.sdp.get_data('AIS')
+        d = sdp.get_data('AIS')
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, '?')
 
-        d = self.sdp.get_data('AJV')
+        d = sdp.get_data('AJV')
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, '?')
 
-        d = self.sdp.get_data('AKW')
+        d = sdp.get_data('AKW')
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, '?')
 
-        d = self.sdp.get_data('iq')
+        d = sdp.get_data('iq')
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, '?')
 
-        self.assertFalse(self.sdp.is_signed())
-        self.assertFalse(self.sdp.check_signature(datagram))
+        self.assertFalse(sdp.is_signed())
+        self.assertFalse(sdp.check_signature(datagram))
 
     def test_decode_invalid(self):
         ''' Test decoder with invalid datagram '''
-        self.assertRaises(SDPDecodeException, self.sdp.decode, '')
-        self.assertRaises(SDPDecodeException, self.sdp.decode, '\n')
-        self.assertRaises(SDPDecodeException, self.sdp.decode, \
+        self.assertRaises(SDPDecodeException, SDP.decode, '')
+        self.assertRaises(SDPDecodeException, SDP.decode, '\n')
+        self.assertRaises(SDPDecodeException, SDP.decode, \
             'id:abc\nABC')
-        self.assertRaises(SDPDecodeException, self.sdp.decode, \
+        self.assertRaises(SDPDecodeException, SDP.decode, \
             'id:abc\nABS:abc')
-        self.assertRaises(SDPDecodeException, self.sdp.decode, \
+        self.assertRaises(SDPDecodeException, SDP.decode, \
             'id:abc\nACW:123 bcd')
-        self.assertRaises(SDPDecodeException, self.sdp.decode, \
+        self.assertRaises(SDPDecodeException, SDP.decode, \
             'id:abc\nADW:1.0 2.2')
-        self.assertRaises(SDPDecodeException, self.sdp.decode, \
+        self.assertRaises(SDPDecodeException, SDP.decode, \
             'id:abc\nxyz:123 : 456')
-        self.assertRaises(SDPDecodeException, self.sdp.decode, \
+        self.assertRaises(SDPDecodeException, SDP.decode, \
             'id:abc\nxyz:\n')
 
     def test_encode_with_signature(self):
@@ -539,47 +539,31 @@ class SDPTests(unittest.TestCase):
         ''' Test decoder with valid SHA1 HMAC signature '''
         datagram = 'id:abc123\n'
         signature = 'sha256:wWYN9u1zKY+zqo0Z0xHxDL38tYsJBv+Mk5UAvN7hr5k=\n'
-        self.sdp.set_secret_key('my-secret-key')
-        self.sdp.set_nonce('12345')
-        self.sdp.decode(datagram + signature)
+        sdp = SDP.decode(datagram + signature, 'my-secret-key', '12345')
 
-        self.assertTrue(self.sdp.is_signed())
+        self.assertTrue(sdp.is_signed())
 
-        d = self.sdp.get_data('id')
+        d = sdp.get_data('id')
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, 'abc123')
 
-        self.assertTrue(self.sdp.check_signature(datagram))
+        self.assertTrue(sdp.check_signature(datagram))
 
     def test_decode_with_invalid_signature1(self):
         ''' Test decoder with invalid SHA1 HMAC signature (1) '''
         datagram = 'id:abc123\n'
         signature = 'sha256:wWYN9u1zKY+zqo0Z0xHxDL38tYsJBv+Mk5UAvN7hr5k=\n'
-        self.sdp.set_secret_key('wrong-secret-key')
-        self.sdp.set_nonce('12345')
-        self.sdp.decode(datagram + signature)
-
-        self.assertIsNone(self.sdp.get_data('id'))
-
-        self.assertFalse(self.sdp.is_signed())
-        self.assertFalse(self.sdp.check_signature(datagram))
+        self.assertRaises(SDPDecodeException, SDP.decode, datagram + signature, 'wrong-secret-key', '12345')
 
     def test_decode_with_invalid_signature2(self):
         ''' Test decoder with invalid SHA1 HMAC signature (2)'''
-        self.sdp.set_secret_key('my-secret-key')
-        self.sdp.set_nonce('54321')
         datagram = 'id:abc123\n'
         signature = 'sha256:wWYN9u1zKY+zqo0Z0xHxDL38tYsJBv+Mk5UAvN7hr5k=\n'
-        self.sdp.decode(datagram + signature)
-
-        self.assertIsNone(self.sdp.get_data('id'))
-
-        self.assertFalse(self.sdp.is_signed())
-        self.assertFalse(self.sdp.check_signature(datagram))
+        self.assertRaises(SDPDecodeException, SDP.decode, datagram + signature, 'my-secret-key', '54321')
 
     def test_decode_invalid_packet_with_valid_signature(self):
         ''' Test decoder with valid SHA1 HMAC signature '''
-        self.assertRaises(SDPException, self.sdp.decode, \
+        self.assertRaises(SDPException, SDP.decode, \
             'id:abc123\n' \
             'sha256:wWYN9u1zKY+zqo0Z0xHxDL38tYsJBv+Mk5UAvN7hr5k=\n' \
             'zx:123\n')
