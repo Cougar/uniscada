@@ -396,8 +396,8 @@ class SDP(UnsecureSDP):
         """ Create a new empty in-memory ``SDP`` datagram
         """
         super(SDP, self).__init__()
-        self._secret_key = None
-        self._nonce = None
+        self._secret_key = secret_key
+        self._nonce = nonce
         if secret_key:
             self.set_secret_key(secret_key)
         if nonce:
