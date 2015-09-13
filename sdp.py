@@ -337,6 +337,31 @@ class UnsecureSDP(object):
             datagram += key + ':?\n'
         return datagram
 
+    def _decode_line(self, line):
+        """ Decodes one line from SDP packet
+
+        :param line: one line from SDP packet
+
+        :returns: (key, val) duple
+        """
+        if not ':' in line:
+            log.error('datagram line format error: no colon')
+            raise SDPDecodeException('datagram line error: \"' + \
+                line + '\"')
+        try:
+            (key, val) = line.split(':', 1)
+        except:
+            log.error('datagram line format error: cant split')
+            raise SDPDecodeException('error in line: \"' + line + '\"')
+        if ':' in val:
+            log.error('datagram line format error: more than one colon')
+            raise SDPDecodeException('colon in value: \"' + val + '\"')
+        if not val:
+            log.error('value mising for \"%s\"', key)
+            raise SDPDecodeException('value mising for \"' + key + '\"')
+
+        return (key, val)
+
     def decode(self, datagram):
         """ Decodes SDP datagram to packet
 
@@ -347,23 +372,7 @@ class UnsecureSDP(object):
             if line == '':
                 log.warning('empty line in datagram')
                 continue
-            if not ':' in line:
-                log.error('datagram line format error: no colon')
-                raise SDPDecodeException('datagram line error: \"' + \
-                    line + '\"')
-            try:
-                (key, val) = line.split(':', 1)
-            except:
-                log.error('datagram line format error: cant split')
-                raise SDPDecodeException('error in line: \"' + line + '\"')
-            if ':' in val:
-                log.error('datagram line format error: more than one colon')
-                raise SDPDecodeException('colon in value: \"' + val + '\"')
-            if not val:
-                log.error('value mising for \"%s\"', key)
-                raise SDPDecodeException('value mising for \"' + key + '\"')
-            if not self.get_data('id') and key != 'id':
-                raise SDPDecodeException('id MUST BE first line but read: %s\n%s' % (key, datagram))
+            (key, val) = self._decode_line(line)
             if key == 'id':
                 controllerid = val
             try:
@@ -462,21 +471,10 @@ class SDP(UnsecureSDP):
             if self._signed:
                 log.error('no data is allowed after signature')
                 raise SDPDecodeException('no data is allowed after signature')
-            if not ':' in line:
-                log.error('datagram line format error: no colon')
-                raise SDPDecodeException('datagram line error: \"' + \
-                    line + '\"')
-            try:
-                (key, val) = line.split(':', 1)
-            except:
-                log.error('datagram line format error: cant split')
-                raise SDPDecodeException('error in line: \"' + line + '\"')
-            if ':' in val:
-                log.error('datagram line format error: more than one colon')
-                raise SDPDecodeException('colon in value: \"' + val + '\"')
-            if not val:
-                log.error('value mising for \"%s\"', key)
-                raise SDPDecodeException('value mising for \"' + key + '\"')
+            if line == '':
+                log.warning('empty line in datagram')
+                continue
+            (key, val) = self._decode_line(line)
             if key == 'sha256':
                 self._sha256 = val
                 self._signed = True
