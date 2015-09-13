@@ -342,6 +342,7 @@ class UnsecureSDP(object):
 
         :param datagram: The string representation of SDP datagram
         """
+        controllerid = None
         for line in datagram.splitlines():
             if line == '':
                 log.warning('empty line in datagram')
@@ -363,12 +364,16 @@ class UnsecureSDP(object):
                 raise SDPDecodeException('value mising for \"' + key + '\"')
             if not self.get_data('id') and key != 'id':
                 raise SDPDecodeException('id MUST BE first line but read: %s\n%s' % (key, datagram))
+            if key == 'id':
+                controllerid = val
             try:
                 self.add_keyvalue(key, val)
             except SDPException as ex:
                 self._empty_sdp()
                 raise SDPDecodeException(ex)
-        if self.get_data('id') is None:
+            if not controllerid:
+                raise SDPDecodeException('id MUST BE first line but read: %s\n%s' % (key, datagram))
+        if not controllerid:
             log.error('id missing in datagram')
             raise SDPDecodeException('id: _MUST_ exists in datagram')
 
