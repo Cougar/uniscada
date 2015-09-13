@@ -553,19 +553,6 @@ class SDPTests(unittest.TestCase):
 
     def test_decode_with_invalid_signature1(self):
         ''' Test decoder with invalid SHA1 HMAC signature (1) '''
-        self.sdp.set_secret_key('wrong-secret-key')
-        self.sdp.set_nonce('12345')
-        datagram = 'id:abc123\n'
-        signature = 'sha256:wWYN9u1zKY+zqo0Z0xHxDL38tYsJBv+Mk5UAvN7hr5k=\n'
-        self.sdp.decode(datagram + signature)
-
-        self.assertEqual(self.sdp.get_data('id'), None)
-
-        self.assertFalse(self.sdp.is_signed())
-        self.assertFalse(self.sdp.check_signature(datagram))
-
-    def test_decode_with_invalid_signature2(self):
-        ''' Test decoder with invalid SHA1 HMAC signature (2)'''
         datagram = 'id:abc123\n'
         signature = 'sha256:wWYN9u1zKY+zqo0Z0xHxDL38tYsJBv+Mk5UAvN7hr5k=\n'
         self.sdp.set_secret_key('wrong-secret-key')
@@ -577,8 +564,8 @@ class SDPTests(unittest.TestCase):
         self.assertFalse(self.sdp.is_signed())
         self.assertFalse(self.sdp.check_signature(datagram))
 
-    def test_decode_with_invalid_signature3(self):
-        ''' Test decoder with invalid SHA1 HMAC signature (3) '''
+    def test_decode_with_invalid_signature2(self):
+        ''' Test decoder with invalid SHA1 HMAC signature (2)'''
         self.sdp.set_secret_key('my-secret-key')
         self.sdp.set_nonce('54321')
         datagram = 'id:abc123\n'
