@@ -394,12 +394,12 @@ class UnsecureSDP(object):
         """ Returns data dictionary """
         return str(self.data)
 
-class SDP(UnsecureSDP):
+class SignedSDP(UnsecureSDP):
     """ Convert to and from signed SDP protocol datagram """
     def __init__(self, secret_key=None, nonce=None):
         """ Create a new empty in-memory ``SDP`` datagram
         """
-        super(SDP, self).__init__()
+        super(SignedSDP, self).__init__()
         self._secret_key = secret_key
         self._nonce = nonce
         if secret_key:
@@ -410,7 +410,7 @@ class SDP(UnsecureSDP):
     def _empty_sdp(self):
         """ Clear all data from this SDP instance
         """
-        super(SDP, self)._empty_sdp()
+        super(SignedSDP, self)._empty_sdp()
         self._signed = False
 
     def set_secret_key(self, secret_key):
@@ -438,7 +438,7 @@ class SDP(UnsecureSDP):
         """
         if key == 'sha256':
             raise SDPException('"sha256" is not a valid key')
-        super(SDP, self)._add_keyvalue_string(key, val)
+        super(SignedSDP, self)._add_keyvalue_string(key, val)
 
     def encode(self, controllerid=None):
         """ Encodes SDP packet to datagram
@@ -447,7 +447,7 @@ class SDP(UnsecureSDP):
 
         :returns: The string representation of SDP datagram
         """
-        datagram = super(SDP, self).encode(controllerid)
+        datagram = super(SignedSDP, self).encode(controllerid)
         if self._secret_key:
             self.add_signature(datagram)
             datagram += 'sha256:' + self._sha256 + '\n'
@@ -461,7 +461,7 @@ class SDP(UnsecureSDP):
         if self._nonce == None:
             raise SDPDecodeException("nonce is required for HMAC")
 
-        self._sha256 = SDP._calculate_signature(datagram, self._secret_key, self._nonce)
+        self._sha256 = SignedSDP._calculate_signature(datagram, self._secret_key, self._nonce)
         self._signed = True
         return
 
@@ -480,15 +480,15 @@ class SDP(UnsecureSDP):
             if line == '':
                 log.warning('empty line in datagram')
                 continue
-            (key, val) = SDP._decode_line(line)
+            (key, val) = SignedSDP._decode_line(line)
             if key == 'sha256':
                 sha256 = val
                 if secret_key:
-                    if not SDP._check_signature(datagram_before_sig, sha256, secret_key, nonce):
+                    if not SignedSDP._check_signature(datagram_before_sig, sha256, secret_key, nonce):
                         raise SDPDecodeException('signature check error')
                 continue
             datagram_before_sig += line + '\n'
-        sdp = SDP()
+        sdp = SignedSDP()
         sdp = UnsecureSDP.decode(datagram_before_sig, sdp)
         if sha256:
             sdp.set_secret_key(secret_key)
@@ -503,14 +503,14 @@ class SDP(UnsecureSDP):
         if not self._sha256:
             log.warning('SDP signature is not known')
             return False
-        return SDP._check_signature(datagram, self._sha256, self._secret_key, self._nonce)
+        return SignedSDP._check_signature(datagram, self._sha256, self._secret_key, self._nonce)
 
     @staticmethod
     def _check_signature(datagram, sha256, secret_key=None, nonce=None):
         if not sha256:
             log.warning('SDP is not signed')
             return False
-        signature = SDP._calculate_signature(datagram, secret_key, nonce)
+        signature = SignedSDP._calculate_signature(datagram, secret_key, nonce)
         return hmac.compare_digest(sha256, signature)
 
     @staticmethod
@@ -535,6 +535,9 @@ class SDP(UnsecureSDP):
             hmac.new(secret_key.encode("UTF-8"), \
                 msg=nonce.encode("UTF-8")+datagram.encode("UTF-8"), \
                 digestmod=hashlib.sha256).digest()).decode()
+
+class SDP(SignedSDP):
+    """ This is a wrapper class for a real SDP class (SignedSDP) """
 
 def _list_str_to_value(string):
     """ Return int of string or None if string is "null" """
