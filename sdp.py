@@ -128,12 +128,15 @@ class UnsecureSDP(object):
                 'or list of numbers but ' + \
                 str(key) + ' is ' + str(type(val)))
         if isinstance(val, list):
-            val = ' '.join([_list_value_to_str(x) for x in val])
-        lst = [_list_str_to_value(x) for x in val.split(' ')]
-        if val != ' '.join([_list_value_to_str(x) for x in lst]):
+            val = ' '.join([UnsecureSDP._list_value_to_str(x)
+                            for x in val])
+        lst = [UnsecureSDP._list_str_to_value(x) for x in val.split(' ')]
+        if val != ' '.join([UnsecureSDP._list_value_to_str(x)
+                            for x in lst]):
             raise SDPException('Only integers allowed in List of ' \
                 'Values: "' + val + '" != "' + \
-                ' '.join([_list_value_to_str(x) for x in lst]) + '"')
+                ' '.join([UnsecureSDP._list_value_to_str(x)
+                          for x in lst]) + '"')
         self.add_value(key[:-1], lst)
 
     def _add_keyvalue_string(self, key, val):
@@ -329,7 +332,7 @@ class UnsecureSDP(object):
         for key in self.data['value'].keys():
             if isinstance(self.data['value'][key], list):
                 datagram += key + 'W:' + \
-                    ' '.join([_list_value_to_str(x) \
+                    ' '.join([UnsecureSDP._list_value_to_str(x) \
                         for x in self.data['value'][key]]) + '\n'
             else:
                 datagram += key + 'V:' + str(self.data['value'][key]) + '\n'
@@ -394,6 +397,22 @@ class UnsecureSDP(object):
         """ Returns data dictionary """
         return str(self.data)
 
+
+    def _list_str_to_value(string):
+        """ Return int of string or None if string is "null" """
+        if string == 'null':
+            return None
+        try:
+            return int(string)
+        except ValueError:
+            raise SDPException('Illegal number in Value string: %s' \
+                % string)
+
+    def _list_value_to_str(val):
+        """ Return string or "null" if missing """
+        if val is None:
+            return 'null'
+        return str(val)
 class SignedSDP(UnsecureSDP):
     """ Convert to and from signed SDP protocol datagram """
     def __init__(self, secret_key=None, nonce=None):
@@ -538,19 +557,3 @@ class SignedSDP(UnsecureSDP):
 
 class SDP(SignedSDP):
     """ This is a wrapper class for a real SDP class (SignedSDP) """
-
-def _list_str_to_value(string):
-    """ Return int of string or None if string is "null" """
-    if string == 'null':
-        return None
-    try:
-        return int(string)
-    except ValueError:
-        raise SDPException('Illegal number in Value string: %s' \
-            % string)
-
-def _list_value_to_str(val):
-    """ Return string or "null" if missing """
-    if val is None:
-        return 'null'
-    return str(val)
