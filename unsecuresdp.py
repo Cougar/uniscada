@@ -382,7 +382,11 @@ class UnsecureSDP(object):
                 continue
             (key, val) = UnsecureSDP._decode_line(line)
             if key == 'id':
+                if controllerid:
+                    raise SDPDecodeException('ONLY ONE "id" is allowed')
                 controllerid = val
+            if sdp.get_data(key):
+                raise SDPDecodeException('multiple "%s" fields' % key)
             try:
                 sdp.add_keyvalue(key, val)
             except SDPException as ex:

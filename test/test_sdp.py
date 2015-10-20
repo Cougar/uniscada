@@ -507,6 +507,10 @@ class SDPTests(unittest.TestCase):
             'id:abc\nxyz:123 : 456')
         self.assertRaises(SDPDecodeException, SDP.decode, \
             'id:abc\nxyz:\n')
+        self.assertRaises(SDPDecodeException, SDP.decode, \
+            'id:abc\nAAS:1\nAAS:2\n')
+        self.assertRaises(SDPDecodeException, SDP.decode, \
+            'id:abc\nAAS:1\nid:def\n')
 
     def test_encode_with_signature(self):
         ''' Test encoder for full packet with SHA1 HMAC signature'''
