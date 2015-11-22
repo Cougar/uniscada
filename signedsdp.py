@@ -22,6 +22,7 @@ class SignedSDP(UnsecureSDP):
         super(SignedSDP, self).__init__()
         self._secret_key = secret_key
         self._nonce = nonce
+        self._csum = None
         if secret_key:
             self.set_secret_key(secret_key)
         if nonce:
@@ -81,7 +82,8 @@ class SignedSDP(UnsecureSDP):
         if self._nonce == None:
             raise SDPDecodeException("nonce is required for HMAC")
 
-        self._sha256 = SignedSDP._calculate_signature(datagram, self._secret_key, self._nonce)
+        self._csum = SignedSDP._calculate_checksum(datagram)
+        self._sha256 = SignedSDP._calculate_signature(self._csum, self._secret_key, self._nonce)
         self._signed = True
         return
 
@@ -93,6 +95,7 @@ class SignedSDP(UnsecureSDP):
         """
         datagram_before_sig = ''
         sha256 = None
+        csum = None
         for line in datagram.splitlines():
             if sha256:
                 log.error('no data is allowed after signature')
@@ -103,8 +106,9 @@ class SignedSDP(UnsecureSDP):
             (key, val) = SignedSDP._decode_line(line)
             if key == 'sha256':
                 sha256 = val
+                csum = SignedSDP._calculate_checksum(datagram_before_sig)
                 if secret_key:
-                    if not SignedSDP._check_signature(datagram_before_sig, sha256, secret_key, nonce):
+                    if not SignedSDP._check_signature(csum, sha256, secret_key, nonce):
                         raise SDPDecodeException('signature check error')
                 continue
             datagram_before_sig += line + '\n'
@@ -114,30 +118,44 @@ class SignedSDP(UnsecureSDP):
             sdp.set_secret_key(secret_key)
             sdp.set_nonce(nonce)
             sdp._sha256 = sha256
+            sdp._csum = csum
             sdp._signed = True
         return sdp
 
-    def check_signature(self, datagram):
+    def check_signature(self):
         if not self._signed:
             return False
         if not self._sha256:
             log.warning('SDP signature is not known')
             return False
-        return SignedSDP._check_signature(datagram, self._sha256, self._secret_key, self._nonce)
+        if not self._csum:
+            log.warning('SDP checksum is not known')
+            return False
+        return SignedSDP._check_signature(self._csum, self._sha256, self._secret_key, self._nonce)
 
     @staticmethod
-    def _check_signature(datagram, sha256, secret_key=None, nonce=None):
+    def _check_signature(checksum, sha256, secret_key=None, nonce=None):
         if not sha256:
             log.warning('SDP is not signed')
             return False
-        signature = SignedSDP._calculate_signature(datagram, secret_key, nonce)
+        signature = SignedSDP._calculate_signature(checksum, secret_key, nonce)
         return hmac.compare_digest(sha256, signature)
 
     @staticmethod
-    def _calculate_signature(datagram, secret_key, nonce):
-        """ Return signature for given datagram
+    def _calculate_checksum(datagram):
+        """ Return checksum for given datagram
 
         :param datagram: unsigned datagram
+
+        :returns: BASE64 encoded checksum
+        """
+        return base64.b64encode(hashlib.sha256(datagram.encode("UTF-8")).digest()).decode()
+
+    @staticmethod
+    def _calculate_signature(checksum, secret_key, nonce):
+        """ Return signature for given checksum
+
+        :param checksum: checksum
         :param secret_key: secret key
         :param nonce: nonce
 
@@ -145,13 +163,13 @@ class SignedSDP(UnsecureSDP):
         """
         if not secret_key:
             log.error('secret key is missing')
-            raise SDPDecodeException('datagram is signed but ' \
+            raise SDPDecodeException('checksum exists but ' \
                 'secret key is missing')
         if nonce == None:
             log.error('nonce is missing')
-            raise SDPDecodeException('datagram is signed but ' \
+            raise SDPDecodeException('checksum exists but ' \
                 'nonce is missing')
         return base64.b64encode( \
             hmac.new(secret_key.encode("UTF-8"), \
-                msg=nonce.encode("UTF-8")+datagram.encode("UTF-8"), \
+                msg=nonce.encode("UTF-8")+checksum.encode("UTF-8"), \
                 digestmod=hashlib.sha256).digest()).decode()

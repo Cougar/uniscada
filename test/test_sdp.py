@@ -346,7 +346,7 @@ class SDPTests(unittest.TestCase):
             'iq:?',
         ])
         self.assertFalse(self.sdp.is_signed())
-        self.assertFalse(self.sdp.check_signature(datagram))
+        self.assertFalse(self.sdp.check_signature())
 
     def test_encode_with_id_param(self):
         ''' Test encoder with id for full packet'''
@@ -391,7 +391,7 @@ class SDPTests(unittest.TestCase):
             'iq:?',
         ])
         self.assertFalse(self.sdp.is_signed())
-        self.assertFalse(self.sdp.check_signature(datagram))
+        self.assertFalse(self.sdp.check_signature())
 
     def test_encode_without_id(self):
         ''' Test encoder without id'''
@@ -489,7 +489,7 @@ class SDPTests(unittest.TestCase):
         self.assertEqual(d, '?')
 
         self.assertFalse(sdp.is_signed())
-        self.assertFalse(sdp.check_signature(datagram))
+        self.assertFalse(sdp.check_signature())
 
     def test_decode_invalid(self):
         ''' Test decoder with invalid datagram '''
@@ -523,7 +523,7 @@ class SDPTests(unittest.TestCase):
         self.assertTrue(isinstance(datagram, str))
         self.assertEqual(sorted(datagram.splitlines()), [
             'id:abc123',
-            'sha256:wWYN9u1zKY+zqo0Z0xHxDL38tYsJBv+Mk5UAvN7hr5k=',
+            'sha256:Z/91VAs43GlbSHZVIzaqXSLKpunjLYPQfnhpHEvzYys=',
         ])
 
     def test_encode_with_signature2(self):
@@ -536,13 +536,13 @@ class SDPTests(unittest.TestCase):
         self.assertTrue(isinstance(datagram, str))
         self.assertEqual(sorted(datagram.splitlines()), [
             'id:abc123',
-            'sha256:wWYN9u1zKY+zqo0Z0xHxDL38tYsJBv+Mk5UAvN7hr5k=',
+            'sha256:Z/91VAs43GlbSHZVIzaqXSLKpunjLYPQfnhpHEvzYys=',
         ])
 
     def test_decode_with_valid_signature(self):
         ''' Test decoder with valid SHA1 HMAC signature '''
         datagram = 'id:abc123\n'
-        signature = 'sha256:wWYN9u1zKY+zqo0Z0xHxDL38tYsJBv+Mk5UAvN7hr5k=\n'
+        signature = 'sha256:Z/91VAs43GlbSHZVIzaqXSLKpunjLYPQfnhpHEvzYys=\n'
         sdp = SDP.decode(datagram + signature, 'my-secret-key', '12345')
 
         self.assertTrue(sdp.is_signed())
@@ -551,7 +551,7 @@ class SDPTests(unittest.TestCase):
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, 'abc123')
 
-        self.assertTrue(sdp.check_signature(datagram))
+        self.assertTrue(sdp.check_signature())
 
     def test_decode_with_invalid_signature1(self):
         ''' Test decoder with invalid SHA1 HMAC signature (1) '''
