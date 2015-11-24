@@ -87,8 +87,8 @@ class SignedSDP(UnsecureSDP):
         self._signed = True
         return
 
-    @staticmethod
-    def decode(datagram, secret_key=None, nonce=None):
+    @classmethod
+    def decode(cls, datagram, secret_key=None, nonce=None):
         """ Decodes SDP datagram to packet
 
         :param datagram: The string representation of SDP datagram

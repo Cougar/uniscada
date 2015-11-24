@@ -361,8 +361,8 @@ class SDPItem(object):
 
         return (key, val)
 
-    @staticmethod
-    def decode(datagram, sdp=None):
+    @classmethod
+    def decode(cls, datagram, sdp=None):
         """ Decodes SDP datagram to packet
 
         :param datagram: The string representation of SDP datagram
