@@ -76,6 +76,7 @@ import datetime
 
 import json
 
+import ssl
 import tornado.web
 import tornado.gen
 
@@ -186,7 +187,12 @@ if __name__ == '__main__':
         httpsserver = tornado.httpserver.HTTPServer(app, ssl_options = {
                 "certfile": "api.uniscada.eu.crt",
                 "keyfile": "api.uniscada.eu.key",
-                "ca_certs": "COMODORSAAddTrustCA.crt"
+                "ca_certs": "COMODORSAAddTrustCA.crt",
+                "ssl_version": ssl.PROTOCOL_TLSv1_2,
+                "ciphers": (
+                    'ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:ECDH+HIGH:'
+                    'DH+HIGH:ECDH+3DES:DH+3DES:RSA+AESGCM:RSA+AES:RSA+HIGH:RSA+3DES:'
+                    '!aNULL:!eNULL:!MD5:!RC4')
             })
         httpsserver.listen(options.https_port, address = options.listen_address)
         print("OK")
