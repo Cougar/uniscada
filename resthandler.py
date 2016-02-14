@@ -72,6 +72,13 @@ class RestHandler(ContentNegotiation, tornado.web.RequestHandler):
             self.set_status(result['status'])
 
         self.set_header("Content-Type", "application/json; charset=utf-8")
+        self.set_header("Strict-Transport-Security", "max-age=31536000")
+        self.set_header("Content-Security-Policy", "default-src 'none';")
+        self.set_header("X-Frame-Options", "deny")
+        self.set_header("X-Xss-Protection", "1; block")
+        self.set_header("Cache-Control", "no-cache")
+        self.set_header("X-Content-Type-Options", "nosniff")
+        self.set_header("Server", "apiserver")
         self.set_header("Access-Control-Allow-Origin", "*")
         if 'headers' in result:
             for header in result['headers']:
