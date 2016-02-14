@@ -65,12 +65,11 @@ sys.path.append('/root/tornado-3.2/')
 sys.path.append('/root/backports.ssl_match_hostname-3.4.0.2/src')
 
 import logging
+import logging.config
 try:
     import chromalog
-    chromalog.basicConfig(level=logging.DEBUG)
 except Exception:
     pass
-logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 
 import datetime
 
@@ -146,6 +145,17 @@ def try_exit():
 if __name__ == '__main__':
     from tornado.options import define, options, parse_command_line
 
+    logging.config.fileConfig('./apiserver.ini')
+    mydefaultlevel = logging.getLogger().getEffectiveLevel()
+    log.debug("log default logger lvl=%s, handlers=%s", logging.getLevelName(mydefaultlevel), str(logging.getLogger().handlers))
+    for mylogger in logging.Logger.manager.loggerDict.keys():
+        mylvl = logging.getLogger(mylogger).getEffectiveLevel()
+        myhdl = logging.getLogger(mylogger).handlers
+        if not mylvl == mydefaultlevel:
+            log.info("log %s lvl=%s, handlers=%s", mylogger, logging.getLevelName(mylvl),  str(myhdl))
+
+    for lvl in ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']:
+        logging.log(getattr(logging, lvl), "test level %s", lvl)
 
     tornado.options.define("http_port", default = "80", help = "HTTP port (0 to disable)", type = int)
     tornado.options.define("https_port", default = "443", help = "HTTPS port (0 to disable)", type = int)

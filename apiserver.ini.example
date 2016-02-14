@@ -5,3 +5,313 @@ dbname = cookie_auth
 dbuser = cookie_r
 dbpass = xxxxxx
 
+##########################################################################
+
+[loggers]
+keys = root,api,api_controllers,api_hostgroups,api_hosts,api_servicegroups,api_services,api_usersessions,auth,concurrent,concurrent.futures,controller,controllers,cookieauth,core,filehandler,globallist,host,hosts,__main__,msgbus,nagiosuser,resthandler,roothandler,sdp,sdpitem,sdpreceiver,service,servicegroup,servicegroups,services,signedsdp,stats,systemauth,tornado,tornado.access,tornado.application,tornado.general,udpcomm,unsecuresdp,usersession,usersessions,websockethandler,wsclient,wsclients
+
+[handlers]
+keys = consoleHandler,chromalogHandler,debugFileHandler,errorFileHandler
+
+[formatters]
+keys = fileFormatter,chromalogFormatter
+
+[handler_consoleHandler]
+class = StreamHandler
+level = DEBUG
+formatter = fileFormatter
+args = (sys.stderr,)
+
+[handler_chromalogHandler]
+class = chromalog.ColorizingStreamHandler
+level = DEBUG
+formatter = chromalogFormatter
+args = (sys.stderr,)
+
+[handler_debugFileHandler]
+class = logging.handlers.TimedRotatingFileHandler
+level = DEBUG
+formatter = fileFormatter
+args = ('./apiserver.log','MIDNIGHT',1,100,None,False,True)
+
+[handler_errorFileHandler]
+class = FileHandler
+level = ERROR
+formatter = fileFormatter
+args = ('./apiserver.error_log','w+')
+
+[formatter_fileFormatter]
+format = %(asctime)s %(levelname)s:%(name)s.%(module)s.%(funcName)s: %(message)s
+
+[formatter_chromalogFormatter]
+class = chromalog.ColorizingFormatter
+format = %(name)-20s: %(asctime)s %(message)s
+datefmt = %Y-%m-%d %H:%M:%S
+
+[logger_root]
+level = DEBUG
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+propagate = 0
+
+[logger_api]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = api
+propagate = 0
+
+[logger_api_controllers]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = api_controllers
+propagate = 0
+
+[logger_api_hostgroups]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = api_hostgroups
+propagate = 0
+
+[logger_api_hosts]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = api_hosts
+propagate = 0
+
+[logger_api_servicegroups]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = api_servicegroups
+propagate = 0
+
+[logger_api_services]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = api_services
+propagate = 0
+
+[logger_api_usersessions]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = api_usersessions
+propagate = 0
+
+[logger_auth]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = auth
+propagate = 0
+
+[logger_concurrent]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = concurrent
+propagate = 0
+
+[logger_concurrent.futures]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = concurrent.futures
+propagate = 0
+
+[logger_controller]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = controller
+propagate = 0
+
+[logger_controllers]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = controllers
+propagate = 0
+
+[logger_cookieauth]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = cookieauth
+propagate = 0
+
+[logger_core]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = core
+propagate = 0
+
+[logger_filehandler]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = filehandler
+propagate = 0
+
+[logger_globallist]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = globallist
+propagate = 0
+
+[logger_host]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = host
+propagate = 0
+
+[logger_hosts]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = hosts
+propagate = 0
+
+[logger___main__]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = __main__
+propagate = 0
+
+[logger_msgbus]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = msgbus
+propagate = 0
+
+[logger_nagiosuser]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = nagiosuser
+propagate = 0
+
+[logger_resthandler]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = resthandler
+propagate = 0
+
+[logger_roothandler]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = roothandler
+propagate = 0
+
+[logger_sdp]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = sdp
+propagate = 0
+
+[logger_sdpitem]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = sdpitem
+propagate = 0
+
+[logger_sdpreceiver]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = sdpreceiver
+propagate = 0
+
+[logger_service]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = service
+propagate = 0
+
+[logger_servicegroup]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = servicegroup
+propagate = 0
+
+[logger_servicegroups]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = servicegroups
+propagate = 0
+
+[logger_services]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = services
+propagate = 0
+
+[logger_signedsdp]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = signedsdp
+propagate = 0
+
+[logger_stats]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = stats
+propagate = 0
+
+[logger_systemauth]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = systemauth
+propagate = 0
+
+[logger_tornado]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = tornado
+propagate = 0
+
+[logger_tornado.access]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = tornado.access
+propagate = 0
+
+[logger_tornado.application]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = tornado.application
+propagate = 0
+
+[logger_tornado.general]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = tornado.general
+propagate = 0
+
+[logger_udpcomm]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = udpcomm
+propagate = 0
+
+[logger_unsecuresdp]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = unsecuresdp
+propagate = 0
+
+[logger_usersession]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = usersession
+propagate = 0
+
+[logger_usersessions]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = usersessions
+propagate = 0
+
+[logger_websockethandler]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = websockethandler
+propagate = 0
+
+[logger_wsclient]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = wsclient
+propagate = 0
+
+[logger_wsclients]
+level = INFO
+handlers = chromalogHandler,debugFileHandler,errorFileHandler
+qualname = wsclients
