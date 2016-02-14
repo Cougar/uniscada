@@ -70,6 +70,7 @@ try:
     import chromalog
 except Exception:
     pass
+from configparser import SafeConfigParser
 
 import datetime
 
@@ -157,11 +158,14 @@ if __name__ == '__main__':
     for lvl in ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']:
         logging.log(getattr(logging, lvl), "test level %s", lvl)
 
-    tornado.options.define("http_port", default = "80", help = "HTTP port (0 to disable)", type = int)
-    tornado.options.define("https_port", default = "443", help = "HTTPS port (0 to disable)", type = int)
-    tornado.options.define("certfile", default = "api.uniscada.eu.crt.pem", help = "PEM certificate", type = str)
-    tornado.options.define("keyfile", default = "api.uniscada.eu.key.pem", help = "PEM certificate key", type = str)
-    tornado.options.define("ca_certs", default = "cacert.pem", help = "CA PEM certificate", type = str)
+    srvconfig = SafeConfigParser()
+    srvconfig.read("./apiserver.ini")
+
+    tornado.options.define("http_port", default = srvconfig.get('http', 'port', fallback=80), help = "HTTP port (0 to disable)", type = int)
+    tornado.options.define("https_port", default = srvconfig.get('https', 'port', fallback=443), help = "HTTPS port (0 to disable)", type = int)
+    tornado.options.define("certfile", default = srvconfig.get('https', 'certfile', fallback="apiserver.crt.pem"), help = "PEM certificate", type = str)
+    tornado.options.define("keyfile", default = srvconfig.get('https', 'keyfile', fallback="apiserver.key.pem"), help = "PEM certificate key", type = str)
+    tornado.options.define("ca_certs", default = srvconfig.get('https', 'ca_certs', fallback="cacert.pem"), help = "CA PEM certificate", type = str)
     tornado.options.define("listen_address", default = "0.0.0.0", help = "Listen this address only", type = str)
     tornado.options.define("udp_port", default = "44444", help = "UDP listen port", type = int)
     tornado.options.define("statefile", default = "/tmp/apiserver.pkl", help = "Read/write server state to/from this file during statup/shutdown", type = str)

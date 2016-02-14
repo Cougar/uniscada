@@ -5,6 +5,15 @@ dbname = cookie_auth
 dbuser = cookie_r
 dbpass = xxxxxx
 
+[http]
+port = 80
+
+[https]
+port = 443
+certfile = apiserver.crt.pem
+keyfile = apiserver.key.pem
+ca_certs = cacert.pem
+
 ##########################################################################
 
 [loggers]
