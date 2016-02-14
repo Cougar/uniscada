@@ -187,7 +187,7 @@ if __name__ == '__main__':
         httpsserver = tornado.httpserver.HTTPServer(app, ssl_options = {
                 "certfile": "api.uniscada.eu.crt",
                 "keyfile": "api.uniscada.eu.key",
-                "ca_certs": "COMODORSAAddTrustCA.crt",
+                "ca_certs": "cacert.pem",
                 "ssl_version": ssl.PROTOCOL_TLSv1_2,
                 "ciphers": (
                     'ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:ECDH+HIGH:'
