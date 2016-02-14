@@ -184,9 +184,9 @@ if __name__ == '__main__':
     if options.https_port != 0:
         print("HTTPS server listening on port " + str(options.https_port))
         import tornado.httpserver
-        httpsserver = tornado.httpserver.HTTPServer(app, ssl_options = {
-                "certfile": "api.uniscada.eu.crt",
-                "keyfile": "api.uniscada.eu.key",
+        httpsserver = tornado.httpserver.HTTPServer(app, ssl_options={
+                "certfile": "api.uniscada.eu.crt.pem",
+                "keyfile": "api.uniscada.eu.key.pem",
                 "ca_certs": "cacert.pem",
                 "ssl_version": ssl.PROTOCOL_TLSv1_2,
                 "ciphers": (
