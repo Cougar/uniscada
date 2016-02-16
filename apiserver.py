@@ -216,7 +216,7 @@ if __name__ == '__main__':
     }
 
     app = tornado.web.Application([
-        (r'/files/(wstest.html|wstest.js)', FileHandler),
+        (r'/files/([A-Za-z0-9\.\-_\/]+)', tornado.web.StaticFileHandler, {"path": "./static/"}),
         (r'/api/v1/(servicegroups|hostgroups|services|hosts|controllers|usersessions)(/(.*))?', RestHandler, handler_settings),
         (r'/api/v1/ws', WebSocketHandler, handler_settings),
         (r'/api/v1/', RootHandler),
