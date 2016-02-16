@@ -1,3 +1,6 @@
+[sdp]
+udp_port = 44444
+
 [CookieAuth]
 cookiename = DefaultAuth
 dbhost = localhost

@@ -167,7 +167,7 @@ if __name__ == '__main__':
     tornado.options.define("keyfile", default = srvconfig.get('https', 'keyfile', fallback="apiserver.key.pem"), help = "PEM certificate key", type = str)
     tornado.options.define("ca_certs", default = srvconfig.get('https', 'ca_certs', fallback="cacert.pem"), help = "CA PEM certificate", type = str)
     tornado.options.define("listen_address", default = "0.0.0.0", help = "Listen this address only", type = str)
-    tornado.options.define("udp_port", default = "44444", help = "UDP listen port", type = int)
+    tornado.options.define("udp_port", default = srvconfig.get('sdp', 'udp_port', fallback=44444), help = "UDP listen port", type = int)
     tornado.options.define("statefile", default = "/tmp/apiserver.pkl", help = "Read/write server state to/from this file during statup/shutdown", type = str)
     tornado.options.define("configfile", default = "./apiserver.ini", help = "Configuration file", type = str)
 
@@ -219,7 +219,8 @@ if __name__ == '__main__':
         app.listen(options.http_port, address = options.listen_address)
         print("OK")
 
-    UDPReader("0.0.0.0", int(options.udp_port), core)
+    log.info("SDP listening on UDP port %s", options.udp_port)
+    udpcomm = UDPReader("0.0.0.0", int(options.udp_port), core)
 
     import tornado.ioloop
 
