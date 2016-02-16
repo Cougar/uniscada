@@ -20,10 +20,10 @@ ca_certs = cacert.pem
 ##########################################################################
 
 [loggers]
-keys = root,api,api_controllers,api_hostgroups,api_hosts,api_servicegroups,api_services,api_usersessions,auth,concurrent,concurrent.futures,controller,controllers,cookieauth,core,filehandler,globallist,host,hosts,__main__,msgbus,nagiosuser,resthandler,roothandler,sdp,sdpitem,sdpreceiver,service,servicegroup,servicegroups,services,signedsdp,stats,systemauth,tornado,tornado.access,tornado.application,tornado.general,udpcomm,unsecuresdp,usersession,usersessions,websockethandler,wsclient,wsclients
+keys = root,status,api,api_controllers,api_hostgroups,api_hosts,api_servicegroups,api_services,api_usersessions,auth,concurrent,concurrent.futures,controller,controllers,cookieauth,core,filehandler,globallist,host,hosts,__main__,msgbus,nagiosuser,resthandler,roothandler,sdp,sdpitem,sdpreceiver,service,servicegroup,servicegroups,services,signedsdp,stats,systemauth,tornado,tornado.access,tornado.application,tornado.general,udpcomm,unsecuresdp,usersession,usersessions,websockethandler,wsclient,wsclients
 
 [handlers]
-keys = consoleHandler,chromalogHandler,debugFileHandler,errorFileHandler
+keys = consoleHandler,chromalogHandler,debugFileHandler,errorFileHandler,statusFileHandler
 
 [formatters]
 keys = fileFormatter,chromalogFormatter
@@ -52,6 +52,12 @@ level = ERROR
 formatter = fileFormatter
 args = ('./apiserver.error_log','w+')
 
+[handler_statusFileHandler]
+class = FileHandler
+level = INFO
+formatter = fileFormatter
+args = ('./apiserver.status_log','w')
+
 [formatter_fileFormatter]
 format = %(asctime)s %(levelname)s:%(name)s.%(module)s.%(funcName)s: %(message)s
 
@@ -63,6 +69,12 @@ datefmt = %Y-%m-%d %H:%M:%S
 [logger_root]
 level = DEBUG
 handlers = chromalogHandler,debugFileHandler,errorFileHandler
+propagate = 0
+
+[logger_status]
+level = INFO
+handlers = statusFileHandler
+qualname = status
 propagate = 0
 
 [logger_api]

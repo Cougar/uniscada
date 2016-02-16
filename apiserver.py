@@ -132,9 +132,25 @@ class UDPReader(object):
 is_closing = False
 
 def signal_handler(signum, frame):
+    global core
     global is_closing
-    logging.info('exiting...')
-    is_closing = True
+    log.info('signal: %d', signum)
+    if signum == signal.SIGINT:
+          log.info('exiting...')
+          is_closing = True
+    elif signum == signal.SIGUSR1:
+        log.info('dump status...')
+        _statdump(core)
+
+def _statdump(core):
+    status = logging.getLogger('status')
+    status.info(' -------------------- dump status... --------------------')
+    status.info('Users: %s', str(core.usersessions()))
+    status.info('Controllers: %s', str(core.controllers()))
+    status.info('Servicegroups: %s', str(core.servicegroups()))
+    status.info('WSClients: %s', str(core.wsclients()))
+    status.info('MsgBus: %s', str(core.msgbus()))
+    status.info('UDPComm: %s', str(udpcomm.u))
 
 def try_exit():
     global is_closing
@@ -224,6 +240,8 @@ if __name__ == '__main__':
 
 
     signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGUSR1, signal_handler)
+    signal.signal(signal.SIGALRM, signal_handler)
     tornado.ioloop.PeriodicCallback(try_exit, 100).start()
     tornado.ioloop.IOLoop.instance().start()
 
