@@ -199,7 +199,7 @@ if __name__ == '__main__':
     ], **app_settings)
 
     if options.https_port != 0:
-        print("HTTPS server listening on port " + str(options.https_port))
+        log.info("HTTPS server listening on port %s", options.https_port)
         import tornado.httpserver
         httpsserver = tornado.httpserver.HTTPServer(app, ssl_options={
                 "certfile": options.certfile,
@@ -212,12 +212,10 @@ if __name__ == '__main__':
                     '!aNULL:!eNULL:!MD5:!RC4')
             })
         httpsserver.listen(options.https_port, address = options.listen_address)
-        print("OK")
 
     if options.http_port != 0:
-        print("HTTP server listening on port " + str(options.http_port))
+        log.info("HTTP server listening on port %s", options.http_port)
         app.listen(options.http_port, address = options.listen_address)
-        print("OK")
 
     log.info("SDP listening on UDP port %s", options.udp_port)
     udpcomm = UDPReader("0.0.0.0", int(options.udp_port), core)
