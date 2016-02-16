@@ -81,6 +81,7 @@ import tornado.web
 import tornado.gen
 
 import signal
+import re
 
 from core import Core
 from udpcomm import *
@@ -134,13 +135,19 @@ is_closing = False
 def signal_handler(signum, frame):
     global core
     global is_closing
-    log.info('signal: %d', signum)
+    for key in dir(signal):
+        sigval = getattr(signal, key)
+        if isinstance(sigval, int) and sigval == signum and re.match(r'^SIG[A-Z]', key):
+            log.info('signal: %s(%d)', key, signum)
     if signum == signal.SIGINT:
           log.info('exiting...')
           is_closing = True
     elif signum == signal.SIGUSR1:
         log.info('dump status...')
         _statdump(core)
+    elif signum == signal.SIGTERM:
+        log.info('exiting...')
+        is_closing = True
 
 def _statdump(core):
     status = logging.getLogger('status')
@@ -239,6 +246,7 @@ if __name__ == '__main__':
     import tornado.ioloop
 
 
+    signal.signal(signal.SIGTERM, signal_handler)
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGUSR1, signal_handler)
     signal.signal(signal.SIGALRM, signal_handler)
