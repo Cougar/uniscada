@@ -114,12 +114,7 @@ class TimerTasks(object):
 
     def _timer_tasks(self):
         ''' Tasks that needs to be executed in regular intervals '''
-        log.debug('Users: %s', str(self._core.usersessions()))
-        log.debug('Controllers: %s', str(self._core.controllers()))
-        log.debug('Servicegroups: %s', str(self._core.servicegroups()))
-        log.debug('WSClients: %s', str(self._core.wsclients()))
-        log.debug('MsgBus: %s', str(self._core.msgbus()))
-        log.debug('UDPComm: %s', str(self._udpcomm))
+        pass
         self.ioloop.add_timeout(datetime.timedelta(seconds=self._interval), self._timer_tasks)
 
 class UDPReader(object):
