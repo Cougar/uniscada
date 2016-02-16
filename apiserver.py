@@ -72,6 +72,7 @@ except Exception:
     pass
 from configparser import SafeConfigParser
 
+import time
 import datetime
 
 import json
@@ -98,7 +99,8 @@ from websockethandler import WebSocketHandler
 
 log = logging.getLogger(__name__)
 
-
+is_closing = False
+last_ctrlc = 0
 
 class TimerTasks(object):
     def __init__(self, interval, core, udpcomm):
@@ -130,18 +132,23 @@ class UDPReader(object):
 
         TimerTasks(10, self._core, self.u)
 
-is_closing = False
-
 def signal_handler(signum, frame):
     global core
     global is_closing
+    global last_ctrlc
     for key in dir(signal):
         sigval = getattr(signal, key)
         if isinstance(sigval, int) and sigval == signum and re.match(r'^SIG[A-Z]', key):
             log.info('signal: %s(%d)', key, signum)
     if signum == signal.SIGINT:
-          log.info('exiting...')
-          is_closing = True
+        t = time.time()
+        if t < last_ctrlc + 1:
+            log.info('exiting...')
+            is_closing = True
+        else:
+            _statdump(core)
+            log.info('press ^C once more within one sec to exit')
+            last_ctrlc = t
     elif signum == signal.SIGUSR1:
         log.info('dump status...')
         _statdump(core)
