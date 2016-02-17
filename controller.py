@@ -29,6 +29,8 @@ class Controller(object):
         self._stats = Stats()
         self._nonce = None
         self._seq = None
+        self._servicegroups = None
+        self._msgbus = None
 
     def get_id(self):
         """ Get id of controller
@@ -36,6 +38,34 @@ class Controller(object):
         :returns: controller id
         """
         return self._id
+
+    def set_servicegroups(self, servicegroups):
+        """ Set servicegroups
+
+        :param servicegroups: servicegroups
+        """
+        self._servicegroups = servicegroups
+
+    def get_servicegroups(self):
+        """ Return servicegroups
+
+        :returns: servicegroups
+        """
+        return self._servicegroups
+
+    def set_msgbus(self, msgbus):
+        """ Set msgbus
+
+        :param msgbus: msgbus
+        """
+        self._msgbus = msgbus
+
+    def get_msgbus(self):
+        """ Return msgbus
+
+        :returns: msgbus
+        """
+        return self._msgbus
 
     def set_setup(self, setup):
         """ Set setup data

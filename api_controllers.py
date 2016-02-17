@@ -48,6 +48,8 @@ class APIcontrollers(APIBase):
                 raise UserWarning('controller %s already exists' % controller)
         for c in data:
             controller = self._controllers.find_by_id(c.get('controller', None))
+            controller.set_servicegroups(self._core.servicegroups())
+            controller.set_msgbus(self._core.msgbus())
             log.info('new controller created: %s', controller)
         return {'status': 201, \
             'headers': [{'Location': self.API_PATH}]}
