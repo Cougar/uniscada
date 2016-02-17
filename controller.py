@@ -311,6 +311,8 @@ class Controller(object):
         self._last_sdp_ts = ts
         self._stats.add('rx/sdp/ok', 1)
         self._stats.set('rx/sdp/last/timestamp', ts)
+        self._publish()
+        self.ack_last_sdp()
 
     def _process_incoming_sdp(self, sdp, ts=time.time()):
         """ Process SDP packet from controller:
@@ -351,6 +353,30 @@ class Controller(object):
                     ' ignoring')
         self._update_state_from_sdp(sdp, ts)
         self._state_ts = ts
+
+    def _publish(self):
+        """ Publish new data to other modules """
+        r = {}
+        r['resource'] = '/controllers/' + self._id
+        r['body'] = self.get_controller_data_v1()
+        self._msgbus.publish(r['resource'], r)
+
+        r = {}
+        r['resource'] = '/hosts/' + self._id
+        r['body'] = self.get_host_data_v1(None)
+        self._msgbus.publish(r['resource'], r)
+
+        r = {}
+        r['resource'] = '/services/' + self._id
+        servicegroup = None
+        if self._setup:
+            servicetable = self._setup.get('servicetable', None)
+            if servicetable:
+                servicegroup = self._servicegroups.get_id(servicetable)
+        r['body'] = self.get_service_data_v1_last_sdp(servicegroup)
+        if len(r['body']['services']):
+            self._msgbus.publish(r['resource'], r)
+
 
     def _update_state_from_sdp(self, sdp, ts=time.time()):
         """ Read last SDP packet and update state dictionary

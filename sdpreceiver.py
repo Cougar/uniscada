@@ -60,6 +60,7 @@ class SDPReceiver(object):
         if not controller:
             log.warning('Unknown controller: %s', ctrid)
             raise Exception('Unknown controller')
+        log.debug('Controller: %s', str(controller))
         controller.set_host(host)
         secret_key = controller.get_secret_key()
         if secret_key:
@@ -97,28 +98,3 @@ class SDPReceiver(object):
         except Exception as ex:
             log.error('sdp set error: ', str(ex))
             raise Exception('sdp set error: ' + str(ex))
-
-        log.debug('Controller: %s', str(controller))
-        controller.ack_last_sdp()
-        log.debug("---------------------------------")
-
-        r = {}
-        r['resource'] = '/controllers/' + str(controller.get_id())
-        r['body'] = controller.get_controller_data_v1()
-        self._msgbus.publish(r['resource'], r)
-
-        r = {}
-        r['resource'] = '/hosts/' + str(controller.get_id())
-        r['body'] = controller.get_host_data_v1(None)
-        self._msgbus.publish(r['resource'], r)
-
-        r = {}
-        r['resource'] = '/services/' + str(controller.get_id())
-        servicegroup = None
-        setup = controller.get_setup()
-        if setup:
-            servicetable = setup.get('servicetable', None)
-            if servicetable:
-                servicegroup = self._servicegroups.get_id(servicetable)
-        r['body'] = controller.get_service_data_v1_last_sdp(servicetable)
-        self._msgbus.publish(r['resource'], r)
