@@ -58,8 +58,8 @@ class SDPReceiver(object):
 
         controller = self._controllers.get_id(ctrid)
         if not controller:
-            log.debug('Unknown controller: %s', ctrid)
-            return
+            log.warning('Unknown controller: %s', ctrid)
+            raise Exception('Unknown controller')
         controller.set_host(host)
         secret_key = controller.get_secret_key()
         if secret_key:
