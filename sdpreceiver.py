@@ -74,21 +74,7 @@ class SDPReceiver(object):
                 raise Exception('sdp signature missing')
             sdp.set_secret_key(secret_key)
             sdp.set_nonce(nonce)
-            seq = sdp.get_in_seq()
-            if seq == None:
-                log.error('packet seq is required for HMAC')
-                self.new_nonce(controller)
-                raise Exception('packet seq is required for HMAC')
-            if not sdp.check_signature():
-                log.error('controller: %s signature error', ctrid)
-                self.new_nonce(controller)
-                raise Exception('sdp signature error')
-            prev_seq = controller.get_seq()
-            if prev_seq:
-                if not prev_seq < seq:
-                    log.error('seq is not growing')
-                    raise Exception('seq is not growing')
-                controller.set_seq(seq)
+            self._check_seq(controller, sdp)
         else:
             if sdp.is_signed():
                 log.error('controller: %s secret_key not configured', id)
@@ -98,3 +84,17 @@ class SDPReceiver(object):
         except Exception as ex:
             log.error('sdp set error: ', str(ex))
             raise Exception('sdp set error: ' + str(ex))
+
+    def _check_seq(self, controller, sdp):
+        ctrid = controller.get_id()
+        seq = sdp.get_in_seq()
+        if seq == None:
+            log.error('packet seq for %s is required for HMAC', ctrid)
+            self.new_nonce(controller)
+            raise Exception('packet seq is required for HMAC')
+        prev_seq = controller.get_seq()
+        if prev_seq:
+            if not prev_seq < seq:
+                log.error('seq is not growing for %s', ctrid)
+                raise Exception('seq is not growing')
+        controller.set_seq(seq)
