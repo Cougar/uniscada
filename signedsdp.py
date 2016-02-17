@@ -173,3 +173,9 @@ class SignedSDP(UnsecureSDP):
             hmac.new(secret_key.encode("UTF-8"), \
                 msg=nonce.encode("UTF-8")+checksum.encode("UTF-8"), \
                 digestmod=hashlib.sha256).digest()).decode()
+
+    def __str__(self):
+        """ Returns data dictionary """
+        s = "signed: \n"
+        s = s + super(SignedSDP, self).__str__()
+        return s
