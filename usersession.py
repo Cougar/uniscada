@@ -158,6 +158,7 @@ class UserSession(object):
             "controllerlist": self._controllerlist,
             "servicegroupids": self._servicegroupids,
             "authinprogress": self._isauthinprogress,
+            "scopes": self._scopes,
         }
 
     def __str__(self):
