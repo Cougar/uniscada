@@ -62,28 +62,39 @@ class SDPReceiver(object):
             raise Exception('Unknown controller')
         log.debug('Controller: %s', str(controller))
         controller.set_host(host)
+        self._check_signature(controller, sdp)
+        log.debug('signature check passed')
+        controller.set_last_sdp(sdp, ts=time.time())
+
+    def _check_signature(self, controller, sdp):
+        ctrid = controller.get_id()
+        log.debug('_check_signature(%s)', ctrid)
         secret_key = controller.get_secret_key()
-        if secret_key:
-            nonce = controller.get_nonce()
-            if not nonce:
-                log.info('controller: %s new_nonce', ctrid)
-                self.new_nonce(controller)
-                return
-            if not sdp.is_signed():
+        log.debug('secret_key = %s', str(secret_key))
+        if not sdp.is_signed():
+            if secret_key:
                 log.error('controller: %s datagram not signed', ctrid)
                 raise Exception('sdp signature missing')
-            sdp.set_secret_key(secret_key)
-            sdp.set_nonce(nonce)
-            self._check_seq(controller, sdp)
-        else:
-            if sdp.is_signed():
-                log.error('controller: %s secret_key not configured', id)
-                raise Exception('controller secret_key not configured')
-        try:
-            controller.set_last_sdp(sdp, ts=time.time())
-        except Exception as ex:
-            log.error('sdp set error: ', str(ex))
-            raise Exception('sdp set error: ' + str(ex))
+            else:
+                log.debug('_check_signature passed without signature')
+                return True
+        if not secret_key:
+            log.error('controller: %s secret_key not configured', ctrid)
+            raise Exception('controller %s secret_key not configured', ctrid)
+        nonce = controller.get_nonce()
+        log.debug('nonce = %s', str(nonce))
+        if not nonce:
+            log.warning('controller: %s new_nonce', ctrid)
+            self.new_nonce(controller)
+            raise Exception('controller %s nonce updates' % ctrid)
+
+        sdp.set_secret_key(secret_key)
+        sdp.set_nonce(nonce)
+        if not sdp.check_signature():
+            log.error('controller: %s signature error', ctrid)
+            self.new_nonce(controller)
+            raise Exception('sdp signature error')
+        self._check_seq(controller, sdp)
 
     def _check_seq(self, controller, sdp):
         ctrid = controller.get_id()
