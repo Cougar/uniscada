@@ -281,11 +281,11 @@ class Controller(object):
                 else:
                     r1['value'] = str(val)
             else:
-                conv_coef = int(conv_coef)
+                conv_coef = float(conv_coef)
                 if isinstance(val, list):
                     r1['value'] = [x / conv_coef for x in val]
                 else:
-                    r1['value'] = str(int(val) / conv_coef)
+                    r1['value'] = str(float(val) / conv_coef)
             r1['status'] = val_s
             r['services'].append(r1)
         if self._last_sdp_ts:
