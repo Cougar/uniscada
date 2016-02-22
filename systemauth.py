@@ -39,7 +39,7 @@ class SystemAuth(object):
         """
         log.debug('get_user(%s)', str(kwargs))
         # FIXME X-ApiKey check missing
-        host = kwargs.get('host', None)
+        host = kwargs.get('host', None).split(':')[0]
         if host == '127.0.0.1' or host == 'localhost':
             return self.SYSTEMUSER
         return None
