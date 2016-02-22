@@ -95,10 +95,16 @@ class SDPReceiver(object):
             self.new_nonce(controller)
             raise Exception('sdp signature error')
         self._check_seq(controller, sdp)
+        log.debug('_check_signature passed')
 
     def _check_seq(self, controller, sdp):
         ctrid = controller.get_id()
-        seq = sdp.get_in_seq()
+        log.debug('_check_seq(%s)', ctrid)
+        seq = None
+        for part in sdp.get_multipart_list():
+            seq = part.get_in_seq()
+        if not seq:
+            seq = sdp.get_in_seq()
         if seq == None:
             log.error('packet seq for %s is required for HMAC', ctrid)
             self.new_nonce(controller)

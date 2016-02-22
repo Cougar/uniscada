@@ -571,3 +571,169 @@ class SDPTests(unittest.TestCase):
             'id:abc123\n' \
             'sha256:wWYN9u1zKY+zqo0Z0xHxDL38tYsJBv+Mk5UAvN7hr5k=\n' \
             'zx:123\n')
+
+    def test_multipart_in_multipart_errors(self):
+        ''' Test multipart SDP in another multipart SDP'''
+        sdp1 = SDP()
+        sdp1.add_keyvalue('AAS', 1)
+        sdp1.add_keyvalue('in', '1,1440871960')
+
+        sdp2 = SDP()
+        sdp2.add_keyvalue('in', '1,1440871960')
+        ''' timestamp is not allowed in parent SDP '''
+        self.assertRaises(SDPException, sdp2.add_sdp_multipart, sdp1)
+
+        sdp3 = SDP()
+        sdp3.add_keyvalue('AAS', 1)
+        ''' other keys than "id" is not allowed in parent SDP '''
+        self.assertRaises(SDPException, sdp3.add_sdp_multipart, sdp1)
+
+        sdp1.add_keyvalue('id', 'abc123')
+        ''' "id" in multipart but not in parent SDP '''
+        self.assertRaises(SDPException, self.sdp.add_sdp_multipart, sdp1)
+        self.sdp.add_keyvalue('id', 'abc123')
+        self.sdp.add_sdp_multipart(sdp1)
+        ''' parent SDP "id" is different '''
+        self.assertRaises(SDPException, sdp1.add_keyvalue, 'id', 'xyz789')
+        sdp1.add_keyvalue('id', 'abc123')
+        ''' only "id" can be added to multipart parent '''
+        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'in', '1,1440871960')
+
+        sdp4 = SDP()
+        ''' multipart SDP cant be added to another SDP '''
+        self.assertRaises(SDPException, sdp4.add_sdp_multipart, self.sdp)
+        ''' SDP is already part of another multipart SDP '''
+        self.assertRaises(SDPException, sdp4.add_sdp_multipart, sdp1)
+        ''' cant add SDP to itself '''
+        self.assertRaises(SDPException, sdp4.add_sdp_multipart, sdp4)
+
+    def test_multipart_key_location_errors(self):
+        ''' Test multipart SDP allowed keys in parent'''
+        sdp1 = SDP()
+        sdp1.add_keyvalue('AAS', 1)
+        sdp1.add_keyvalue('in', '1,1440871960')
+
+        self.sdp.add_sdp_multipart(sdp1)
+        self.sdp.add_keyvalue('id', 'abc123')
+        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AAS', 1)
+
+    def test_multipart_id(self):
+        ''' Test multipart SDP "id" logic'''
+        self.assertIsNone(self.sdp.data['id'])
+        self.sdp.add_keyvalue('id', 'abc123')
+        d = self.sdp.get_data('id')
+        self.assertTrue(isinstance(d, str))
+        self.assertEqual(d, 'abc123')
+        self.assertEqual(self.sdp.data['id'], 'abc123')
+
+        sdp1 = SDP()
+        sdp1.add_keyvalue('AAS', 1)
+        sdp1.add_keyvalue('in', '1,1440871960')
+        self.assertIsNone(sdp1.data['id'])
+        sdp1.add_keyvalue('id', 'abc123')
+        d = sdp1.get_data('id')
+        self.assertTrue(isinstance(d, str))
+        self.assertEqual(d, 'abc123')
+        self.assertEqual(sdp1.data['id'], 'abc123')
+
+        self.sdp.add_sdp_multipart(sdp1)
+
+        ''' "id" comes from parent '''
+        d = sdp1.get_data('id')
+        self.assertTrue(isinstance(d, str))
+        self.assertEqual(d, 'abc123')
+        self.assertEqual(sdp1._multipart_parent.get_data('id'), 'abc123')
+        self.assertIsNone(sdp1.data['id'])
+
+    def test_multipart_add_remove(self):
+        ''' Test multipart SDP assembly/disassembly '''
+        sdp1 = SDP()
+        sdp1.add_keyvalue('AAS', 1)
+        sdp1.add_keyvalue('in', '1,1440871960')
+        sdp2 = SDP()
+        sdp2.add_keyvalue('AAS', 2)
+        sdp2.add_keyvalue('in', '2,1440871961')
+
+        self.sdp.add_keyvalue('id', 'abc123')
+
+        self.assertRaises(ValueError, self.sdp.remove_sdp_multipart, sdp1)
+        self.assertRaises(ValueError, self.sdp.remove_sdp_multipart, sdp2)
+        self.assertListEqual(list(self.sdp.get_multipart_list()), [])
+
+        self.sdp.add_sdp_multipart(sdp1)
+        self.assertListEqual(list(self.sdp.get_multipart_list()), [sdp1])
+        self.sdp.add_sdp_multipart(sdp2)
+        self.assertListEqual(list(self.sdp.get_multipart_list()), [sdp1, sdp2])
+
+        self.sdp.remove_sdp_multipart(sdp1)
+        self.assertListEqual(list(self.sdp.get_multipart_list()), [sdp2])
+        self.sdp.remove_sdp_multipart(sdp2)
+        self.assertListEqual(list(self.sdp.get_multipart_list()), [])
+
+        self.assertRaises(ValueError, self.sdp.remove_sdp_multipart, sdp1)
+        self.assertRaises(ValueError, self.sdp.remove_sdp_multipart, sdp2)
+
+    def test_multipart(self):
+        ''' Test multiple SDP packest in one datagram '''
+        sdp1 = SDP()
+        sdp1.add_keyvalue('AAS', 1)
+        sdp1.add_keyvalue('in', '1,1440871960')
+        sdp2 = SDP()
+        sdp2.add_keyvalue('AAS', 2)
+        sdp2.add_keyvalue('in', '2,1440871961')
+
+        self.sdp.add_keyvalue('id', 'abc123')
+        self.sdp.add_sdp_multipart(sdp1)
+        self.sdp.add_sdp_multipart(sdp2)
+
+        datagram = self.sdp.encode()
+        self.assertTrue(isinstance(datagram, str))
+        self.assertEqual(datagram.splitlines(), [
+            'id:abc123',
+            'in:1,1440871960',
+            'AAS:1',
+            'in:2,1440871961',
+            'AAS:2',
+        ])
+
+    def test_multipart_invalid1(self):
+        ''' Timestamp is not growing '''
+        datagram = \
+            'id:abc123\n' \
+            'in:1,1440871960\n' \
+            'AAS:1\n' \
+            'in:2,1440871960\n' \
+            'AAS:2\n'
+        self.assertRaises(SDPException, self.sdp.decode, datagram)
+
+    def test_multipart_invalid2(self):
+        ''' Timestamp is in wrong position '''
+        datagram = \
+            'id:abc123\n' \
+            'AAS:1\n' \
+            'in:1,1440871960\n' \
+            'in:2,1440871961\n' \
+            'AAS:2\n'
+        return # FIXME
+        self.assertRaises(SDPDecodeException, self.sdp.decode, datagram)
+
+    def test_multipart_invalid3(self):
+        ''' No "id" field '''
+        datagram = \
+            'in:1,1440871960\n' \
+            'AAS:1\n' \
+            'in:2,1440871961\n' \
+            'AAS:2\n'
+        self.assertRaises(SDPDecodeException, self.sdp.decode, datagram)
+
+    def test_multipart_invalid4(self):
+        ''' data before first "in" field '''
+        datagram = \
+            'AAA:1\n' \
+            'id:abc123\n' \
+            'in:1,1440871960\n' \
+            'AAS:2\n' \
+            'in:2,1440871961\n' \
+            'AAS:3\n'
+        return # FIXME
+        self.assertRaises(SDPDecodeException, self.sdp.decode, datagram)
