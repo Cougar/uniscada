@@ -5,7 +5,7 @@ MD5 based ticket-type user authentication
 
 IP address cacheing and validation are not supported
 
-Copyright (c) 2014 Droid4Control OÜ <cougar@droid4control.com>
+Copyright (c) 2014-2016 Droid4Control OÜ <cougar@droid4control.com>
 
 This implementation is based on MOD_AUTH_COOKIE code CVS revision 1.7
 
@@ -72,7 +72,7 @@ This module has the same license that mod_auth_cookie.c
  *
  * ======================================================================
 """
-import pymysql
+import mysql.connector
 import hashlib
 import time
 
@@ -156,8 +156,11 @@ class CookieAuth(object):
         log.debug('connect to MySQL server "%s" database "%s" ' \
             'with user "%s"', self._dbhost, self._dbname, self._dbuser)
         try:
-            self._conn = pymysql.connect(host=self._dbhost, port=3306, \
-                user=self._dbuser, passwd=self._dbpass, db=self._dbname)
+            self._conn = mysql.connector.connect(
+                    user=self._dbuser,
+                    password=self._dbpass,
+                    host=self._dbhost,
+                    database=self._dbname)
         except Exception as ex:
             log.critical('cant connect to database: ' + str(ex))
 
@@ -169,11 +172,11 @@ class CookieAuth(object):
             log.warning('no db connection')
             return
         tm = int(time.time())
-        cur = self._conn.cursor()
+        cur = self._conn.cursor(buffered=True)
         try:
             cur.execute('SELECT version,secret_key,expire ' \
                 'FROM secret_keys WHERE expire > ' + str(tm))
-            for row in cur:
+            for row in list(cur):
                 log.debug('add secret_key version %d with expire %d', \
                     row[0], row[2])
                 self._secret_keys[str(row[0])] = {
