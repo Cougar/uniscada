@@ -94,7 +94,16 @@ class Host(object):
                 self._stats.set_timestamp('rx/last_error/timestamp')
                 return
         if not isinstance(receivedmessage, str):
-            receivedmessage = receivedmessage.decode("UTF-8")
+            try:
+                receivedmessage = receivedmessage.decode("UTF-8")
+            except UnicodeDecodeError as ex:
+                self._stats.add('rx/errors', 1)
+                self._stats.set('rx/last_error/datagram_raw_b64', \
+                    base64.b64encode(receivedmessage))
+                self._stats.set('rx/last_error/reason', \
+                    'decode("UTF-8") exception: ' + str(ex))
+                self._stats.set_timestamp('rx/last_error/timestamp')
+                return
         log.debug('receiver(%s, "%s")', \
             str(self._id), str(receivedmessage))
         self._stats.add('rx/bytes', len(receivedmessage))
