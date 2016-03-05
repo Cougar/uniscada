@@ -10,7 +10,7 @@ log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
 MAX_RECV_BUF = 100000
-MAX_SDP_SIZE = 5000
+MAX_SDP_SIZE = 1200
 
 class UDPComm(object):
     ''' UDP socket listener '''
@@ -59,7 +59,6 @@ class UDPComm(object):
         (data, addr) = sock.recvfrom(MAX_RECV_BUF)
         if len(data) > MAX_SDP_SIZE:
             log.warning("datagram from %s is too big: %d", str(addr), len(data))
-            return
         log.debug("got UDP datagram from %s @%.1f: %s", str(addr), time.time(), str(data))
         hosturi = 'udp://' + str(addr[0]) + ':' + str(addr[1])
         host = self._hosts.find_by_id(hosturi)
