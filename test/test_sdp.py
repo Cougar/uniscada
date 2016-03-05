@@ -18,7 +18,7 @@ class SDPTests(unittest.TestCase):
 
     def test_add_keyvalue_status(self):
         ''' Test setting/getting key:val for Status '''
-        self.sdp.add_keyvalue('AAS', 2)
+        self.sdp += ('AAS', 2)
         d = self.sdp.get_data('AAS')
         self.assertTrue(isinstance(d, int))
         self.assertEqual(d, 2)
@@ -27,23 +27,31 @@ class SDPTests(unittest.TestCase):
 
         self.sdp.remove_data('AAS')
         self.assertIsNone(self.sdp.get_data('AAS'))
-        self.assertRaises(SDPException, self.sdp.remove_data, 'AAS')
+        with self.assertRaises(SDPException):
+            self.sdp.remove_data('AAS')
 
-        self.sdp.add_keyvalue('ABS', '3')
+        self.sdp += ('ABS', '3')
         d = self.sdp.get_data('ABS')
         self.assertTrue(isinstance(d, int))
         self.assertEqual(d, 3)
 
         self.sdp.remove_data('ABS')
         self.assertIsNone(self.sdp.get_data('ABS'))
-        self.assertRaises(SDPException, self.sdp.remove_data, 'ABS')
+        with self.assertRaises(SDPException):
+            self.sdp.remove_data('ABS')
 
-        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AxS', -1)
-        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AyS', 4)
-        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AqS', '4')
-        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AXS', 'a')
-        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AYS', [1, 2])
-        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AZS', None)
+        with self.assertRaises(SDPException):
+            self.sdp += ('AxS', -1)
+        with self.assertRaises(SDPException):
+            self.sdp += ('AyS', 4)
+        with self.assertRaises(SDPException):
+            self.sdp += ('AqS', '4')
+        with self.assertRaises(SDPException):
+            self.sdp += ('AXS', 'a')
+        with self.assertRaises(SDPException):
+            self.sdp += ('AYS', [1, 2])
+        with self.assertRaises(SDPException):
+            self.sdp += ('AZS', None)
 
     def test_add_status(self):
         ''' Test setting/getting Status key:val '''
@@ -56,15 +64,19 @@ class SDPTests(unittest.TestCase):
 
         self.sdp.remove_data('AAS')
         self.assertIsNone(self.sdp.get_data('AAS'))
-        self.assertRaises(SDPException, self.sdp.remove_data, 'AAS')
+        with self.assertRaises(SDPException):
+            self.sdp.remove_data('AAS')
 
-        self.assertRaises(SDPException, self.sdp.add_status, 'AX', 'a')
-        self.assertRaises(SDPException, self.sdp.add_status, 'AY', [1, 2])
-        self.assertRaises(SDPException, self.sdp.add_status, 'AZ', None)
+        with self.assertRaises(SDPException):
+            self.sdp.add_status('AX', 'a')
+        with self.assertRaises(SDPException):
+            self.sdp.add_status('AY', [1, 2])
+        with self.assertRaises(SDPException):
+            self.sdp.add_status('AZ', None)
 
     def test_add_keyvalue_value(self):
         ''' Test setting/getting key:val for Value '''
-        self.sdp.add_keyvalue('AAV', 1234)
+        self.sdp += ('AAV', 1234)
         d = self.sdp.get_data('AAV')
         self.assertTrue(isinstance(d, int))
         self.assertEqual(d, 1234)
@@ -73,44 +85,46 @@ class SDPTests(unittest.TestCase):
 
         self.sdp.remove_data('AAV')
         self.assertIsNone(self.sdp.get_data('AAV'))
-        self.assertRaises(SDPException, self.sdp.remove_data, 'AAV')
+        with self.assertRaises(SDPException):
+            self.sdp.remove_data('AAV')
 
-        self.sdp.add_keyvalue('ABV', 1.5)
+        self.sdp += ('ABV', 1.5)
         d = self.sdp.get_data('ABV')
         self.assertTrue(isinstance(d, float))
         self.assertEqual(d, 1.5)
 
-        self.sdp.add_keyvalue('ACV', 'abc')
+        self.sdp += ('ACV', 'abc')
         d = self.sdp.get_data('ACV')
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, 'abc')
 
-        self.sdp.add_keyvalue('ADV', 'cde xyz')
+        self.sdp += ('ADV', 'cde xyz')
         d = self.sdp.get_data('ADV')
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, 'cde xyz')
 
-        self.sdp.add_keyvalue('AEV', '1 2 3.5')
+        self.sdp += ('AEV', '1 2 3.5')
         d = self.sdp.get_data('AEV')
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, '1 2 3.5')
 
-        self.sdp.add_keyvalue('AFV', 'not null string')
+        self.sdp += ('AFV', 'not null string')
         d = self.sdp.get_data('AFV')
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, 'not null string')
 
-        self.sdp.add_keyvalue('AGV', 'null')
+        self.sdp += ('AGV', 'null')
         self.assertEqual(self.sdp.get_data('AGV'), 'null')
 
-        self.sdp.add_keyvalue('AHV', '')
+        self.sdp += ('AHV', '')
         self.assertEqual(self.sdp.get_data('AHV'), '')
 
-        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AXV', [1, 2])
+        with self.assertRaises(SDPException):
+            self.sdp += ('AXV', [1, 2])
 
     def test_add_keyvalue_values_list(self):
         ''' Test setting/getting key:val for List of Values (list) '''
-        self.sdp.add_keyvalue('AAW', [1])
+        self.sdp += ('AAW', [1])
         d = self.sdp.get_data('AAW')
         self.assertTrue(isinstance(d, list))
         self.assertEqual(d, [1])
@@ -119,41 +133,49 @@ class SDPTests(unittest.TestCase):
 
         self.sdp.remove_data('AAW')
         self.assertIsNone(self.sdp.get_data('AAW'))
-        self.assertRaises(SDPException, self.sdp.remove_data, 'AAW')
+        with self.assertRaises(SDPException):
+            self.sdp.remove_data('AAW')
 
-        self.sdp.add_keyvalue('ABW', [1, None, 2])
+        self.sdp += ('ABW', [1, None, 2])
         d = self.sdp.get_data('ABW')
         self.assertTrue(isinstance(d, list))
         self.assertEqual(d, [1, None, 2])
 
-        self.assertRaises(SDPException, self.sdp.add_keyvalue, \
+        with self.assertRaises(SDPException):
+            self.sdp += (\
             'AXV', [0, None, 3.5])
 
     def test_add_keyvalue_values(self):
         ''' Test setting/getting key:val for List of Values '''
-        self.sdp.add_keyvalue('AAW', '1')
+        self.sdp += ('AAW', '1')
         d = self.sdp.get_data('AAW')
         self.assertTrue(isinstance(d, list))
         self.assertEqual(d, [1])
         self.assertEqual(self.sdp.get_data('AAw'), None)
         self.assertEqual(self.sdp.get_data('aaW'), None)
 
-        self.sdp.add_keyvalue('ABW', '1 2 35')
+        self.sdp += ('ABW', '1 2 35')
         d = self.sdp.get_data('ABW')
         self.assertTrue(isinstance(d, list))
         self.assertEqual(d, [1, 2, 35])
 
-        self.sdp.add_keyvalue('ACW', '0 null 35')
+        self.sdp += ('ACW', '0 null 35')
         d = self.sdp.get_data('ACW')
         self.assertTrue(isinstance(d, list))
         self.assertEqual(d, [0, None, 35])
 
-        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AXW', 1)
-        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AYW', 1.5)
-        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AZW', 'a')
-        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AQW', '')
-        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AWW', None)
-        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AVW', [1.5])
+        with self.assertRaises(SDPException):
+            self.sdp += ('AXW', 1)
+        with self.assertRaises(SDPException):
+            self.sdp += ('AYW', 1.5)
+        with self.assertRaises(SDPException):
+            self.sdp += ('AZW', 'a')
+        with self.assertRaises(SDPException):
+            self.sdp += ('AQW', '')
+        with self.assertRaises(SDPException):
+            self.sdp += ('AWW', None)
+        with self.assertRaises(SDPException):
+            self.sdp += ('AVW', [1.5])
 
     def test_add_value(self):
         ''' Test setting/getting Value and List of Values key:val '''
@@ -168,7 +190,8 @@ class SDPTests(unittest.TestCase):
 
         self.sdp.remove_data('AAV')
         self.assertIsNone(self.sdp.get_data('AAV'))
-        self.assertRaises(SDPException, self.sdp.remove_data, 'AAV')
+        with self.assertRaises(SDPException):
+            self.sdp.remove_data('AAV')
 
         self.sdp.add_value('AB', 1.5)
         d = self.sdp.get_data('ABV')
@@ -201,7 +224,7 @@ class SDPTests(unittest.TestCase):
 
     def test_add_keyvalue_float(self):
         ''' Test setting/getting Float key:val '''
-        self.sdp.add_keyvalue('TOV', '4000D3349FEBBEAE')
+        self.sdp += ('TOV', '4000D3349FEBBEAE')
         d = self.sdp.get_data('TOV')
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, '4000D3349FEBBEAE')
@@ -211,9 +234,10 @@ class SDPTests(unittest.TestCase):
 
         self.sdp.remove_data('TOV')
         self.assertIsNone(self.sdp.get_data('TOV'))
-        self.assertRaises(SDPException, self.sdp.remove_data, 'TOV')
+        with self.assertRaises(SDPException):
+            self.sdp.remove_data('TOV')
 
-        self.sdp.add_keyvalue('ALF', '4000D3349FEBBEAE')
+        self.sdp += ('ALF', '4000D3349FEBBEAE')
         d = self.sdp.get_data('ALF')
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, '4000D3349FEBBEAE')
@@ -223,15 +247,19 @@ class SDPTests(unittest.TestCase):
 
         self.sdp.remove_data('ALF')
         self.assertIsNone(self.sdp.get_data('ALF'))
-        self.assertRaises(SDPException, self.sdp.remove_data, 'ALF')
+        with self.assertRaises(SDPException):
+            self.sdp.remove_data('ALF')
 
-        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'ALF', 1)
-        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'ALF', 1.5)
-        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'ALF', [1, 2])
+        with self.assertRaises(SDPException):
+            self.sdp += ('ALF', 1)
+        with self.assertRaises(SDPException):
+            self.sdp += ('ALF', 1.5)
+        with self.assertRaises(SDPException):
+            self.sdp += ('ALF', [1, 2])
 
     def test_add_keyvalue_data(self):
         ''' Test setting/getting key:val for Other Data '''
-        self.sdp.add_keyvalue('aa', '123')
+        self.sdp += ('aa', '123')
         d = self.sdp.get_data('aa')
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, '123')
@@ -241,34 +269,39 @@ class SDPTests(unittest.TestCase):
 
         self.sdp.remove_data('aa')
         self.assertIsNone(self.sdp.get_data('aa'))
-        self.assertRaises(SDPException, self.sdp.remove_data, 'aa')
+        with self.assertRaises(SDPException):
+            self.sdp.remove_data('aa')
 
-        self.sdp.add_keyvalue('ab', 'null')
+        self.sdp += ('ab', 'null')
         d = self.sdp.get_data('ab')
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, 'null')
 
-        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'ax', 1)
-        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'ay', 1.5)
-        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'az', [1, 2])
+        with self.assertRaises(SDPException):
+            self.sdp += ('ax', 1)
+        with self.assertRaises(SDPException):
+            self.sdp += ('ay', 1.5)
+        with self.assertRaises(SDPException):
+            self.sdp += ('az', [1, 2])
 
     def test_add_keyvalue_illegal_data(self):
         ''' Test setting illegal key:val '''
-        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'sha256', 1)
+        with self.assertRaises(SDPException):
+            self.sdp += ('sha256', 1)
 
     def test_add_keyvalue_request_data(self):
         ''' Test setting/getting key:val where val == '?' '''
-        self.sdp.add_keyvalue('AAS', '?')
+        self.sdp += ('AAS', '?')
         d = self.sdp.get_data('AAS')
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, '?')
 
-        self.sdp.add_keyvalue('ABV', '?')
+        self.sdp += ('ABV', '?')
         d = self.sdp.get_data('ABV')
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, '?')
 
-        self.sdp.add_keyvalue('ACW', '?')
+        self.sdp += ('ACW', '?')
         d = self.sdp.get_data('ACW')
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, '?')
@@ -276,51 +309,51 @@ class SDPTests(unittest.TestCase):
     def test_timestamp(self):
         ''' Test get_timestamp() method '''
         self.assertEqual(self.sdp.get_timestamp(), None)
-        self.sdp.add_keyvalue('in', '1')
+        self.sdp += ('in', '1')
         self.assertEqual(self.sdp.get_timestamp(), None)
-        self.sdp.add_keyvalue('in', '2,123')
+        self.sdp += ('in', '2,123')
         self.assertEqual(self.sdp.get_timestamp(), 123)
-        self.sdp.add_keyvalue('in', '3,456.7')
+        self.sdp += ('in', '3,456.7')
         self.assertEqual(self.sdp.get_timestamp(), 456.7)
-        self.sdp.add_keyvalue('in', '4,567,89')
+        self.sdp += ('in', '4,567,89')
         self.assertEqual(self.sdp.get_timestamp(), None)
-        self.sdp.add_keyvalue('in', '5,67.8.9')
+        self.sdp += ('in', '5,67.8.9')
         self.assertEqual(self.sdp.get_timestamp(), None)
 
     def test_seq(self):
         ''' Test get_in_seq() method '''
         self.assertEqual(self.sdp.get_in_seq(), None)
-        self.sdp.add_keyvalue('in', '1')
+        self.sdp += ('in', '1')
         self.assertEqual(self.sdp.get_in_seq(), 1)
-        self.sdp.add_keyvalue('in', '2,123')
+        self.sdp += ('in', '2,123')
         self.assertEqual(self.sdp.get_in_seq(), 2)
-        self.sdp.add_keyvalue('in', '3,456.7')
+        self.sdp += ('in', '3,456.7')
         self.assertEqual(self.sdp.get_in_seq(), 3)
-        self.sdp.add_keyvalue('in', '4,567,89')
+        self.sdp += ('in', '4,567,89')
         self.assertEqual(self.sdp.get_in_seq(), None)
-        self.sdp.add_keyvalue('in', '5,67.8.9')
+        self.sdp += ('in', '5,67.8.9')
         self.assertEqual(self.sdp.get_in_seq(), None)
 
     def test_encode_with_id(self):
         ''' Test encoder for full packet'''
-        self.sdp.add_keyvalue('id', 'abc123')
-        self.sdp.add_keyvalue('ip', '10.0.0.10')
-        self.sdp.add_keyvalue('AAS', 1)
-        self.sdp.add_keyvalue('ABV', 2)
-        self.sdp.add_keyvalue('ACV', 3.5)
-        self.sdp.add_keyvalue('ADV', '4')
-        self.sdp.add_keyvalue('AEV', '5.5')
-        self.sdp.add_keyvalue('AFV', 'abc')
-        self.sdp.add_keyvalue('AGW', '4')
-        self.sdp.add_keyvalue('AHW', '5 6 75')
-        self.sdp.add_keyvalue('AIS', '?')
-        self.sdp.add_keyvalue('AJV', '?')
-        self.sdp.add_keyvalue('AKW', '?')
-        self.sdp.add_keyvalue('iq', '?')
-        self.sdp.add_keyvalue('TOV', '4000D3349FEBBEAE') # legacy
-        self.sdp.add_keyvalue('ALF', '4000D3349FEBBEAE')
-        self.sdp.add_keyvalue('AMW', '8 null 9')
-        self.sdp.add_keyvalue('in', '1')
+        self.sdp += ('id', 'abc123')
+        self.sdp += ('ip', '10.0.0.10')
+        self.sdp += ('AAS', 1)
+        self.sdp += ('ABV', 2)
+        self.sdp += ('ACV', 3.5)
+        self.sdp += ('ADV', '4')
+        self.sdp += ('AEV', '5.5')
+        self.sdp += ('AFV', 'abc')
+        self.sdp += ('AGW', '4')
+        self.sdp += ('AHW', '5 6 75')
+        self.sdp += ('AIS', '?')
+        self.sdp += ('AJV', '?')
+        self.sdp += ('AKW', '?')
+        self.sdp += ('iq', '?')
+        self.sdp += ('TOV', '4000D3349FEBBEAE') # legacy
+        self.sdp += ('ALF', '4000D3349FEBBEAE')
+        self.sdp += ('AMW', '8 null 9')
+        self.sdp += ('in', '1')
         datagram = self.sdp.encode()
         self.assertTrue(isinstance(datagram, str))
         self.assertEqual(datagram.splitlines()[0], 'id:abc123')
@@ -350,23 +383,23 @@ class SDPTests(unittest.TestCase):
 
     def test_encode_with_id_param(self):
         ''' Test encoder with id for full packet'''
-        self.sdp.add_keyvalue('id', 'abc123')
-        self.sdp.add_keyvalue('ip', '10.0.0.10')
-        self.sdp.add_keyvalue('AAS', 1)
-        self.sdp.add_keyvalue('ABV', 2)
-        self.sdp.add_keyvalue('ACV', 3.5)
-        self.sdp.add_keyvalue('ADV', '4')
-        self.sdp.add_keyvalue('AEV', '5.5')
-        self.sdp.add_keyvalue('AFV', 'abc')
-        self.sdp.add_keyvalue('AGW', '4')
-        self.sdp.add_keyvalue('AHW', '5 6 75')
-        self.sdp.add_keyvalue('AIS', '?')
-        self.sdp.add_keyvalue('AJV', '?')
-        self.sdp.add_keyvalue('AKW', '?')
-        self.sdp.add_keyvalue('iq', '?')
-        self.sdp.add_keyvalue('TOV', '4000D3349FEBBEAE') # legacy
-        self.sdp.add_keyvalue('ALF', '4000D3349FEBBEAE')
-        self.sdp.add_keyvalue('in', '1')
+        self.sdp += ('id', 'abc123')
+        self.sdp += ('ip', '10.0.0.10')
+        self.sdp += ('AAS', 1)
+        self.sdp += ('ABV', 2)
+        self.sdp += ('ACV', 3.5)
+        self.sdp += ('ADV', '4')
+        self.sdp += ('AEV', '5.5')
+        self.sdp += ('AFV', 'abc')
+        self.sdp += ('AGW', '4')
+        self.sdp += ('AHW', '5 6 75')
+        self.sdp += ('AIS', '?')
+        self.sdp += ('AJV', '?')
+        self.sdp += ('AKW', '?')
+        self.sdp += ('iq', '?')
+        self.sdp += ('TOV', '4000D3349FEBBEAE') # legacy
+        self.sdp += ('ALF', '4000D3349FEBBEAE')
+        self.sdp += ('in', '1')
         datagram = self.sdp.encode(controllerid='def456')
         self.assertTrue(isinstance(datagram, str))
         self.assertEqual(datagram.splitlines()[0], 'id:def456')
@@ -395,7 +428,8 @@ class SDPTests(unittest.TestCase):
 
     def test_encode_without_id(self):
         ''' Test encoder without id'''
-        self.assertRaises(SDPException, self.sdp.encode)
+        with self.assertRaises(SDPException):
+            self.sdp.encode()
 
     def test_decode_valid(self):
         ''' Test decoder with valid datagram '''
@@ -493,28 +527,30 @@ class SDPTests(unittest.TestCase):
 
     def test_decode_invalid(self):
         ''' Test decoder with invalid datagram '''
-        self.assertRaises(SDPDecodeException, SDP.decode, '')
-        self.assertRaises(SDPDecodeException, SDP.decode, '\n')
-        self.assertRaises(SDPDecodeException, SDP.decode, \
-            'id:abc\nABC')
-        self.assertRaises(SDPDecodeException, SDP.decode, \
-            'id:abc\nABS:abc')
-        self.assertRaises(SDPDecodeException, SDP.decode, \
-            'id:abc\nACW:123 bcd')
-        self.assertRaises(SDPDecodeException, SDP.decode, \
-            'id:abc\nADW:1.0 2.2')
-        self.assertRaises(SDPDecodeException, SDP.decode, \
-            'id:abc\nxyz:123 : 456')
-        self.assertRaises(SDPDecodeException, SDP.decode, \
-            'id:abc\nxyz:\n')
-        self.assertRaises(SDPDecodeException, SDP.decode, \
-            'id:abc\nAAS:1\nAAS:2\n')
-        self.assertRaises(SDPDecodeException, SDP.decode, \
-            'id:abc\nAAS:1\nid:def\n')
+        with self.assertRaises(SDPDecodeException):
+            SDP.decode('')
+        with self.assertRaises(SDPDecodeException):
+            SDP.decode('\n')
+        with self.assertRaises(SDPDecodeException):
+            SDP.decode('id:abc\nABC')
+        with self.assertRaises(SDPDecodeException):
+            SDP.decode('id:abc\nABS:abc')
+        with self.assertRaises(SDPDecodeException):
+            SDP.decode('id:abc\nACW:123 bcd')
+        with self.assertRaises(SDPDecodeException):
+            SDP.decode('id:abc\nADW:1.0 2.2')
+        with self.assertRaises(SDPDecodeException):
+            SDP.decode('id:abc\nxyz:123 : 456')
+        with self.assertRaises(SDPDecodeException):
+            SDP.decode('id:abc\nxyz:\n')
+        with self.assertRaises(SDPDecodeException):
+            SDP.decode('id:abc\nAAS:1\nAAS:2\n')
+        with self.assertRaises(SDPDecodeException):
+            SDP.decode('id:abc\nAAS:1\nid:def\n')
 
     def test_encode_with_signature(self):
         ''' Test encoder for full packet with SHA1 HMAC signature'''
-        self.sdp.add_keyvalue('id', 'abc123')
+        self.sdp += ('id', 'abc123')
         self.sdp.set_secret_key('my-secret-key')
         self.sdp.set_nonce('12345')
         self.assertFalse(self.sdp.is_signed())
@@ -529,7 +565,7 @@ class SDPTests(unittest.TestCase):
     def test_encode_with_signature2(self):
         ''' Test encoder for full packet with SHA1 HMAC signature'''
         self.sdp = SDP(secret_key='my-secret-key', nonce='12345')
-        self.sdp.add_keyvalue('id', 'abc123')
+        self.sdp += ('id', 'abc123')
         self.assertFalse(self.sdp.is_signed())
         datagram = self.sdp.encode()
         self.assertTrue(self.sdp.is_signed())
@@ -557,17 +593,20 @@ class SDPTests(unittest.TestCase):
         ''' Test decoder with invalid SHA1 HMAC signature (1) '''
         datagram = 'id:abc123\n'
         signature = 'sha256:wWYN9u1zKY+zqo0Z0xHxDL38tYsJBv+Mk5UAvN7hr5k=\n'
-        self.assertRaises(SDPDecodeException, SDP.decode, datagram + signature, 'wrong-secret-key', '12345')
+        with self.assertRaises(SDPDecodeException):
+            SDP.decode(datagram + signature, 'wrong-secret-key', '12345')
 
     def test_decode_with_invalid_signature2(self):
         ''' Test decoder with invalid SHA1 HMAC signature (2)'''
         datagram = 'id:abc123\n'
         signature = 'sha256:wWYN9u1zKY+zqo0Z0xHxDL38tYsJBv+Mk5UAvN7hr5k=\n'
-        self.assertRaises(SDPDecodeException, SDP.decode, datagram + signature, 'my-secret-key', '54321')
+        with self.assertRaises(SDPDecodeException):
+            SDP.decode(datagram + signature, 'my-secret-key', '54321')
 
     def test_decode_invalid_packet_with_valid_signature(self):
         ''' Test decoder with valid SHA1 HMAC signature '''
-        self.assertRaises(SDPException, SDP.decode, \
+        with self.assertRaises(SDPException):
+            SDP.decode(\
             'id:abc123\n' \
             'sha256:wWYN9u1zKY+zqo0Z0xHxDL38tYsJBv+Mk5UAvN7hr5k=\n' \
             'zx:123\n')
@@ -575,68 +614,77 @@ class SDPTests(unittest.TestCase):
     def test_multipart_in_multipart_errors(self):
         ''' Test multipart SDP in another multipart SDP'''
         sdp1 = SDP()
-        sdp1.add_keyvalue('AAS', 1)
-        sdp1.add_keyvalue('in', '1,1440871960')
+        sdp1 += ('AAS', 1)
+        sdp1 += ('in', '1,1440871960')
 
         sdp2 = SDP()
-        sdp2.add_keyvalue('in', '1,1440871960')
+        sdp2 += ('in', '1,1440871960')
         ''' timestamp is not allowed in parent SDP '''
-        self.assertRaises(SDPException, sdp2.add_sdp_multipart, sdp1)
+        with self.assertRaises(SDPException):
+            sdp2 += sdp1
 
         sdp3 = SDP()
-        sdp3.add_keyvalue('AAS', 1)
+        sdp3 += ('AAS', 1)
         ''' other keys than "id" is not allowed in parent SDP '''
-        self.assertRaises(SDPException, sdp3.add_sdp_multipart, sdp1)
+        with self.assertRaises(SDPException):
+            sdp3 += sdp1
 
-        sdp1.add_keyvalue('id', 'abc123')
+        sdp1 += ('id', 'abc123')
         ''' "id" in multipart but not in parent SDP '''
-        self.assertRaises(SDPException, self.sdp.add_sdp_multipart, sdp1)
-        self.sdp.add_keyvalue('id', 'abc123')
-        self.sdp.add_sdp_multipart(sdp1)
+        with self.assertRaises(SDPException):
+            self.sdp += sdp1
+        self.sdp += ('id', 'abc123')
+        self.sdp += sdp1
         ''' parent SDP "id" is different '''
-        self.assertRaises(SDPException, sdp1.add_keyvalue, 'id', 'xyz789')
-        sdp1.add_keyvalue('id', 'abc123')
+        with self.assertRaises(SDPException):
+            sdp1 += ('id', 'xyz789')
+        sdp1 += ('id', 'abc123')
         ''' only "id" can be added to multipart parent '''
-        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'in', '1,1440871960')
+        with self.assertRaises(SDPException):
+            self.sdp += ('in', '1,1440871960')
 
         sdp4 = SDP()
         ''' multipart SDP cant be added to another SDP '''
-        self.assertRaises(SDPException, sdp4.add_sdp_multipart, self.sdp)
+        with self.assertRaises(SDPException):
+            sdp4 += self.sdp
         ''' SDP is already part of another multipart SDP '''
-        self.assertRaises(SDPException, sdp4.add_sdp_multipart, sdp1)
+        with self.assertRaises(SDPException):
+            sdp4 += sdp1
         ''' cant add SDP to itself '''
-        self.assertRaises(SDPException, sdp4.add_sdp_multipart, sdp4)
+        with self.assertRaises(SDPException):
+            sdp4 += sdp4
 
     def test_multipart_key_location_errors(self):
         ''' Test multipart SDP allowed keys in parent'''
         sdp1 = SDP()
-        sdp1.add_keyvalue('AAS', 1)
-        sdp1.add_keyvalue('in', '1,1440871960')
+        sdp1 += ('AAS', 1)
+        sdp1 += ('in', '1,1440871960')
 
-        self.sdp.add_sdp_multipart(sdp1)
-        self.sdp.add_keyvalue('id', 'abc123')
-        self.assertRaises(SDPException, self.sdp.add_keyvalue, 'AAS', 1)
+        self.sdp += sdp1
+        self.sdp += ('id', 'abc123')
+        with self.assertRaises(SDPException):
+            self.sdp += ('AAS', 1)
 
     def test_multipart_id(self):
         ''' Test multipart SDP "id" logic'''
         self.assertIsNone(self.sdp.data['id'])
-        self.sdp.add_keyvalue('id', 'abc123')
+        self.sdp += ('id', 'abc123')
         d = self.sdp.get_data('id')
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, 'abc123')
         self.assertEqual(self.sdp.data['id'], 'abc123')
 
         sdp1 = SDP()
-        sdp1.add_keyvalue('AAS', 1)
-        sdp1.add_keyvalue('in', '1,1440871960')
+        sdp1 += ('AAS', 1)
+        sdp1 += ('in', '1,1440871960')
         self.assertIsNone(sdp1.data['id'])
-        sdp1.add_keyvalue('id', 'abc123')
+        sdp1 += ('id', 'abc123')
         d = sdp1.get_data('id')
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, 'abc123')
         self.assertEqual(sdp1.data['id'], 'abc123')
 
-        self.sdp.add_sdp_multipart(sdp1)
+        self.sdp += sdp1
 
         ''' "id" comes from parent '''
         d = sdp1.get_data('id')
@@ -648,21 +696,23 @@ class SDPTests(unittest.TestCase):
     def test_multipart_add_remove(self):
         ''' Test multipart SDP assembly/disassembly '''
         sdp1 = SDP()
-        sdp1.add_keyvalue('AAS', 1)
-        sdp1.add_keyvalue('in', '1,1440871960')
+        sdp1 += ('AAS', 1)
+        sdp1 += ('in', '1,1440871960')
         sdp2 = SDP()
-        sdp2.add_keyvalue('AAS', 2)
-        sdp2.add_keyvalue('in', '2,1440871961')
+        sdp2 += ('AAS', 2)
+        sdp2 += ('in', '2,1440871961')
 
-        self.sdp.add_keyvalue('id', 'abc123')
+        self.sdp += ('id', 'abc123')
 
-        self.assertRaises(ValueError, self.sdp.remove_sdp_multipart, sdp1)
-        self.assertRaises(ValueError, self.sdp.remove_sdp_multipart, sdp2)
+        with self.assertRaises(ValueError):
+            self.sdp.remove_sdp_multipart(sdp1)
+        with self.assertRaises(ValueError):
+            self.sdp.remove_sdp_multipart(sdp2)
         self.assertListEqual(list(self.sdp.get_multipart_list()), [])
 
-        self.sdp.add_sdp_multipart(sdp1)
+        self.sdp += sdp1
         self.assertListEqual(list(self.sdp.get_multipart_list()), [sdp1])
-        self.sdp.add_sdp_multipart(sdp2)
+        self.sdp += sdp2
         self.assertListEqual(list(self.sdp.get_multipart_list()), [sdp1, sdp2])
 
         self.sdp.remove_sdp_multipart(sdp1)
@@ -670,21 +720,23 @@ class SDPTests(unittest.TestCase):
         self.sdp.remove_sdp_multipart(sdp2)
         self.assertListEqual(list(self.sdp.get_multipart_list()), [])
 
-        self.assertRaises(ValueError, self.sdp.remove_sdp_multipart, sdp1)
-        self.assertRaises(ValueError, self.sdp.remove_sdp_multipart, sdp2)
+        with self.assertRaises(ValueError):
+            self.sdp.remove_sdp_multipart(sdp1)
+        with self.assertRaises(ValueError):
+            self.sdp.remove_sdp_multipart(sdp2)
 
     def test_multipart(self):
         ''' Test multiple SDP packest in one datagram '''
         sdp1 = SDP()
-        sdp1.add_keyvalue('AAS', 1)
-        sdp1.add_keyvalue('in', '1,1440871960')
+        sdp1 += ('AAS', 1)
+        sdp1 += ('in', '1,1440871960')
         sdp2 = SDP()
-        sdp2.add_keyvalue('AAS', 2)
-        sdp2.add_keyvalue('in', '2,1440871961')
+        sdp2 += ('AAS', 2)
+        sdp2 += ('in', '2,1440871961')
 
-        self.sdp.add_keyvalue('id', 'abc123')
-        self.sdp.add_sdp_multipart(sdp1)
-        self.sdp.add_sdp_multipart(sdp2)
+        self.sdp += ('id', 'abc123')
+        self.sdp += sdp1
+        self.sdp += sdp2
 
         datagram = self.sdp.encode()
         self.assertTrue(isinstance(datagram, str))
@@ -704,7 +756,8 @@ class SDPTests(unittest.TestCase):
             'AAS:1\n' \
             'in:2,1440871960\n' \
             'AAS:2\n'
-        self.assertRaises(SDPException, self.sdp.decode, datagram)
+        with self.assertRaises(SDPException):
+            self.sdp.decode(datagram)
 
     def test_multipart_invalid2(self):
         ''' Timestamp is in wrong position '''
@@ -715,7 +768,8 @@ class SDPTests(unittest.TestCase):
             'in:2,1440871961\n' \
             'AAS:2\n'
         return # FIXME
-        self.assertRaises(SDPDecodeException, self.sdp.decode, datagram)
+        with self.assertRaises(SDPDecodeException):
+            self.sdp.decode(datagram)
 
     def test_multipart_invalid3(self):
         ''' No "id" field '''
@@ -724,7 +778,8 @@ class SDPTests(unittest.TestCase):
             'AAS:1\n' \
             'in:2,1440871961\n' \
             'AAS:2\n'
-        self.assertRaises(SDPDecodeException, self.sdp.decode, datagram)
+        with self.assertRaises(SDPDecodeException):
+            self.sdp.decode(datagram)
 
     def test_multipart_invalid4(self):
         ''' data before first "in" field '''
@@ -736,4 +791,5 @@ class SDPTests(unittest.TestCase):
             'in:2,1440871961\n' \
             'AAS:3\n'
         return # FIXME
-        self.assertRaises(SDPDecodeException, self.sdp.decode, datagram)
+        with self.assertRaises(SDPDecodeException):
+            self.sdp.decode(datagram)

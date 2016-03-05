@@ -190,6 +190,20 @@ class UnsecureSDP(SDPItem):
         else:
             return sdp
 
+    def __add__(self, val):
+        """ Add (key, value) tuple to the SDP or
+        add another SDP instance to the multipart SDP
+
+        CAUTION! first summand will be changed and returned
+        """
+        if isinstance(val, tuple):
+            self.add_keyvalue(val[0], val[1])
+            return self
+        if isinstance(val, UnsecureSDP):
+            self.add_sdp_multipart(val)
+            return self
+        return super(UnsecureSDP, self).__add__(val)
+
     def __str__(self):
         """ Returns data dictionary """
         s = ""
