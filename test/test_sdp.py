@@ -353,6 +353,8 @@ class SDPTests(unittest.TestCase):
         self.sdp += ('TOV', '4000D3349FEBBEAE') # legacy
         self.sdp += ('ALF', '4000D3349FEBBEAE')
         self.sdp += ('AMW', '8 null 9')
+        self.sdp += ('ANV', '')
+        self.sdp += ('ix', '')
         self.sdp += ('in', '1')
         datagram = self.sdp.encode()
         self.assertTrue(isinstance(datagram, str))
@@ -372,11 +374,13 @@ class SDPTests(unittest.TestCase):
             'AKW:?',
             'ALF:4000D3349FEBBEAE',
             'AMW:8 null 9',
+            'ANV:',
             'TOV:4000D3349FEBBEAE',
             'id:abc123',
             'in:1',
             'ip:10.0.0.10',
             'iq:?',
+            'ix:',
         ])
         self.assertFalse(self.sdp.is_signed())
         self.assertFalse(self.sdp.check_signature())
@@ -399,6 +403,8 @@ class SDPTests(unittest.TestCase):
         self.sdp += ('iq', '?')
         self.sdp += ('TOV', '4000D3349FEBBEAE') # legacy
         self.sdp += ('ALF', '4000D3349FEBBEAE')
+        self.sdp += ('ANV', '')
+        self.sdp += ('ix', '')
         self.sdp += ('in', '1')
         datagram = self.sdp.encode(controllerid='def456')
         self.assertTrue(isinstance(datagram, str))
@@ -417,11 +423,13 @@ class SDPTests(unittest.TestCase):
             'AJV:?',
             'AKW:?',
             'ALF:4000D3349FEBBEAE',
+            'ANV:',
             'TOV:4000D3349FEBBEAE',
             'id:def456',
             'in:1',
             'ip:10.0.0.10',
             'iq:?',
+            'ix:',
         ])
         self.assertFalse(self.sdp.is_signed())
         self.assertFalse(self.sdp.check_signature())
