@@ -78,10 +78,11 @@ class SDPItem(object):
         :param key: data key
         :param val: data value as float hex string
         """
-        if isinstance(val, str):
-            self.data['float'][key] = val
-        else:
+        if not isinstance(val, str):
             raise SDPException('Value _MUST_BE_ hex str type')
+        if val == '':
+            raise SDPException('Float value _MUST_ exist')
+        self.data['float'][key] = val
 
     def _add_keyvalue_status(self, key, val):
         """ Add status key:val pair to the packet
@@ -356,8 +357,7 @@ class SDPItem(object):
             log.error('datagram line format error: more than one colon')
             raise SDPDecodeException('colon in value: \"' + val + '\"')
         if not val:
-            log.error('value mising for \"%s\"', key)
-            raise SDPDecodeException('value mising for \"' + key + '\"')
+            val = ''
 
         return (key, val)
 
@@ -401,6 +401,8 @@ class SDPItem(object):
         """ Return int of string or None if string is "null" """
         if string == 'null':
             return None
+        if string == '':
+            raise SDPException('Empty string is not allowed')
         try:
             return int(string)
         except ValueError:

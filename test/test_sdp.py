@@ -458,7 +458,9 @@ class SDPTests(unittest.TestCase):
             'ip:10.0.0.10\n' \
             'ALF:4000D3349FEBBEAE\n' \
             'TOV:4000D3349FEBBEAE\n' \
-            'AMW:8 null 9\n'
+            'AMW:8 null 9\n' \
+            'ANV:\n' \
+            'ix:\n'
 
         sdp = SDP.decode(datagram)
 
@@ -526,9 +528,17 @@ class SDPTests(unittest.TestCase):
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, '?')
 
+        d = sdp.get_data('ANV')
+        self.assertTrue(isinstance(d, str))
+        self.assertEqual(d, '')
+
         d = sdp.get_data('iq')
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, '?')
+
+        d = sdp.get_data('ix')
+        self.assertTrue(isinstance(d, str))
+        self.assertEqual(d, '')
 
         self.assertFalse(sdp.is_signed())
         self.assertFalse(sdp.check_signature())
@@ -550,7 +560,11 @@ class SDPTests(unittest.TestCase):
         with self.assertRaises(SDPDecodeException):
             SDP.decode('id:abc\nxyz:123 : 456')
         with self.assertRaises(SDPDecodeException):
-            SDP.decode('id:abc\nxyz:\n')
+            SDP.decode('id:abc\nABS:\n')
+        with self.assertRaises(SDPDecodeException):
+            SDP.decode('id:abc\nABF:\n')
+        with self.assertRaises(SDPDecodeException):
+            SDP.decode('id:abc\nABW:\n')
         with self.assertRaises(SDPDecodeException):
             SDP.decode('id:abc\nAAS:1\nAAS:2\n')
         with self.assertRaises(SDPDecodeException):
