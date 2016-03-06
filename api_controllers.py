@@ -24,14 +24,16 @@ class APIcontrollers(APIBase):
         """ Return details of one controller """
         log.debug('_request_get_with_filter(%s)', str(kwargs))
         user = kwargs.get('user', None)
-        controller = kwargs.get('filter', None)
         usersession = self._usersessions.find_by_id(user)
-        if not usersession.check_access(controller):
-            raise SessionException('unknown controller')
-        c = self._controllers.get_id(controller)
-        if not c:
-            return {'status': 404}
-        return {'status': 200, 'bodydata': c.get_controller_data_v1()}
+        r = []
+        for controller in kwargs.get('filter', '').split(','):
+            if not usersession.check_access(controller):
+                raise SessionException('unknown controller')
+            c = self._controllers.get_id(controller)
+            if not c:
+                raise SessionException('unknown controller')
+            r.append(c.get_controller_data_v1())
+        return {'status': 200, 'bodydata': r}
 
     def _request_post(self, **kwargs):
         """ Create new controller """

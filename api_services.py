@@ -39,16 +39,18 @@ class APIservices(APIBase):
         user = kwargs.get('user', None)
         controller = kwargs.get('filter', None)
         usersession = self._usersessions.find_by_id(user)
-        if not usersession.check_access(controller):
-            raise SessionException('unknown controller')
-        c = self._controllers.get_id(controller)
-        if not c:
-            return {'status': 404}
-        servicegroup = None
-        setup = c.get_setup()
-        if setup:
-            servicetable = setup.get('servicetable', None)
-            if servicetable:
-                servicegroup = self._servicegroups.get_id(servicetable)
-        return {'status': 200, \
-            'bodydata': [ c.get_service_data_v1(servicegroup) ]}
+        r = []
+        for controller in kwargs.get('filter', '').split(','):
+            if not usersession.check_access(controller):
+                raise SessionException('unknown controller')
+            c = self._controllers.get_id(controller)
+            if not c:
+                raise SessionException('unknown controller')
+            servicegroup = None
+            setup = c.get_setup()
+            if setup:
+                servicetable = setup.get('servicetable', None)
+                if servicetable:
+                    servicegroup = self._servicegroups.get_id(servicetable)
+            r.append(c.get_service_data_v1(servicegroup))
+        return {'status': 200, 'bodydata': r}

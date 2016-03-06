@@ -212,7 +212,7 @@ class Controller(object):
             r['timestamp'] = self._last_sdp_ts
         if check_scope and check_scope('stats:controller'):
             r['stats'] = self._stats.get()
-        return [r]
+        return r
 
     def get_service_data_v1(self, servicegroup):
         """ Return service data in API v1 format
@@ -358,12 +358,12 @@ class Controller(object):
         """ Publish new data to other modules """
         r = {}
         r['resource'] = '/controllers/' + self._id
-        r['body'] = self.get_controller_data_v1()
+        r['body'] = [ self.get_controller_data_v1() ]
         self._msgbus.publish(r['resource'], r)
 
         r = {}
         r['resource'] = '/hosts/' + self._id
-        r['body'] = self.get_host_data_v1(None)
+        r['body'] = [ self.get_host_data_v1(None) ]
         self._msgbus.publish(r['resource'], r)
 
         r = {}

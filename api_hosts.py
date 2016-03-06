@@ -37,12 +37,13 @@ class APIhosts(APIBase):
         """ Return details of one host """
         log.debug('_request_get_with_filter(%s)', str(kwargs))
         user = kwargs.get('user', None)
-        host = kwargs.get('filter', None)
         usersession = self._usersessions.find_by_id(user)
-        if not usersession.check_access(host):
-            raise SessionException('unknown host')
-        h = self._controllers.get_id(host)
-        if h:
-            return {'status': 200, \
-                'bodydata': h.get_host_data_v1(usersession.check_scope)}
-        return {'status': 404}
+        r = []
+        for host in kwargs.get('filter', '').split(','):
+            if not usersession.check_access(host):
+                raise SessionException('unknown host')
+            h = self._controllers.get_id(host)
+            if not h:
+                raise SessionException('unknown host')
+            r.append(h.get_host_data_v1(usersession.check_scope))
+        return {'status': 200, 'bodydata': r}
