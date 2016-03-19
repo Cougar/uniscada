@@ -176,6 +176,6 @@ class SignedSDP(UnsecureSDP):
 
     def __str__(self):
         """ Returns data dictionary """
-        s = "signed: \n"
+        s = "signed: "
         s = s + super(SignedSDP, self).__str__()
         return s

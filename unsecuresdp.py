@@ -208,9 +208,9 @@ class UnsecureSDP(SDPItem):
         """ Returns data dictionary """
         s = ""
         if self._multipart_parent:
-            s = s + "+ " + str(self._multipart_parent) + "\n"
+            s = s + "(child) "
         s = s + super(UnsecureSDP, self).__str__() + "\n"
         if self._multipart_pieces:
             for piece in self._multipart_pieces:
-                s = s + "\\ " + str(piece) + "\n"
+                s = s + " \\ " + str(piece)
         return s
