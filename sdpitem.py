@@ -249,7 +249,7 @@ class SDPItem(object):
         in_seq = re.compile(r'^(\d+)(,\d+(\.\d+)?)?$').match(inn)
         if not in_seq:
             return None
-        return float(in_seq.group(1))
+        return int(in_seq.group(1))
 
     def get_timestamp(self):
         """ Read SDP timestamp from "in:<num>,<timestamp>"
