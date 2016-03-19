@@ -152,11 +152,11 @@ class UnsecureSDP(SDPItem):
         :param datagram: The string representation of SDP datagram
         """
 
-        log.debug("decode")
+        log.debug("decode: %s", str(datagram))
         controllerid = None
         multipart_parent = None
         if not sdp:
-            sdp = SDPItem()
+            sdp = UnsecureSDP()
         for line in datagram.splitlines():
             if line == '':
                 log.warning('empty line in datagram')
@@ -171,10 +171,10 @@ class UnsecureSDP(SDPItem):
                     if not multipart_parent:
                         if not controllerid:
                             raise SDPDecodeException('in multipart SDP the "id" MUST BE before first "in"')
-                        multipart_parent = UnsecureSDP()
+                        multipart_parent = sdp.__class__()
                         multipart_parent.add_keyvalue("id", controllerid)
                     multipart_parent.add_sdp_multipart(sdp)
-                    sdp = SDPItem()
+                    sdp = sdp.__class__()
                 else:
                     raise SDPDecodeException('multiple "%s" fields' % key)
             try:

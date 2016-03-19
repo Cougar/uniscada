@@ -112,8 +112,7 @@ class SignedSDP(UnsecureSDP):
                         raise SDPDecodeException('signature check error')
                 continue
             datagram_before_sig += line + '\n'
-        sdp = SignedSDP()
-        sdp = UnsecureSDP.decode(datagram_before_sig, sdp)
+        sdp = UnsecureSDP.decode(datagram_before_sig, SignedSDP())
         if sha256:
             sdp.set_secret_key(secret_key)
             sdp.set_nonce(nonce)

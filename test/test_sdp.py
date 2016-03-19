@@ -770,6 +770,80 @@ class SDPTests(unittest.TestCase):
             'AAS:2',
         ])
 
+    def test_multipart_decode(self):
+        ''' Decode multipart SDP datagram '''
+        datagram = \
+            'id:abc123\n' \
+            'in:1,1440871960\n' \
+            'AAS:1\n' \
+            'in:2,1440871961\n' \
+            'AAS:2\n'
+        self.sdp = SDP.decode(datagram)
+        parts = list(self.sdp.get_multipart_list())
+        # part 1
+        self.assertEqual(parts[0].get_in_seq(), 1)
+        d = parts[0].get_data('id')
+        self.assertTrue(isinstance(d, str))
+        self.assertEqual(d, 'abc123')
+        d = parts[0].get_data('AAS')
+        self.assertTrue(isinstance(d, int))
+        self.assertEqual(d, 1)
+        # part 2
+        self.assertEqual(parts[1].get_in_seq(), 2)
+        d = parts[1].get_data('id')
+        self.assertTrue(isinstance(d, str))
+        self.assertEqual(d, 'abc123')
+        d = parts[1].get_data('AAS')
+        self.assertTrue(isinstance(d, int))
+        self.assertEqual(d, 2)
+
+    def test_multipart_decode_signed(self):
+        ''' Decode multipart SDP datagram with signature '''
+        datagram = \
+            'id:abc123\n' \
+            'in:1,1440871960\n' \
+            'AAS:1\n' \
+            'in:2,1440871961\n' \
+            'AAS:2\n' \
+            'sha256:wWYN9u1zKY+zqo0Z0xHxDL38tYsJBv+Mk5UAvN7hr5k=\n'
+        self.sdp = SDP.decode(datagram)
+        parts = list(self.sdp.get_multipart_list())
+        # part 1
+        self.assertEqual(parts[0].get_in_seq(), 1)
+        d = parts[0].get_data('id')
+        self.assertTrue(isinstance(d, str))
+        self.assertEqual(d, 'abc123')
+        d = parts[0].get_data('AAS')
+        self.assertTrue(isinstance(d, int))
+        self.assertEqual(d, 1)
+        # part 2
+        self.assertEqual(parts[1].get_in_seq(), 2)
+        d = parts[1].get_data('id')
+        self.assertTrue(isinstance(d, str))
+        self.assertEqual(d, 'abc123')
+        d = parts[1].get_data('AAS')
+        self.assertTrue(isinstance(d, int))
+        self.assertEqual(d, 2)
+
+    def test_multipart_decode_ack(self):
+        ''' Decode multipart SDP ACK datagram '''
+        datagram = \
+            'id:abc123\n' \
+            'in:1,1440871960\n' \
+            'in:2,1440871961\n'
+        self.sdp = SDP.decode(datagram)
+        parts = list(self.sdp.get_multipart_list())
+        # part 1
+        self.assertEqual(parts[0].get_in_seq(), 1)
+        d = parts[0].get_data('id')
+        self.assertTrue(isinstance(d, str))
+        self.assertEqual(d, 'abc123')
+        # part 2
+        self.assertEqual(parts[1].get_in_seq(), 2)
+        d = parts[1].get_data('id')
+        self.assertTrue(isinstance(d, str))
+        self.assertEqual(d, 'abc123')
+
     def test_multipart_invalid1(self):
         ''' Timestamp is not growing '''
         datagram = \
