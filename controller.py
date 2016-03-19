@@ -430,6 +430,12 @@ class Controller(object):
         ack = SDP()
         ack.add_keyvalue('id', self._id)
         if self._last_sdp:
+            for part in self._last_sdp.get_multipart_list():
+                part_ack = SDP()
+                inn = part.get_data('in')
+                if inn:
+                    part_ack.add_keyvalue('in', inn)
+                    ack += part_ack
             inn = self._last_sdp.get_data('in')
             if inn:
                 ack.add_keyvalue('in', inn)
