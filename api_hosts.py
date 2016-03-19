@@ -25,7 +25,6 @@ class APIhosts(APIBase):
             if  usersession.check_scope('stats:host'):
                 r.append({
                     'host': h,
-                    'compressed': host.is_compressed(),
                     'controllers': entry,
                     'stats': host.get_stats()
                 })

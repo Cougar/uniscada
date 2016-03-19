@@ -1,6 +1,7 @@
 """ Physical host or device data structure for Comm module
 """
 import zlib
+import gzip
 import base64
 
 from stats import Stats
@@ -24,7 +25,6 @@ class Host(object):
         self._receiver = None
         self._sender = None
         self._addr = None
-        self._compressed = False
         self._controllers = []
         self._stats = Stats()
 
@@ -59,15 +59,6 @@ class Host(object):
         log.debug('set_addr(%s, %s)', str(self._id), str(addr))
         self._addr = addr
 
-    def set_compressed(self, compressed):
-        """ Set compressor/decompressor for host data stream
-
-        :param compressed: True or False
-        """
-        log.debug('set_compressed(%s, %s)', \
-            str(self._id), str(compressed))
-        self._compressed = compressed
-
     def receiver(self, receivedmessage):
         """ Process data received from the host/controller
 
@@ -79,20 +70,34 @@ class Host(object):
         :param receivedmessage: data received from the host/controller
         """
         if not self._receiver:
-            log.error('receiver(%s): callback not set', str(self._id))
+            log.exception('receiver(%s): callback not set', str(self._id))
             return
-        if self._compressed:
-            self._stats.add('rx/bytes_raw', len(receivedmessage))
+        rawlen = len(receivedmessage)
+        self._stats.add('rx/bytes_raw', rawlen)
+
+        if receivedmessage[0] == 0x1f and receivedmessage[1] == 0x8b:
+            ''' gzip compressed data '''
             try:
-                receivedmessage = zlib.decompress(receivedmessage)
-            except zlib.error as ex:
+                receivedmessage = gzip.decompress(receivedmessage)
+            except Exception as ex:
                 self._stats.add('rx/errors', 1)
                 self._stats.set('rx/last_error/datagram_raw_b64', \
-                    base64.b64encode(receivedmessage))
+                        base64.b64encode(receivedmessage))
                 self._stats.set('rx/last_error/reason', \
-                    'zlib.decompress() exception: ' + str(ex))
+                        'gzip.decompress() exception: ' + str(ex))
                 self._stats.set_timestamp('rx/last_error/timestamp')
                 return
+            self._stats.add('rx/packets_compressed', 1)
+            self._stats.add('rx/compression_saved_bytes', len(receivedmessage) - rawlen)
+            log.debug('compressed data from %s', str(self._id))
+        else:
+            ''' try zlib compressed data '''
+            try:
+                receivedmessage = zlib.decompress(receivedmessage)
+                self._stats.add('rx/packets_compressed', 1)
+                self._stats.add('rx/compression_saved_bytes', len(receivedmessage) - rawlen)
+            except zlib.error as ex:
+                pass
         if not isinstance(receivedmessage, str):
             try:
                 receivedmessage = receivedmessage.decode("UTF-8")
@@ -140,9 +145,6 @@ class Host(object):
         self._stats.set_timestamp('tx/last/timestamp')
         if isinstance(sendmessage, str):
             sendmessage = sendmessage.encode("UTF-8")
-        if self._compressed:
-            sendmessage = zlib.compress(sendmessage)
-            self._stats.add('tx/bytes_raw', len(sendmessage))
         self._sender(self, self._addr, sendmessage)
 
     def add_controller(self, controller):
@@ -207,13 +209,6 @@ class Host(object):
         :returns: statistics
         """
         return self._stats.get()
-
-    def is_compressed(self):
-        """ Is data transmission compressed or not
-
-        :returns: True or False
-        """
-        return self._compressed
 
     def __eq__(self, host):
         return self.get_id() == host.get_id()
