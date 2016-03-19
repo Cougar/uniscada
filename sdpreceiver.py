@@ -101,10 +101,8 @@ class SDPReceiver(object):
         ctrid = controller.get_id()
         log.debug('_check_seq(%s)', ctrid)
         seq = None
-        for part in sdp.get_multipart_list():
+        for part in sdp.gen_get():
             seq = part.get_in_seq()
-        if not seq:
-            seq = sdp.get_in_seq()
         if seq == None:
             log.error('packet seq for %s is required for HMAC', ctrid)
             self.new_nonce(controller)

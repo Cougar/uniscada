@@ -292,6 +292,13 @@ class SDPItem(object):
         else:
             del self.data['data'][key]
 
+    def gen_get(self):
+        """ Return this SDP
+
+        :returns: Generator of this single SDP
+        """
+        return (sdp for sdp in [self])
+
     def encode(self, controllerid=None):
         """ Encodes SDP packet to datagram
 

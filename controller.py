@@ -426,26 +426,33 @@ class Controller(object):
         if not self._host:
             log.error('No host data for controller (%s)', str(self._id))
             return
-
+        if not self._last_sdp:
+            log.error('Last SDP missing')
+            return
         ack = SDP()
         ack.add_keyvalue('id', self._id)
-        if self._last_sdp:
-            for part in self._last_sdp.get_multipart_list():
-                part_ack = SDP()
-                inn = part.get_data('in')
-                if inn:
-                    part_ack.add_keyvalue('in', inn)
-                    ack += part_ack
-            inn = self._last_sdp.get_data('in')
+        part_ack = None
+        for part in self._last_sdp.gen_get():
+            if part_ack:
+                ack += part_ack
+                part_ack = None
+            inn = part.get_data('in')
             if inn:
-                ack.add_keyvalue('in', inn)
+                part_ack = SDP()
+                part_ack.add_keyvalue('in', inn)
+            self._stats.add('tx/sdp/ack/parts', 1)
         for reg in self._send_queue.keys():
-            ack.add_keyvalue(reg, self._send_queue[reg])
-            self._stats.add('tx/sdp/updates', 1)
+            if part_ack:
+                part_ack.add_keyvalue(reg, self._send_queue[reg])
+            else:
+                ack.add_keyvalue(reg, self._send_queue[reg])
+            self._stats.add('tx/sdp/ack/updates', 1)
+        if part_ack:
+            ack += part_ack
         ack.set_secret_key(self.get_secret_key())
         ack.set_nonce(self.get_nonce())
         self._host.send(ack.encode())
-        self._stats.add('tx/ack', 1)
+        self._stats.add('tx/sdp/ack/packets', 1)
 
     def send_queue_reset(self):
         """ Reset send queue

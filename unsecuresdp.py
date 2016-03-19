@@ -125,13 +125,15 @@ class UnsecureSDP(SDPItem):
         """
         self._multipart_pieces.remove(sdp)
 
-    def get_multipart_list(self):
-        """ Generates list or all SDP pieces in multipart SDP
+    def gen_get(self):
+        """ Return multipart SDP pieces or this single SDP
 
-        :yields: SDP piece
+        :returns: Generator of multipart SDP pieces or this single SDP
         """
-        for sdp in self._multipart_pieces:
-            yield sdp
+        if self._multipart_pieces:
+            return (sdp for sdp in self._multipart_pieces)
+        else:
+            return super(UnsecureSDP, self).gen_get()
 
     def encode(self, controllerid=None):
         """ Encodes SDP packet to datagram

@@ -730,17 +730,17 @@ class SDPTests(unittest.TestCase):
             self.sdp.remove_sdp_multipart(sdp1)
         with self.assertRaises(ValueError):
             self.sdp.remove_sdp_multipart(sdp2)
-        self.assertListEqual(list(self.sdp.get_multipart_list()), [])
+        self.assertListEqual(list(self.sdp.gen_get()), [self.sdp])
 
         self.sdp += sdp1
-        self.assertListEqual(list(self.sdp.get_multipart_list()), [sdp1])
+        self.assertListEqual(list(self.sdp.gen_get()), [sdp1])
         self.sdp += sdp2
-        self.assertListEqual(list(self.sdp.get_multipart_list()), [sdp1, sdp2])
+        self.assertListEqual(list(self.sdp.gen_get()), [sdp1, sdp2])
 
         self.sdp.remove_sdp_multipart(sdp1)
-        self.assertListEqual(list(self.sdp.get_multipart_list()), [sdp2])
+        self.assertListEqual(list(self.sdp.gen_get()), [sdp2])
         self.sdp.remove_sdp_multipart(sdp2)
-        self.assertListEqual(list(self.sdp.get_multipart_list()), [])
+        self.assertListEqual(list(self.sdp.gen_get()), [self.sdp])
 
         with self.assertRaises(ValueError):
             self.sdp.remove_sdp_multipart(sdp1)
@@ -779,7 +779,7 @@ class SDPTests(unittest.TestCase):
             'in:2,1440871961\n' \
             'AAS:2\n'
         self.sdp = SDP.decode(datagram)
-        parts = list(self.sdp.get_multipart_list())
+        parts = list(self.sdp.gen_get())
         # part 1
         self.assertEqual(parts[0].get_in_seq(), 1)
         d = parts[0].get_data('id')
@@ -807,7 +807,7 @@ class SDPTests(unittest.TestCase):
             'AAS:2\n' \
             'sha256:wWYN9u1zKY+zqo0Z0xHxDL38tYsJBv+Mk5UAvN7hr5k=\n'
         self.sdp = SDP.decode(datagram)
-        parts = list(self.sdp.get_multipart_list())
+        parts = list(self.sdp.gen_get())
         # part 1
         self.assertEqual(parts[0].get_in_seq(), 1)
         d = parts[0].get_data('id')
@@ -832,7 +832,7 @@ class SDPTests(unittest.TestCase):
             'in:1,1440871960\n' \
             'in:2,1440871961\n'
         self.sdp = SDP.decode(datagram)
-        parts = list(self.sdp.get_multipart_list())
+        parts = list(self.sdp.gen_get())
         # part 1
         self.assertEqual(parts[0].get_in_seq(), 1)
         d = parts[0].get_data('id')
