@@ -20,7 +20,7 @@ class UserSession(object):
         self._isadmin = False
         self._isauthinprogress = False
         self._userdata = None
-        self._userdata_callback = None
+        self._userdata_callback = []
         self._controllerlist = {}
         self._servicegroupids = None
         self._scopes = []
@@ -39,11 +39,12 @@ class UserSession(object):
 
             :param callback: optional callback function
         """
+        if callback:
+            self._userdata_callback.append(callback)
         if self._isauthinprogress:
             log.debug('Nagios auth already in progress')
             return
         self._isauthinprogress = True
-        self._userdata_callback = callback
         try:
             NagiosUser().async_load_userdata(self._id, \
                 self._userdata_from_nagios)
@@ -67,11 +68,12 @@ class UserSession(object):
         else:
             log.error('userdata missing')
         if self._userdata_callback:
-            try:
-                self._userdata_callback(self)
-            except Exception as ex:
-                log.error('callback exception: %s', str(ex))
-            self._userdata_callback = None
+            for cb in self._userdata_callback:
+                try:
+                    cb(self)
+                except Exception as ex:
+                    log.error('callback exception: %s', str(ex))
+            self._userdata_callback = []
         self._isauthinprogress = False
 
     def _set_userdata(self, userdata):

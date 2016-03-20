@@ -39,7 +39,7 @@ class UserSessionTest(unittest.TestCase):
         x = []
         def _cb(usersession):
                 x.append(usersession)
-        self.usersession._userdata_callback = _cb
+        self.usersession._userdata_callback.append(_cb)
         self.usersession._userdata_from_nagios(self.userdata)
         self.assertEqual(x[0], self.usersession)
         self.assertEqual(self.usersession.get_userdata(), self.userdata)
