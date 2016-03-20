@@ -45,6 +45,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             self.on_close()
             return
         self._isopen = True
+        self._usersession.add_websocket(self)
 
     def on_message(self, message):
         log.debug('on_message(%s)', str(message))
@@ -159,6 +160,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
     def on_close(self):
         log.debug('on_close')
+        self._usersession.del_websocket(self)
         self._isopen = False
         self._msgbus.unsubscribe_all(self)
         self._wsclients.remove_by_id(self)

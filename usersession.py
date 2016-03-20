@@ -24,6 +24,7 @@ class UserSession(object):
         self._controllerlist = {}
         self._servicegroupids = None
         self._scopes = []
+        self._wslist = []
 
     def get_id(self):
         """ Get id of user (username)
@@ -31,6 +32,13 @@ class UserSession(object):
         :returns: user id (username)
         """
         return self._id
+
+    def add_websocket(self, ws):
+        self._wslist.append(ws)
+
+    def del_websocket(self, ws):
+        if ws in self._wslist:
+            self._wslist.remove(ws)
 
     def read_userdata_form_nagios(self, callback=None):
         """ Read userdata from Nagios
@@ -153,6 +161,19 @@ class UserSession(object):
 
         :returns: usersession data
         """
+        wslist = []
+        for ws in self._wslist:
+            r = {}
+            r['Sec-Websocket-Key'] = ws.request.headers['Sec-Websocket-Key']
+            r['remote_ip'] = ws.request.remote_ip
+            r['User-Agent'] = ws.request.headers['User-Agent']
+            r['subscriptions'] = []
+            for (token, subject) in ws._msgbus.gen_get_subscriptions(ws):
+                s = {}
+                s['token'] = token
+                s['subject'] = subject
+                r['subscriptions'].append(s)
+            wslist.append(r)
         return {
             "id": self._id,
             "admin": self._isadmin,
@@ -161,6 +182,7 @@ class UserSession(object):
             "servicegroupids": self._servicegroupids,
             "authinprogress": self._isauthinprogress,
             "scopes": self._scopes,
+            "websockets": wslist
         }
 
     def __str__(self):
