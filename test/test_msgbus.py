@@ -1,13 +1,19 @@
 import unittest
+import tornado.ioloop
+from tornado.testing import AsyncTestCase, gen_test
 
 from msgbus import MsgBus
 
-class MsgBusTest(unittest.TestCase):
+class MsgBusTest(AsyncTestCase):
     '''
     This is the unittest for the uniscada.msgbus module
     '''
     def setUp(self):
+        super(MsgBusTest, self).setUp()
         self.msgbus = MsgBus()
+
+    def get_new_ioloop(self):
+        return tornado.ioloop.IOLoop.instance()
 
     def test_send_unknown_subject(self):
         ''' Test message send when no listeners subscribed '''
@@ -27,6 +33,8 @@ class MsgBusTest(unittest.TestCase):
         self.msgbus.subscribe('token1', 'subject2', 'owner', self._cb3)
 
         self.msgbus.publish('subject1', 'message1')
+        self.io_loop.add_callback(self.stop)
+        self.wait()
 
         self.assertEqual('subject1', self.msg_subject1)
         self.assertEqual('token1', self.msg_token1)

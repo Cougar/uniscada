@@ -1,5 +1,10 @@
 ''' Message bus implementation
 '''
+import copy
+
+from functools import partial
+import tornado.ioloop
+
 import logging
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
@@ -39,7 +44,10 @@ class MsgBus(object):
         for owner in self._subscriptions.keys():
             for token in self._subscriptions[owner].keys():
                 if subject in self._subscriptions[owner][token]:
-                    self._subscriptions[owner][token][subject](token, subject, message)
+                    tornado.ioloop.IOLoop.instance().add_callback(partial(self._publish_one, token, subject, owner, self._subscriptions[owner][token][subject], copy.deepcopy(message)))
+
+    def _publish_one(self, token, subject, owner, func, message):
+        func(token, subject, message)
 
     def unsubscribe(self, token, subject, owner):
         ''' Unsubscribe a bus message listener
