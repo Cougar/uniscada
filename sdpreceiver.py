@@ -110,6 +110,7 @@ class SDPReceiver(object):
         prev_seq = controller.get_seq()
         if prev_seq:
             if not prev_seq < seq:
-                log.error('seq is not growing for %s', ctrid)
+                log.error('seq is not growing for %s: needs to be > %d', ctrid, prev_seq)
+                self.new_nonce(controller)
                 raise Exception('seq is not growing')
         controller.set_seq(seq)
