@@ -24,8 +24,8 @@ class APIusersessions(APIBase):
         user = kwargs.get('filter', None)
         u = self._usersessions.get_id(user)
         if not u:
-            return {'status': 404}
-        return {'status': 200, 'bodydata': u.get_usersession_data_v1()}
+            return {'status': 404, 'bodydata': []}
+        return {'status': 200, 'bodydata': [ u.get_usersession_data_v1() ]}
 
     def _request_post(self, **kwargs):
         """ Create new usersession """
