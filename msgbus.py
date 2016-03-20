@@ -80,6 +80,18 @@ class MsgBus(object):
         if owner in self._subscriptions:
             del self._subscriptions[owner]
 
+    def gen_get_subscriptions(self, owner):
+        ''' Generate list of subscriptions
+
+        :param owner: listener
+
+        :yields: Generated (token, subject) pair for each subscription
+        '''
+        if owner in self._subscriptions:
+            for token in self._subscriptions[owner].keys():
+                for subject in self._subscriptions[owner][token]:
+                    yield (token, subject)
+
     def __str__(self):
         s = 'Subscriptions:'
         for owner in self._subscriptions.keys():
