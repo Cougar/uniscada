@@ -25,6 +25,7 @@ class SystemAuth(object):
         _usersession = core.usersessions().find_by_id(self.SYSTEMUSER)
         _usersession._set_userdata({'user_name': self.SYSTEMUSER})
         _usersession.add_scope('system')
+        _usersession.add_scope('users')
         _usersession.add_scope('all')
         _usersession.add_scope('stats')
 

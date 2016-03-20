@@ -11,7 +11,7 @@ class APIusersessions(APIBase):
     def _request_get(self, **kwargs):
         """ Return list of all usersessions """
         log.debug('_request_get(%s)', str(kwargs))
-        self._error_if_not_systemuser(**kwargs)
+        self._error_if_not_scope('users', **kwargs)
         r = []
         for usersession in self._usersessions.get_id_list():
             r.append({'usersession': str(usersession)})
@@ -20,7 +20,7 @@ class APIusersessions(APIBase):
     def _request_get_with_filter(self, **kwargs):
         """ Return details of one usersession """
         log.debug('_request_get_with_filter(%s)', str(kwargs))
-        self._error_if_not_systemuser(**kwargs)
+        self._error_if_not_scope('users', **kwargs)
         user = kwargs.get('filter', None)
         u = self._usersessions.get_id(user)
         if not u:
