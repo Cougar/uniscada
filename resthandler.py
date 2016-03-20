@@ -68,6 +68,9 @@ class RestHandler(ContentNegotiation, tornado.web.RequestHandler):
         if self._finished:
             return
 
+        if result == None:
+            return
+
         if 'status' in result:
             self.set_status(result['status'])
 
@@ -89,23 +92,21 @@ class RestHandler(ContentNegotiation, tornado.web.RequestHandler):
             self.write(json.dumps(result['bodydata'], indent=4, sort_keys=True, cls=JSONBinEncoder))
         self.finish()
 
-    def precheck(self):
+    def precheck(self, cb_on_success):
         ct = self.negotiated_content_type(finish_on_error=False)
         if not ct:
-            self.write_response({ 'status': 406, 'bodydata': {'message' : 'unsupportet content type'} })
-            return False
+            return({ 'status': 406, 'bodydata': {'message' : 'unsupportet content type'} })
         self.user = self.get_current_user()
         if not self.user:
-            self.write_response({ 'status': 200, 'bodydata': {'message': 'Not authenticated', 'login_url': 'https://login.uniscada.eu/login'} })
-            return False
+            return({ 'status': 200, 'bodydata': {'message': 'Not authenticated', 'login_url': 'https://login.uniscada.eu/login'} })
         self._usersession = self._usersessions.find_by_id(self.user)
         if not self._usersession.get_userdata():
-            self._usersession.read_userdata_form_nagios()
-            # FIXME return right reload page with 307
-            # FIXME return right URL
-            self.write_response({ 'status': 200, 'headers': [ { 'Location': 'https://api.uniscada.eu/api/v1/hosts' } ], 'bodydata': {'message' : 'Authentication is in progress..'} })
-            return False
-        return True
+            self._usersession.read_userdata_form_nagios(partial(self._cb_userdata_ready, cb_on_success))
+            return None
+        return(cb_on_success())
+
+    def _cb_userdata_ready(self, cb, usersession):
+        self.write_response(cb())
 
     @unblock
     def post(self, *args, **kwargs):
@@ -128,9 +129,9 @@ class RestHandler(ContentNegotiation, tornado.web.RequestHandler):
         return self._any_method(*args, **kwargs)
 
     def _any_method(self, *args, **kwargs):
-        if not self.precheck():
-            return
+        return(self.precheck(partial(self._any_method_run, *args, **kwargs)))
 
+    def _any_method_run(self, *args, **kwargs):
         if len(args) != 3:
             return({ 'status': 200, 'bodydata': {'message' : 'missing arguments'} })
 
@@ -144,7 +145,6 @@ class RestHandler(ContentNegotiation, tornado.web.RequestHandler):
                 data = json.loads(self.request.body.decode('UTF8'))
             except Exception as e:
                 log.warning("JSON parse error: %s" % str(e))
-                pass
 
         try:
             return API(self._core).get(user=self.user, resource=args[0], filter=filter, method=self.request.method, data=data)
@@ -153,7 +153,5 @@ class RestHandler(ContentNegotiation, tornado.web.RequestHandler):
         except UserWarning as e:
             return({ 'status': 500, 'bodydata': {'message' : 'error: %s' % str(e)} })
         except Exception as e:
-            log.critical("Exception: %s" % str(e))
-            import traceback
-            log.critical("Trace: %s" % traceback.format_exc())
+            log.exception("Exception: %s" % str(e))
             return({ 'status': 501, 'bodydata': {'message' : str(e)} })
