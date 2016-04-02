@@ -42,16 +42,18 @@ class APIservicegroups(APIBase):
         """ Return details of one servicegroup """
         log.debug('_request_get_with_filter(%s)', str(kwargs))
         user = kwargs.get('user', None)
-        servicegroup = kwargs.get('filter', None)
         servicegroupids = self._get_servicegroupids(user)
-        if servicegroup not in servicegroupids:
-            raise SessionException('unknown servicegroup')
-        sg = self._servicegroups.get_id(servicegroup)
-        if not sg:
-            log.error('servicegroup data inconsistency user=%s, ' \
-                ' servicegroup=%s', str(user), str(servicegroup))
-            raise SessionException('servicegroup data inconsistency')
-        return {'status': 200, 'bodydata': sg.get_servicegroup_data_v1()}
+        r = []
+        for servicegroup in kwargs.get('filter', '').split(','):
+            if servicegroup not in servicegroupids:
+                raise SessionException('unknown servicegroup')
+            sg = self._servicegroups.get_id(servicegroup)
+            if not sg:
+                log.error('servicegroup data inconsistency user=%s, ' \
+                    ' servicegroup=%s', str(user), str(servicegroup))
+                raise SessionException('servicegroup data inconsistency')
+            r.append(sg.get_servicegroup_data_v1())
+        return {'status': 200, 'bodydata': r}
 
     def _request_post(self, **kwargs):
         """ Create new servicegroup(s) """
