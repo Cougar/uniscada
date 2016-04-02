@@ -373,8 +373,8 @@ class Controller(object):
             servicetable = self._setup.get('servicetable', None)
             if servicetable:
                 servicegroup = self._servicegroups.get_id(servicetable)
-        r['body'] = self.get_service_data_v1_last_sdp(servicegroup)
-        if len(r['body']['services']):
+        r['body'] = [ self.get_service_data_v1_last_sdp(servicegroup) ]
+        if len(r['body'][0]['services']):
             self._msgbus.publish(r['resource'], r)
 
 
