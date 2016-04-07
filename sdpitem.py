@@ -228,7 +228,7 @@ class SDPItem(object):
         for key in self.data['value'].keys():
             if isinstance(self.data['value'][key], list):
                 yield (key + 'W', \
-                    ' '.join([str(x) for x in self.data['value'][key]]))
+                    ' '.join([SDPItem._list_value_to_str(x) for x in self.data['value'][key]]))
             else:
                 yield (key + 'V', str(self.data['value'][key]))
         for key in self.data['float'].keys():
