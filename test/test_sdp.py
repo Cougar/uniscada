@@ -844,7 +844,7 @@ class SDPTests(unittest.TestCase):
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, 'abc123')
 
-    def test_multipart_invalid1(self):
+    def test_multipart_same_timestamp(self):
         ''' Timestamp is not growing '''
         datagram = \
             'id:abc123\n' \
@@ -852,8 +852,24 @@ class SDPTests(unittest.TestCase):
             'AAS:1\n' \
             'in:2,1440871960\n' \
             'AAS:2\n'
-        with self.assertRaises(SDPException):
-            self.sdp.decode(datagram)
+        self.sdp = SDP.decode(datagram)
+        parts = list(self.sdp.gen_get())
+        # part 1
+        self.assertEqual(parts[0].get_in_seq(), 1)
+        d = parts[0].get_data('id')
+        self.assertTrue(isinstance(d, str))
+        self.assertEqual(d, 'abc123')
+        d = parts[0].get_data('AAS')
+        self.assertTrue(isinstance(d, int))
+        self.assertEqual(d, 1)
+        # part 2
+        self.assertEqual(parts[1].get_in_seq(), 2)
+        d = parts[1].get_data('id')
+        self.assertTrue(isinstance(d, str))
+        self.assertEqual(d, 'abc123')
+        d = parts[1].get_data('AAS')
+        self.assertTrue(isinstance(d, int))
+        self.assertEqual(d, 2)
 
     def test_multipart_invalid2(self):
         ''' Timestamp is in wrong position '''

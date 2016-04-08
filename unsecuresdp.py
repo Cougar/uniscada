@@ -108,7 +108,7 @@ class UnsecureSDP(SDPItem):
         if not ts:
             raise SDPException('timestamp is required for multipart SDP')
         if len(self._multipart_pieces):
-            if ts <= self._multipart_pieces[-1].get_timestamp():
+            if ts < self._multipart_pieces[-1].get_timestamp():
                 raise SDPException('timestamp is not growing')
         else:
             for (key, val) in self.get_data_list():
