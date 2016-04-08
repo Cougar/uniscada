@@ -23,6 +23,7 @@ class SDPItem(object):
         """
         self.data = {}
         self.data['id'] = None
+        self.data['in'] = None
         self.data['data'] = {}
         self.data['float'] = {}
         self.data['status'] = {}
@@ -52,6 +53,8 @@ class SDPItem(object):
         """
         if key == 'id':
             self.data['id'] = val
+        elif key == 'in':
+            self._add_keyvalue_in(val)
         elif val == '?':
             self._add_keyvalue_query(key)
         elif key[-1] == 'F' or key == 'TOV':
@@ -64,6 +67,19 @@ class SDPItem(object):
             self._add_keyvalue_values(key, val)
         else:
             self._add_keyvalue_string(key, val)
+
+    def _add_keyvalue_in(self, inn):
+        """ Add 'in' key with format validation
+
+        :param inn: 'in' value
+        """
+        if isinstance(inn, int):
+            inn = str(inn)
+        if not isinstance(inn, str):
+            raise SDPException('Illegal "in" type: %s' % str(type(inn)))
+        if not re.compile(r'^(\d+)(,\d+)?$').match(inn):
+            raise SDPException('Illegal "in" format: %s' % inn)
+        self.data['in'] = inn
 
     def _add_keyvalue_query(self, key):
         """ Add special query key to the packet
@@ -187,8 +203,8 @@ class SDPItem(object):
         :returns: Status, Value, List of Values, Data or
         None if key is missing
         """
-        if key == 'id':
-            return self.data.get('id', None)
+        if key in ['id', 'in']:
+            return self.data[key]
         elif key in self.data['query']:
             return '?'
         elif key[-1] == 'F' or key == 'TOV':
@@ -223,6 +239,8 @@ class SDPItem(object):
         """
         if self.data['id']:
             yield ('id', self.data['id'])
+        if self.data['in']:
+            yield ('in', self.data['in'])
         for key in self.data['status'].keys():
             yield (key + 'S', str(self.data['status'][key]))
         for key in self.data['value'].keys():
@@ -243,37 +261,40 @@ class SDPItem(object):
 
         :returns: sequence number or 'None' if not exists
         """
-        inn = str(self.get_data('in'))
-        if not inn:
+        if not self.data['in']:
             return None
-        in_seq = re.compile(r'^(\d+)(,\d+(\.\d+)?)?$').match(inn)
-        if not in_seq:
+        try:
+            (seq, ts) = self.data['in'].split(',', 1)
+        except ValueError:
+            seq = self.data['in']
+        try:
+            return int(seq)
+        except ValueError:
             return None
-        return int(in_seq.group(1))
 
     def get_timestamp(self):
         """ Read SDP timestamp from "in:<num>,<timestamp>"
 
-        If "in" consists timestamp but the format has errors the
-        'Exception' will be raised.
-
         :returns: timestamp or 'None' if not exists
         """
-        inn = str(self.get_data('in'))
-        if not inn:
+        if not self.data['in']:
             return None
-        is_ts = re.compile(r'^\d+,(\d+(\.\d+)?)$').match(inn)
-        if not is_ts:
+        try:
+            (seq, ts) = self.data['in'].split(',', 1)
+        except:
             return None
-        return float(is_ts.group(1))
+        try:
+            return int(ts)
+        except ValueError:
+            return None
 
     def remove_data(self, key):    # pylint: disable=too-many-return-statements
         """ Remove entry of saved data
 
         :param key: data key to remove
         """
-        if key == 'id':
-            self.data['id'] = None
+        if key in ['id', 'in']:
+            self.data[key] = None
             return
 
         if not self.get_data(key):
@@ -323,11 +344,10 @@ class SDPItem(object):
         :returns: The string representation of SDP datagram data part
         """
         datagram = ''
-        if 'in' in self.data['data']:
-            datagram += 'in:' + str(self.data['data']['in']) + '\n'
+        if self.data['in']:
+            datagram += 'in:' + self.data['in'] + '\n'
         for key in self.data['data'].keys():
-            if key != 'in':
-                datagram += key + ':' + str(self.data['data'][key]) + '\n'
+            datagram += key + ':' + str(self.data['data'][key]) + '\n'
         for key in self.data['float'].keys():
             datagram += key + ':' + str(self.data['float'][key]) + '\n'
         for key in self.data['status'].keys():

@@ -306,6 +306,15 @@ class SDPTests(unittest.TestCase):
         self.assertTrue(isinstance(d, str))
         self.assertEqual(d, '?')
 
+    def test_add_illegal_in(self):
+        ''' Test wit illegal 'in' values '''
+        with self.assertRaises(SDPException):
+            self.sdp.add_keyvalue('in', '3,456.7')
+        with self.assertRaises(SDPException):
+            self.sdp.add_keyvalue('in', '4,567,89')
+        with self.assertRaises(SDPException):
+            self.sdp.add_keyvalue('in', '5,67.8.9')
+
     def test_timestamp(self):
         ''' Test get_timestamp() method '''
         self.assertEqual(self.sdp.get_timestamp(), None)
@@ -313,12 +322,6 @@ class SDPTests(unittest.TestCase):
         self.assertEqual(self.sdp.get_timestamp(), None)
         self.sdp += ('in', '2,123')
         self.assertEqual(self.sdp.get_timestamp(), 123)
-        self.sdp += ('in', '3,456.7')
-        self.assertEqual(self.sdp.get_timestamp(), 456.7)
-        self.sdp += ('in', '4,567,89')
-        self.assertEqual(self.sdp.get_timestamp(), None)
-        self.sdp += ('in', '5,67.8.9')
-        self.assertEqual(self.sdp.get_timestamp(), None)
 
     def test_seq(self):
         ''' Test get_in_seq() method '''
@@ -327,12 +330,6 @@ class SDPTests(unittest.TestCase):
         self.assertEqual(self.sdp.get_in_seq(), 1)
         self.sdp += ('in', '2,123')
         self.assertEqual(self.sdp.get_in_seq(), 2)
-        self.sdp += ('in', '3,456.7')
-        self.assertEqual(self.sdp.get_in_seq(), 3)
-        self.sdp += ('in', '4,567,89')
-        self.assertEqual(self.sdp.get_in_seq(), None)
-        self.sdp += ('in', '5,67.8.9')
-        self.assertEqual(self.sdp.get_in_seq(), None)
 
     def test_encode_with_id(self):
         ''' Test encoder for full packet'''
