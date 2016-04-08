@@ -566,8 +566,6 @@ class SDPTests(unittest.TestCase):
         with self.assertRaises(SDPDecodeException):
             SDP.decode('id:abc\nABW:\n')
         with self.assertRaises(SDPDecodeException):
-            SDP.decode('id:abc\nAAS:1\nAAS:2\n')
-        with self.assertRaises(SDPDecodeException):
             SDP.decode('id:abc\nAAS:1\nid:def\n')
 
     def test_encode_with_signature(self):
