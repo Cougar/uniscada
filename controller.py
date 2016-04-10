@@ -3,6 +3,7 @@
 import time
 
 from sdp import SDP
+from sdpexception import SDPException
 from stats import Stats
 
 import logging
@@ -301,12 +302,15 @@ class Controller(object):
         log.debug('set_last_sdp(%s)', str(self._id))
         try:
             self._process_incoming_sdp(sdp, ts=ts)
-        except Exception as ex:
+        except SDPException as ex:
             log.error('contoller=%s SDP processing error: %s', \
                 str(self._id),  str(ex))
             self._stats.set('rx/sdp/last_error/reason', str(ex))
             self._stats.add('rx/sdp/errors/total', 1)
-            raise Exception(ex)
+            raise SDPException(ex)
+        except Exception as ex:
+            log.exception('contoller=%s SDP processing error: %s', \
+                str(self._id),  str(ex))
         self._last_sdp = sdp
         self._last_sdp_ts = ts
         self._stats.add('rx/sdp/ok', 1)
