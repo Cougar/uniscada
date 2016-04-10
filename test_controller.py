@@ -321,6 +321,60 @@ class SensorSimulator(object):
         self._msgbus = msgbus
         self._controllerid = controllerid
         self._tmp_counter = 0
+        self._registers = {
+            # HeatRadiStop
+            "SRW": [
+                { "val": 1, "cfg": False },
+                { "val": 0, "cfg": False },
+                { "val": 1, "cfg": False },
+                { "val": 0, "cfg": True },
+            ],
+            # HeatFloorStop
+            "SFW": [
+                { "val": 1, "cfg": False },
+                { "val": 0, "cfg": False },
+                { "val": 1, "cfg": False },
+                { "val": 0, "cfg": True },
+            ],
+            # TestJuhtW
+            "SWW": [
+                { "val": 1, "cfg": False },
+                { "val": 0, "cfg": True },
+                { "val": 1, "cfg": True },
+                { "val": 0, "cfg": True },
+            ],
+        }
+        self._msgbus.subscribe(None, "sdp/ack", self, self._cb_sdp_ack)
+
+    def _cb_sdp_ack(self, _token, _subject, message):
+        sdp = message['value']
+        nr = 0;
+        for part in sdp.gen_get():
+            nr += 1;
+            updated_keys = {}
+            for (key, val) in part.get_data_list():
+                if key in ['id', 'in']:
+                    continue
+                log.warning('%d: data: %s: %s', nr, key, str(val))
+                if key in self._registers:
+                    valw = sdp.get_data(key)
+                    for idx, valx in enumerate(valw):
+                        if self._registers[key][idx]['cfg']:
+                            self._registers[key][idx]['val'] = valx
+                else:
+                    log.warning('unknown setup key %s:%s', key, str(val))
+                    continue
+                updated_keys[key] = val
+        if not len(updated_keys):
+            return
+        sdp = SDP()
+        sdp += ('id', self._controllerid)
+        for key in updated_keys.keys():
+            sdp += (key, list(r['val'] for r in self._registers[key]))
+        # send immediately without queue
+        datagram = sdp.encode()
+        log.debug('send immediately: %s', str(datagram))
+        self._msgbus.publish("sdp/out", {"value": datagram})
 
     def read_sensors(self):
         xxx = self._tmp_counter % 4
@@ -376,7 +430,19 @@ class SensorSimulator(object):
         # TestStateS
         sdp += ('TTS', self._registers['SWW'][3]['val'] % 4)
         if xxx == 1:
-            sdp += ('xx0', '?')
+            sdp += ('SFW', '?')
+            sdp += ('SRW', '?')
+            sdp += ('SWW', '?')
+        else:
+            # HeatFloorStop
+            sdp += ('SFW', list(r['val'] for r in self._registers['SFW']))
+            sdp += ('SFS', 0)
+            # HeatRadiStop
+            sdp += ('SRW', list(r['val'] for r in self._registers['SRW']))
+            sdp += ('SRS', 1)
+            # TestJuhtW
+            sdp += ('SWW', list(r['val'] for r in self._registers['SWW']))
+            sdp += ('SWS', 2)
 
         self._msgbus.publish("sdpqueue/append", {"value": sdp})
 
