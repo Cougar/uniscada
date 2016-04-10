@@ -22,6 +22,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         self._msgbus = self._core.msgbus()
         self._args = args
         self._isopen = False
+        self._usersession = None
         super(WebSocketHandler, self).__init__(*args, **kwargs)
 
     def get_current_user(self):
@@ -54,23 +55,6 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             return
         if not message:
             log.debug('no message')
-            return
-        if not self.user:
-            log.info('Not authenticated')
-            self.wsclient.send_data({'message': 'Not authenticated', 'login_url': 'https://login.uniscada.eu/login'})
-            self.close()
-            self.on_close()
-            return
-
-        self._usersession = self._usersessions.find_by_id(self.user)
-        if not self._usersession.get_userdata():
-            log.debug('on_message: Authentication in progress...')
-            try:
-                self.write_message(json.dumps({'message': 'Authentication is in progress..'}, indent=4, sort_keys=True))
-            except tornado.websocket.WebSocketClosedError as ex:
-                log.debug('WebSocketClosedError: %s', str(ex))
-            self.close()
-            self.on_close()
             return
 
         try:
@@ -130,8 +114,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             except Exception as e:
                 reply['message'] = 'error: ' + str(e)
         elif method == 'subscribe':
-            usersession = self._usersessions.find_by_id(self.user)
-            if not usersession.check_access(filter):
+            if not self._usersession.check_access(filter):
                 reply['message'] = 'error: no such resource'
                 self.wsclient.send_data(reply)
                 return
@@ -140,7 +123,6 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             reply['message'] = 'success'
             reply['body'] = {}
         elif method == 'unsubscribe':
-            usersession = self._usersessions.find_by_id(self.user)
             try:
                 self._msgbus.unsubscribe(token, resource, self)
                 reply['message'] = 'success'
@@ -160,7 +142,8 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
     def on_close(self):
         log.debug('on_close')
-        self._usersession.del_websocket(self)
+        if self._usersession:
+            self._usersession.del_websocket(self)
         self._isopen = False
         self._msgbus.unsubscribe_all(self)
         self._wsclients.remove_by_id(self)
