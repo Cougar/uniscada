@@ -163,6 +163,8 @@ class SDPClient(object):
         self._msgbus.subscribe(None, "udp/in", self, self._cb_udp_in)
         self._msgbus.subscribe(None, "sdp/out", self, self._cb_sdp_out)
         self._msgbus.subscribe(None, "sdp/bootstrap", self, self._cb_sdp_bootstrap)
+        if self._secretkey:
+            self._msgbus.publish("sdp/bootstrap", None)
 
     def _cb_nonce(self, _token, _subject, message):
         self._nonce = message['value']
@@ -172,7 +174,7 @@ class SDPClient(object):
             sdp = SDP.decode(message['value'])
         except Exception as ex:
             log.error('sdp.decode() exception: %s', str(ex))
-        if not sdp.is_signed():
+        if self._secretkey and not sdp.is_signed():
             log.error('datagram not signed')
             return
         if sdp.get_data('nonce'):
@@ -259,7 +261,7 @@ class SDPQueue(object):
             log.debug('queue is empty')
             return
         self._queue_cleanup()
-        if not self._nonce:
+        if self._secretkey and not self._nonce:
             log.warning('nonce missing')
             self._msgbus.publish("sdp/bootstrap", None)
             return
