@@ -445,18 +445,26 @@ class Controller(object):
                 part_ack = SDP()
                 part_ack.add_keyvalue('in', inn)
             self._stats.add('tx/sdp/ack/parts', 1)
-        for reg in self._send_queue.keys():
-            if part_ack:
-                part_ack.add_keyvalue(reg, self._send_queue[reg])
-            else:
-                ack.add_keyvalue(reg, self._send_queue[reg])
-            self._stats.add('tx/sdp/ack/updates', 1)
+        if part_ack:
+            self._stats.add('tx/sdp/ack/updates', self._add_send_queue_to_sdp(part_ack))
+        else:
+            self._stats.add('tx/sdp/ack/updates', self._add_send_queue_to_sdp(ack))
         if part_ack:
             ack += part_ack
         ack.set_secret_key(self.get_secret_key())
         ack.set_nonce(self.get_nonce())
         self._host.send(ack.encode())
         self._stats.add('tx/sdp/ack/packets', 1)
+
+    def _add_send_queue_to_sdp(self, sdp):
+        """ Add register values from the send queue
+        """
+        changes = 0
+        for reg in self._send_queue.keys():
+            sdp.add_keyvalue(reg, self._send_queue[reg]['val'])
+            changes += 1
+        self._stats.add('tx/sdp/confreg', changes)
+        return changes
 
     def send_queue_reset(self):
         """ Reset send queue
