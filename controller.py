@@ -498,11 +498,13 @@ class Controller(object):
         """ Remove one register from send queue
 
         :param reg: register to remove
-        :param val: expected register value
+        :param val: expected register value (string)
         """
         expval = self._send_queue.get(reg, {}).get('val', None)
         if not expval:
             return
+        if isinstance(expval, list):
+            expval = ' '.join([SDP._list_value_to_str(x) for x in expval])
         log.debug('send_queue_remove_reg(%s, %s)', str(self._id), str(reg))
         if expval != val:
             log.warning('controller=%s reg=%s val=\"%s\" != ' \
