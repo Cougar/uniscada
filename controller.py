@@ -479,6 +479,15 @@ class Controller(object):
         """
         log.debug('send_queue_add_last_reg(%s, %s)', str(self._id), str(reg))
         (val, ts) = self.get_state_reg(reg)
+        self.send_queue_add_reg_val(reg, val)
+
+    def send_queue_add_reg_val(self, reg, val):
+        """ Add a register and value to the send queue
+
+        :param reg: register to add the the queue
+        :param val: register value
+        """
+        log.debug('send_queue_add_reg_val(%s, %s, %s)', str(self._id), str(reg), str(val))
         if val:
             log.debug('  %s', str(val))
             self._send_queue[reg] = {}
