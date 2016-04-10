@@ -110,7 +110,7 @@ class UDPSocket(object):
         self._io_loop = tornado.ioloop.IOLoop.instance()
         self._io_loop.add_handler(self._socket.fileno(), \
             partial(self._callback, self._socket), self._io_loop.READ)
-        self._msgbus.subscribe(None, "udp/out", None, self._cb_udp_out)
+        self._msgbus.subscribe(None, "udp/out", self, self._cb_udp_out)
 
     def _cb_udp_out(self, _token, _subject, message):
         datagram = message['value']
@@ -126,8 +126,8 @@ class UDPSocket(object):
             len(datagram_zlib2))
         if len(datagram) > len(datagram_gzip):
             log.info('send ZIP')
-            # self._socket.sendto(datagram_gzip, (self._host, self._port))
-            self._socket.sendto(datagram_zlib, (self._host, self._port))
+            self._socket.sendto(datagram_gzip, (self._host, self._port))
+            # self._socket.sendto(datagram_zlib, (self._host, self._port))
         else:
             self._socket.sendto(datagram, (self._host, self._port))
 
@@ -159,11 +159,10 @@ class SDPClient(object):
         self._controllerid = controllerid
         self._secretkey = secretkey
         self._nonce = None
-        self._msgbus.subscribe(None, "nonce", None, self._cb_nonce)
-        self._msgbus.subscribe(None, "udp/in", None, self._cb_udp_in)
-        self._msgbus.subscribe(None, "sdp/out", None, self._cb_sdp_out)
-        self._msgbus.subscribe(None, "sdp/bootstrap", None, self._cb_sdp_bootstrap)
-        self._msgbus.publish("sdp/bootstrap", None)
+        self._msgbus.subscribe(None, "nonce", self, self._cb_nonce)
+        self._msgbus.subscribe(None, "udp/in", self, self._cb_udp_in)
+        self._msgbus.subscribe(None, "sdp/out", self, self._cb_sdp_out)
+        self._msgbus.subscribe(None, "sdp/bootstrap", self, self._cb_sdp_bootstrap)
 
     def _cb_nonce(self, _token, _subject, message):
         self._nonce = message['value']
@@ -198,7 +197,7 @@ class SDPNonce(object):
     def __init__(self, msgbus, secretkey):
         self._msgbus = msgbus
         self._secretkey = secretkey
-        self._msgbus.subscribe(None, "sdp/nonce", None, self._cb_sdp_nonce)
+        self._msgbus.subscribe(None, "sdp/nonce", self, self._cb_sdp_nonce)
 
     def _cb_sdp_nonce(self, _token, _subject, message):
         sdp = message['value']
@@ -222,9 +221,9 @@ class SDPQueue(object):
         self._nonce = None
         self._inn = 0
         self._queue = deque()
-        self._msgbus.subscribe(None, "nonce", None, self._cb_nonce)
-        self._msgbus.subscribe(None, "sdp/ack", None, self._cb_sdp_ack)
-        self._msgbus.subscribe(None, "sdpqueue/append", None, self._cb_sdpqueue_append)
+        self._msgbus.subscribe(None, "nonce", self, self._cb_nonce)
+        self._msgbus.subscribe(None, "sdp/ack", self, self._cb_sdp_ack)
+        self._msgbus.subscribe(None, "sdpqueue/append", self, self._cb_sdpqueue_append)
 
     def _cb_nonce(self, _token, _subject, message):
         self._nonce = message['value']
