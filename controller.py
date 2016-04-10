@@ -469,7 +469,9 @@ class Controller(object):
         (val, ts) = self.get_state_reg(reg)
         if val:
             log.debug('  %s', str(val))
-            self._send_queue[reg] = val
+            self._send_queue[reg] = {}
+            self._send_queue[reg]['val'] = val
+            self._send_queue[reg]['tries'] = 0
 
     def send_queue_remove_reg(self, reg, val):
         """ Remove one register from send queue
@@ -477,7 +479,7 @@ class Controller(object):
         :param reg: register to remove
         :param val: expected register value
         """
-        expval = self._send_queue.get(reg, None)
+        expval = self._send_queue.get(reg, {}).get('val', None)
         if not expval:
             return
         log.debug('send_queue_remove_reg(%s, %s)', str(self._id), str(reg))
@@ -486,6 +488,11 @@ class Controller(object):
                 'sent val=\"%s\"', str(self._id), str(reg), \
                 str(val), str(expval))
             self._stats.add('rx/sdp/updates/different', 1)
+            self._send_queue[reg]['tries'] += 1
+            if self._send_queue[reg]['tries'] > 10:
+                log.warning('controller=%s reg=%s expired', str(self._id), str(reg))
+                self._stats.add('rx/sdp/updates/expired', 1)
+                self._send_queue.pop(reg)
             return
         else:
             self._send_queue.pop(reg)
