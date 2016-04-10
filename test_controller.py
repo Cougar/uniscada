@@ -323,41 +323,61 @@ class SensorSimulator(object):
         self._tmp_counter = 0
 
     def read_sensors(self):
+        xxx = self._tmp_counter % 4
+        self._tmp_counter += 1
+
         sdp = SDP()
         sdp += ('id', self._controllerid)
+        # unknown variable with value
         sdp += ('psversion', psutil.__version__)
+        # unknown empty variable
         sdp += ('emx', '')
 
         scputimes = psutil.cpu_times()
-        sdp += ('CUV', getattr(scputimes, 'user'))
-        sdp += ('CSV', getattr(scputimes, 'system'))
-        sdp += ('CIV', getattr(scputimes, 'idle'))
+        # CPUtimeU
+        sdp += ('CUV', int(getattr(scputimes, 'user') * 10))
+        sdp += ('CUS', xxx)
+        # CPUtimeS
+        sdp += ('CSV', int(getattr(scputimes, 'system') * 10))
+        sdp += ('CSS', xxx)
+        # CPUtimeI
+        sdp += ('CIV', int(getattr(scputimes, 'idle') * 10))
+        sdp += ('CIS', xxx)
 
         svmem = psutil.virtual_memory()
+        # MemoryTotal
         sdp += ('MTV', getattr(svmem, 'total'))
+        #  MemoryAvail
         sdp += ('MAV', getattr(svmem, 'available'))
+        # MemoryPercent
         sdp += ('MPV', getattr(svmem, 'percent'))
+        # MemoryUsed
         sdp += ('MUV', getattr(svmem, 'used'))
+        # MemoryFree
         sdp += ('MFV', getattr(svmem, 'free'))
+        # MemoryBuffers
         sdp += ('MBV', getattr(svmem, 'buffers'))
+        # MemoryCached
         sdp += ('MCV', getattr(svmem, 'cached'))
 
         sdiskio = psutil.disk_io_counters()
+        # DiskRead
         sdp += ('DRW', [ \
             getattr(sdiskio, 'read_count'), \
             getattr(sdiskio, 'read_bytes'), \
             getattr(sdiskio, 'read_time')])
+        sdp += ('DRS', 0)
+        # DiskWrite
         sdp += ('DWW', [ \
             getattr(sdiskio, 'write_count'), \
             getattr(sdiskio, 'write_bytes'), \
             getattr(sdiskio, 'write_time')])
 
-        xxx = self._tmp_counter % 4
-        sdp += ('xx'+str(xxx), str(getattr(scputimes, 'user')))
-        sdp += ('CUS', xxx)
+        # TestStateS
+        sdp += ('TTS', self._registers['SWW'][3]['val'] % 4)
         if xxx == 1:
             sdp += ('xx0', '?')
-        self._tmp_counter += 1
+
         self._msgbus.publish("sdpqueue/append", {"value": sdp})
 
 
