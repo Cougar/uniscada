@@ -456,6 +456,19 @@ class Controller(object):
         self._host.send(ack.encode())
         self._stats.add('tx/sdp/ack/packets', 1)
 
+    def send_settings(self):
+        """ Send SDP with register values from the send queue
+        """
+        log.debug('send_settings(%s)', str(self._id))
+        if not self._host:
+            log.error('No host data for controller (%s)', str(self._id))
+            return
+        sdp = SDP()
+        sdp.add_keyvalue('id', self._id)
+        self._stats.add('tx/sdp/conf/updates', self._add_send_queue_to_sdp(sdp))
+        self._host.send(sdp.encode())
+        self._stats.add('tx/sdp/conf/packets', 1)
+
     def _add_send_queue_to_sdp(self, sdp):
         """ Add register values from the send queue
         """
