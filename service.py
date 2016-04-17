@@ -22,6 +22,7 @@ class Service(object):
         log.debug('Create a new service (%s)', str(id))
         self._id = id
         self._setup = {}
+        self._data_v1 = {}
         self._setup_mask = []
 
     def get_id(self):
@@ -38,6 +39,7 @@ class Service(object):
         '''
         self._setup = setup
         self._create_setup_mask()
+        self._create_data_v1()
 
     def get_setup(self):
         ''' Return setup data
@@ -51,9 +53,15 @@ class Service(object):
 
         :returns: service data in API v1 format
         '''
+        return self._data_v1
+
+    def _create_data_v1(self):
+        ''' Create service data in API v1 format
+        '''
         (show, key) = self._get_show_and_key()
         if not show:
-            return {}
+            self._data_v1 = {}
+            return
         unit = self._setup.get('out_unit', '')
         desc = [ self._setup.get('desc0', ''), self._setup.get('desc1', ''), self._setup.get('desc2', '') ]
         multiperf = self._setup.get('multiperf')
@@ -94,7 +102,7 @@ class Service(object):
                 if str(mp+1) in multicfg:
                     multiperf['cfg'] = True
             r['multiperf'].append(multiperf)
-        return r
+        self._data_v1 = r
 
     def _get_show_and_key(self):
         ''' Return Show and Key values
