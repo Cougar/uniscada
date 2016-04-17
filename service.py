@@ -22,6 +22,7 @@ class Service(object):
         log.debug('Create a new service (%s)', str(id))
         self._id = id
         self._setup = {}
+        self._setup_mask = []
 
     def get_id(self):
         ''' Get id of service
@@ -36,6 +37,7 @@ class Service(object):
         :param setup: setup data
         '''
         self._setup = setup
+        self._create_setup_mask()
 
     def get_setup(self):
         ''' Return setup data
@@ -109,6 +111,14 @@ class Service(object):
             return (False, val_reg)
         else:
             return (None, None)
+
+    def _create_setup_mask(self):
+        ''' create mask for r/w setup keys
+        '''
+        self._setup_mask = []
+        multicfg = set(self._setup.get('multicfg', "").split())
+        for i in range(len(self._setup.get('multiperf', "").split())):
+            self._setup_mask.append(str(i+1) in multicfg)
 
     def __str__(self):
         return(str(self._id) + ': ' +
