@@ -315,8 +315,8 @@ class Controller(object):
         self._last_sdp_ts = ts
         self._stats.add('rx/sdp/ok', 1)
         self._stats.set('rx/sdp/last/timestamp', ts)
-        self._publish()
         self.ack_last_sdp()
+        self._publish()
 
     def _process_incoming_sdp(self, sdp, ts=time.time()):
         """ Process SDP packet from controller:
