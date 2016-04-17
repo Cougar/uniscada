@@ -514,7 +514,7 @@ class Controller(object):
         :param val: expected register value (string)
         """
         expval = self._send_queue.get(reg, {}).get('val', None)
-        if not expval:
+        if expval == None:
             return
         if isinstance(expval, list):
             expval = ' '.join([SDP._list_value_to_str(x) for x in expval])
