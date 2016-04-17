@@ -300,23 +300,25 @@ class Controller(object):
         :param ts: optional timestamp
         """
         log.debug('set_last_sdp(%s)', str(self._id))
-        try:
-            self._process_incoming_sdp(sdp, ts=ts)
-        except SDPException as ex:
-            log.error('contoller=%s SDP processing error: %s', \
-                str(self._id),  str(ex))
-            self._stats.set('rx/sdp/last_error/reason', str(ex))
-            self._stats.add('rx/sdp/errors/total', 1)
-            raise SDPException(ex)
-        except Exception as ex:
-            log.exception('contoller=%s SDP processing error: %s', \
-                str(self._id),  str(ex))
-        self._last_sdp = sdp
-        self._last_sdp_ts = ts
-        self._stats.add('rx/sdp/ok', 1)
-        self._stats.set('rx/sdp/last/timestamp', ts)
-        self.ack_last_sdp()
-        self._publish()
+        for part in sdp.gen_get():
+            try:
+                self._process_incoming_sdp(part, ts=ts)
+            except SDPException as ex:
+                log.error('contoller=%s SDP processing error: %s', \
+                    str(self._id),  str(ex))
+                self._stats.set('rx/sdp/last_error/reason', str(ex))
+                self._stats.add('rx/sdp/errors/total', 1)
+                raise SDPException(ex)
+            except Exception as ex:
+                log.exception('contoller=%s SDP processing error: %s', \
+                    str(self._id),  str(ex))
+                raise Exception(ex)
+            self._last_sdp = part
+            self._last_sdp_ts = ts
+            self._stats.add('rx/sdp/ok', 1)
+            self._stats.set('rx/sdp/last/timestamp', ts)
+            self._publish()
+        self.ack_sdp(sdp)
 
     def _process_incoming_sdp(self, sdp, ts=time.time()):
         """ Process SDP packet from controller:
@@ -420,23 +422,23 @@ class Controller(object):
         self._host.send(sdp.encode())
         self._stats.add('tx/nonce', 1)
 
-    def ack_last_sdp(self):
-        """ Send ACK based on the last SDP packet.
+    def ack_sdp(self, sdp):
+        """ Send ACK based on the SDP packet.
 
-        ACK packet consists "id", "in" if it was defined in the last
+        ACK packet consists "id", "in" if it was defined in the
         SDP packet and register values from the send queue
         """
-        log.debug('ack_last_sdp(%s)', str(self._id))
+        log.debug('ack_sdp(%s)', str(self._id))
         if not self._host:
             log.error('No host data for controller (%s)', str(self._id))
             return
-        if not self._last_sdp:
-            log.error('Last SDP missing')
+        if not sdp:
+            log.error('SDP is missing')
             return
         ack = SDP()
         ack.add_keyvalue('id', self._id)
         part_ack = None
-        for part in self._last_sdp.gen_get():
+        for part in sdp.gen_get():
             if part_ack:
                 ack += part_ack
                 part_ack = None
