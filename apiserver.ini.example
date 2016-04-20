@@ -44,19 +44,19 @@ args = (sys.stderr,)
 class = logging.handlers.TimedRotatingFileHandler
 level = DEBUG
 formatter = fileFormatter
-args = ('./apiserver.log','MIDNIGHT',1,100,None,False,True)
+args = ('./apiserver.log','MIDNIGHT',1,100,'utf-8',False,True)
 
 [handler_errorFileHandler]
 class = FileHandler
 level = ERROR
 formatter = fileFormatter
-args = ('./apiserver.error_log','w+')
+args = ('./apiserver.error_log','w+','utf-8')
 
 [handler_statusFileHandler]
 class = FileHandler
 level = INFO
 formatter = fileFormatter
-args = ('./apiserver.status_log','w')
+args = ('./apiserver.status_log','w','utf-8')
 
 [formatter_fileFormatter]
 format = %(asctime)s %(levelname)s:%(name)s.%(module)s.%(funcName)s: %(message)s
