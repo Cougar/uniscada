@@ -1,5 +1,6 @@
 import tornado.websocket
 import json
+import uuid
 
 from api import API
 
@@ -107,36 +108,37 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             self.wsclient.send_data(reply)
             return
 
-        if method == 'get':
-            try:
+        try:
+            if method == 'get':
                 r = self._api.get(user=self.user, resource=query, filter=filter, method='GET')
                 reply['body'] = r.get('bodydata', '')
-            except Exception as e:
-                reply['message'] = 'error: ' + str(e)
-        elif method == 'post':
-            try:
+            elif method == 'post':
                 r = self._api.get(user=self.user, resource=query, filter=filter, method='POST', data=jsondata.get('data', None))
                 reply['body'] = r.get('bodydata', '')
-            except Exception as e:
-                reply['message'] = 'error: ' + str(e)
-        elif method == 'subscribe':
-            if not self._usersession.check_access(filter):
-                reply['message'] = 'error: no such resource'
-                self.wsclient.send_data(reply)
-                return
+            elif method == 'subscribe':
+                if not self._usersession.check_access(filter):
+                    reply['message'] = 'error: no such resource'
+                    self.wsclient.send_data(reply)
+                    return
 
-            self._msgbus.subscribe(token, resource, self, self._on_bus_message)
-            reply['message'] = 'success'
-            reply['body'] = {}
-        elif method == 'unsubscribe':
-            try:
+                self._msgbus.subscribe(token, resource, self, self._on_bus_message)
+                reply['message'] = 'success'
+                reply['body'] = {}
+            elif method == 'unsubscribe':
                 self._msgbus.unsubscribe(token, resource, self)
                 reply['message'] = 'success'
                 reply['body'] = {}
-            except Exception as e:
-                reply['message'] = 'error: ' + str(e)
-        else:
-            raise Exception('update known method list above')
+            else:
+                log.exception('update known method list above')
+                return
+        except SessionException as e:
+            reply['message'] = 'error: ' + str(e)
+        except UserWarning as e:
+            reply['message'] = 'error: ' + str(e)
+        except Exception as e:
+            errid = str(uuid.uuid4())
+            log.exception("Exception: %s: %s" % (errid, str(e)))
+            reply['message'] = 'error: Exception ' + errid
 
         self.wsclient.send_data(reply)
 

@@ -1,5 +1,6 @@
 import tornado.web
 import json
+import uuid
 
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial, wraps
@@ -153,5 +154,6 @@ class RestHandler(ContentNegotiation, tornado.web.RequestHandler):
         except UserWarning as e:
             return({ 'status': 500, 'bodydata': {'message' : 'error: %s' % str(e)} })
         except Exception as e:
-            log.exception("Exception: %s" % str(e))
-            return({ 'status': 501, 'bodydata': {'message' : str(e)} })
+            errid = str(uuid.uuid4())
+            log.exception("Exception: %s: %s" % (errid, str(e)))
+            return({ 'status': 501, 'bodydata': {'message' : 'Exception ' + errid }})
