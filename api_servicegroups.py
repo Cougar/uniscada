@@ -90,10 +90,6 @@ class APIservicegroups(APIBase):
         log.debug('_request_post(%s)', str(kwargs))
         self._error_if_not_systemuser(**kwargs)
         data = kwargs.get('data', None)
-        if not data:
-            raise UserWarning('missing data')
-        if not type(data) == list:
-            raise UserWarning('servicegroup list expected')
         for sg in data:
             servicegroup = sg.get('servicegroup', None)
             if not servicegroup:
@@ -113,8 +109,6 @@ class APIservicegroups(APIBase):
         log.debug('_request_delete(%s)', str(kwargs))
         self._error_if_not_systemuser(**kwargs)
         data = kwargs.get('data', None)
-        if data:
-            raise UserWarning('unknown data')
         fltr = kwargs.get('filter', None)
         if not fltr:
             raise UserWarning('servicegroup name expected')
@@ -130,8 +124,6 @@ class APIservicegroups(APIBase):
         log.debug('_request_put(%s)', str(kwargs))
         self._error_if_not_systemuser(**kwargs)
         data = kwargs.get('data', None)
-        if not data:
-            raise UserWarning('missing data')
         fltr = kwargs.get('filter', None)
         if not fltr:
             raise UserWarning('servicegroup name expected')

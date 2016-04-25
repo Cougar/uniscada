@@ -65,12 +65,8 @@ class APIcontrollers(APIBase):
         log.debug('_request_post(%s)', str(kwargs))
         self._error_if_not_systemuser(**kwargs)
         data = self._get_data_or_error(**kwargs)
-        if not type(data) == list:
-            raise UserWarning('controller list expected')
         for c in data:
             controller = c.get('controller', None)
-            if not controller:
-                raise UserWarning('controller data missing')
             if self._controllers.get_id(controller):
                 raise UserWarning('controller %s already exists' % controller)
         for c in data:
@@ -100,8 +96,6 @@ class APIcontrollers(APIBase):
         fltr = self._get_filter_or_error('controller id expected', \
             **kwargs)
         controller = self._get_controller_or_error(fltr)
-        if not "servicetable" in data:
-            raise UserWarning('servicetable not defined')
         if not self._servicegroups.get_id(data["servicetable"]):
             raise UserWarning('no such servicegroup defined: %s' % \
                 data["servicetable"])

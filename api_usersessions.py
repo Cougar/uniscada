@@ -40,14 +40,8 @@ class APIusersessions(APIBase):
         log.debug('_request_post(%s)', str(kwargs))
         self._error_if_not_systemuser(**kwargs)
         data = kwargs.get('data', None)
-        if not data:
-            raise UserWarning('missing data')
-        if not type(data) == list:
-            raise UserWarning('user_name list expected')
         for u in data:
             user = u.get('user_name', None)
-            if not user:
-                raise UserWarning('user data missing')
             if self._usersessions.get_id(user):
                 raise UserWarning('user %s already exists' % user)
         for u in data:
@@ -62,8 +56,6 @@ class APIusersessions(APIBase):
         log.debug('_request_delete(%s)', str(kwargs))
         self._error_if_not_systemuser(**kwargs)
         data = kwargs.get('data', None)
-        if data:
-            raise UserWarning('unknown data')
         fltr = kwargs.get('filter', None)
         if not fltr:
             raise UserWarning('user id expected')
