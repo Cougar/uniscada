@@ -85,3 +85,42 @@ class ServiceTests(unittest.TestCase):
     def test_setupmask(self):
         ''' Test setup mask creation '''
         self.assertListEqual(self.service._setup_mask, [False, True, True, True])
+
+        self.service._setup['multiperf'] = "0p 0i 0d"
+        self.service._setup['multicfg'] = ""
+        self.service._create_setup_mask()
+        self.assertListEqual(self.service._setup_mask, [False, False, False])
+
+        self.service._setup['multiperf'] = "MBA1 MBA2 MBA3 MBA4"
+        self.service._setup['multicfg'] = "-"
+        self.service._create_setup_mask()
+        self.assertListEqual(self.service._setup_mask, [False, False, False, False])
+
+        del self.service._setup['multiperf']
+        del self.service._setup['multicfg']
+        self.service._create_setup_mask()
+        self.assertListEqual(self.service._setup_mask, [])
+
+        self.service._setup['multicfg'] = ""
+        self.service._create_setup_mask()
+        self.assertListEqual(self.service._setup_mask, [])
+
+        del self.service._setup['multicfg']
+        self.service._setup['multiperf'] = ""
+        self.service._create_setup_mask()
+        self.assertListEqual(self.service._setup_mask, [])
+
+        self.service._setup['multiperf'] = "21Sdo 21Sint 21Scal 21Sext"
+        self.service._setup['multicfg'] = "4"
+        self.service._create_setup_mask()
+        self.assertListEqual(self.service._setup_mask, [False, False, False, True])
+
+        self.service._setup['multiperf'] = "HP HPlo HPhi"
+        self.service._setup['multicfg'] = "2 3"
+        self.service._create_setup_mask()
+        self.assertListEqual(self.service._setup_mask, [False, True, True])
+
+        self.service._setup['multiperf'] = "kPx100 kIx1000 kD"
+        self.service._setup['multicfg'] = "1 2 3"
+        self.service._create_setup_mask()
+        self.assertListEqual(self.service._setup_mask, [True, True, True])
