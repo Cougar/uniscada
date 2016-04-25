@@ -172,7 +172,12 @@ class CookieAuth(object):
             log.warning('no db connection')
             return
         tm = int(time.time())
-        cur = self._conn.cursor(buffered=True)
+        try:
+            cur = self._conn.cursor(buffered=True)
+        except Exception as ex:
+            log.error('cursor error: %s', str(ex))
+            self._connect_db()
+            return
         try:
             cur.execute('SELECT version,secret_key,expire ' \
                 'FROM secret_keys WHERE expire > ' + str(tm))
