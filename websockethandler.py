@@ -84,7 +84,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             self.on_close()
             return
 
-        if method not in ['get', 'subscribe', 'unsubscribe']:
+        if method not in ['get', 'post', 'subscribe', 'unsubscribe']:
             reply['message'] = 'error: unknown method'
             self.wsclient.send_data(reply)
             return
@@ -110,6 +110,12 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         if method == 'get':
             try:
                 r = self._api.get(user=self.user, resource=query, filter=filter, method='GET')
+                reply['body'] = r.get('bodydata', '')
+            except Exception as e:
+                reply['message'] = 'error: ' + str(e)
+        elif method == 'post':
+            try:
+                r = self._api.get(user=self.user, resource=query, filter=filter, method='POST', data=jsondata.get('data', None))
                 reply['body'] = r.get('bodydata', '')
             except Exception as e:
                 reply['message'] = 'error: ' + str(e)
