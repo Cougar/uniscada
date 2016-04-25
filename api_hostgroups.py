@@ -1,6 +1,8 @@
 from apibase import APIBase
 from sessionexception import SessionException
 
+from schema import Schema
+
 import logging
 log = logging.getLogger(__name__)   # pylint: disable=invalid-name
 log.addHandler(logging.NullHandler())
@@ -8,6 +10,8 @@ log.addHandler(logging.NullHandler())
 class APIhostgroups(APIBase):
 
     API_PATH = APIBase.API_BASE_PATH + '/hostgroups/'
+
+    _schema_GET = Schema(None)
 
     def _request_get(self, **kwargs):
         """ Return list of all hostgroups """

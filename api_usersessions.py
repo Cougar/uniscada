@@ -1,5 +1,7 @@
 from apibase import APIBase
 
+from schema import Schema
+
 import logging
 log = logging.getLogger(__name__)   # pylint: disable=invalid-name
 log.addHandler(logging.NullHandler())
@@ -7,6 +9,12 @@ log.addHandler(logging.NullHandler())
 class APIusersessions(APIBase):
 
     API_PATH = APIBase.API_BASE_PATH + '/usersessions/'
+
+    _schema_GET = Schema(None)
+    _schema_POST = Schema([{
+        'user_name': str,
+        }])
+    _schema_DELETE = Schema(None)
 
     def _request_get(self, **kwargs):
         """ Return list of all usersessions """

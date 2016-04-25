@@ -1,5 +1,11 @@
 """ Common functions for API classes.
 """
+from schema import SchemaError
+
+import logging
+log = logging.getLogger(__name__)   # pylint: disable=invalid-name
+log.addHandler(logging.NullHandler())
+
 class APIBase(object):
     """ Defaults for API classes
     """
@@ -16,6 +22,7 @@ class APIBase(object):
 
     def output(self, **kwargs):
         """ Process HTTP request and output results """
+        self._validate_schema(**kwargs)
         if kwargs.get('method', None) == 'GET':
             if kwargs.get('filter', None):
                 return self._request_get_with_filter(**kwargs)
@@ -74,3 +81,14 @@ class APIBase(object):
         if not fltr:
             raise UserWarning(errmsg)
         return fltr
+
+    def _validate_schema(self, method, **kwargs):
+        schema = getattr(self, '_schema_' + method, None)
+        if not schema:
+            return
+        data = self._get_data_or_error(**kwargs)
+        try:
+            schema.validate(data)
+        except SchemaError as ex:
+            log.warning('schema error: ' + str(ex))
+            raise UserWarning('data schema error: ' + str(ex))

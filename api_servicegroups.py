@@ -1,6 +1,8 @@
 from apibase import APIBase
 from sessionexception import SessionException
 
+from schema import Schema, Optional
+
 import logging
 log = logging.getLogger(__name__)   # pylint: disable=invalid-name
 log.addHandler(logging.NullHandler())
@@ -8,6 +10,34 @@ log.addHandler(logging.NullHandler())
 class APIservicegroups(APIBase):
 
     API_PATH = APIBase.API_BASE_PATH + '/servicegroups/'
+
+    _schema_GET = Schema(None)
+    _schema_POST = Schema([{
+        'servicegroup': str,
+        }])
+    _schema_DELETE = Schema(None)
+    _schema_PUT = Schema([{
+        'conv_coef': str,
+        'desc0': str,
+        'desc1': str,
+        'desc2': str,
+        Optional('freshness'): str,
+        Optional('grp_value'): str,
+        'in_unit': str,
+        Optional('max_val'): str,
+        Optional('min_len'): str,
+        Optional('minstep'): str,
+        Optional('multicfg'): str,
+        Optional('multiperf'): str,
+        Optional('multivalue'): str,
+        Optional('notify'): str,
+        'out_unit': str,
+        'sta_reg': str,
+        Optional('step'): str,
+        'svc_name': str,
+        Optional('toggle'): str,
+        'val_reg': str,
+        }])
 
     def _get_servicegroupids(self, user):
         usersession = self._usersessions.find_by_id(user)

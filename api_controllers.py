@@ -1,6 +1,8 @@
 from apibase import APIBase
 from sessionexception import SessionException
 
+from schema import Schema, Optional
+
 import logging
 log = logging.getLogger(__name__)   # pylint: disable=invalid-name
 log.addHandler(logging.NullHandler())
@@ -8,6 +10,29 @@ log.addHandler(logging.NullHandler())
 class APIcontrollers(APIBase):
 
     API_PATH = APIBase.API_BASE_PATH + '/controllers/'
+
+    _schema_GET = Schema(None)
+    _schema_POST = Schema([{
+        'controller': str,
+        }])
+    _schema_DELETE = Schema(None)
+    _schema_PUT = Schema({
+        Optional('disp_name'): str,
+        'it_sim': str,
+        'location': str,
+        'mac': str,
+        'servicetable': str,
+        Optional('nagios_ip'): str,
+        Optional('nagios_port'): str,
+        Optional('secret_key'): str,
+        Optional('ignore'): bool,
+        Optional('script'): str,
+        Optional('babup_server'): str,
+        Optional('babup_services'): str,
+        Optional('babup_user'): str,
+        Optional('babup_pass'): str,
+        Optional('grp_value'): str,
+        })
 
     def _request_get(self, **kwargs):
         """ Return list of all controllers """
