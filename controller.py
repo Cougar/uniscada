@@ -300,6 +300,7 @@ class Controller(object):
         :param ts: optional timestamp
         """
         log.debug('set_last_sdp(%s)', str(self._id))
+        self._stats.add('rx/datagram/total', 1)
         for part in sdp.gen_get():
             try:
                 self._process_incoming_sdp(part, ts=ts)
@@ -307,7 +308,9 @@ class Controller(object):
                 log.error('contoller=%s SDP processing error: %s', \
                     str(self._id),  str(ex))
                 self._stats.set('rx/sdp/last_error/reason', str(ex))
+                self._stats.set('rx/sdp/last_error/timestamp', ts)
                 self._stats.add('rx/sdp/errors/total', 1)
+                self._stats.add('rx/datagram/error', 1)
                 raise SDPException(ex)
             except Exception as ex:
                 log.exception('contoller=%s SDP processing error: %s', \
@@ -318,6 +321,7 @@ class Controller(object):
             self._stats.add('rx/sdp/ok', 1)
             self._stats.set('rx/sdp/last/timestamp', ts)
             self._publish()
+        self._stats.add('rx/datagram/ok', 1)
         self.ack_sdp(sdp)
 
     def _process_incoming_sdp(self, sdp, ts=time.time()):
@@ -358,6 +362,8 @@ class Controller(object):
                 raise Exception('SDP packet is older than previous,' \
                     ' ignoring')
         self._update_state_from_sdp(sdp, ts)
+        if self._state_ts == ts:
+            self._stats.add('rx/sdp/same_ts', 1)
         self._state_ts = ts
 
     def _publish(self):
@@ -531,6 +537,8 @@ class Controller(object):
                 log.warning('controller=%s reg=%s expired', str(self._id), str(reg))
                 self._stats.add('rx/sdp/updates/expired', 1)
                 self._send_queue.pop(reg)
+            elif self._send_queue[reg]['tries'] > 1:
+                self._stats.add('rx/sdp/updates/retries', 1)
             return
         else:
             self._send_queue.pop(reg)
