@@ -86,7 +86,7 @@ class APIBase(object):
         schema = getattr(self, '_schema_' + method, None)
         if not schema:
             return
-        data = self._get_data_or_error(**kwargs)
+        data = kwargs.get('data', None)
         try:
             schema.validate(data)
         except SchemaError as ex:
