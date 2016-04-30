@@ -64,35 +64,6 @@ class Core(object):
         config = self.config()
         self._auth.setup(self.config())
 
-    def save_state(self, statefile):
-        ''' Save Controllers to statefile
-
-        :param statefile: statefile name
-        '''
-        import pickle
-        f = open(statefile, 'wb')
-        pickler = pickle.Pickler(f, 0)
-        pickler.dump(self._controllers)
-        f.close()
-
-    def restore_state(self, statefile):
-        ''' Restore Controllers from statefile
-
-        :param statefile: statefile name
-        '''
-        import pickle
-        try:
-            f = open(statefile, 'rb')
-            log.info("restore state from pickle")
-            unpickler = pickle.Unpickler(f)
-            self._controllers = unpickler.load()
-            log.info("controllers restored")
-            f.close()
-        except:
-            log.info("cant restore controllers state")
-            pass
-
-
     def usersessions(self):
         ''' Get UserSessions instance
 

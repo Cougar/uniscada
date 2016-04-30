@@ -193,7 +193,6 @@ if __name__ == '__main__':
     tornado.options.define("ca_certs", default = srvconfig.get('https', 'ca_certs', fallback="cacert.pem"), help = "CA PEM certificate", type = str)
     tornado.options.define("listen_address", default = "0.0.0.0", help = "Listen this address only", type = str)
     tornado.options.define("udp_port", default = srvconfig.get('sdp', 'udp_port', fallback=44444), help = "UDP listen port", type = int)
-    tornado.options.define("statefile", default = "/tmp/apiserver.pkl", help = "Read/write server state to/from this file during statup/shutdown", type = str)
     tornado.options.define("configfile", default = "./apiserver.ini", help = "Configuration file", type = str)
 
     args = sys.argv
@@ -202,7 +201,6 @@ if __name__ == '__main__':
 
     core = Core(configfile=options.configfile)
 
-    core.restore_state(options.statefile)
     controllers = core.controllers()
     servicegroups = core.servicegroups()
 
@@ -255,5 +253,3 @@ if __name__ == '__main__':
     tornado.ioloop.IOLoop.instance().start()
 
     log.info(' --- EXIT ---')
-
-    core.save_state(options.statefile)
