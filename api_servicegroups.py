@@ -132,6 +132,5 @@ class APIservicegroups(APIBase):
         if not servicegroup:
             raise UserWarning('no such servicegroup')
         for service in data:
-            servicegroup.get_services().find_by_id(service['sta_reg']). \
-                set_setup(service)
+            servicegroup.set_service(service)
         return {'status': 200}

@@ -53,7 +53,7 @@ class Core(object):
             password=self.config().get('storage', 'redispass', fallback=None),
             )
         self._usersessions = UserSessions(storage=self._storage, key='usersessions')
-        self._servicegroups = ServiceGroups()
+        self._servicegroups = ServiceGroups(storage=self._storage, key='servicegroups').restore()
         self._controllers = Controllers()
         self._hosts = Hosts()
         self._wsclients = WsClients()
