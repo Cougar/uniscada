@@ -12,7 +12,9 @@ __all__ = [
 class GlobalList(object):
     ''' List of all members '''
 
-    def __init__(self):
+    def __init__(self, storage=None, key=None):
+        self._storage = storage
+        self._storage_key = key
         self._members = {}
         self.class_name = self.getMemberClass()
         log.info('Initialise a new global list of %s', str(self.class_name))
@@ -30,8 +32,15 @@ class GlobalList(object):
 
         :returns: member instance
         '''
+        log.debug('find_by_id(%s)', id)
         if not id in self._members:
             self._members[id] = self.class_name(id, listinstance=self)
+            if self._storage:
+                set_storage = getattr(self._members[id], 'set_storage', None)
+                if set_storage:
+                    set_storage(self._storage)
+                if self._storage_key:
+                    self._storage.sadd(self._storage_key, id)
             log.debug('find_by_id(%s): created a new member(%s)', str(id), str(self._members[id]))
         else:
             log.debug('find_by_id(%s): existing member(%s)', str(id), str(self._members[id]))
@@ -57,6 +66,8 @@ class GlobalList(object):
         log.debug('remove_by_id(%s)', str(id))
         if id in self._members:
             del self._members[id]
+            if self._storage and self._storage_key:
+                self._storage.srem(self._storage_key, id)
         else:
             log.error("No such id: %s", str(id))
 
