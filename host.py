@@ -87,14 +87,14 @@ class Host(object):
                         'gzip.decompress() exception: ' + str(ex))
                 self._stats.set_timestamp('rx/last_error/timestamp')
                 return
-            self._stats.add('rx/packets_compressed', 1)
+            self._stats.add('rx/packets_compressed_gzip', 1)
             self._stats.add('rx/compression_saved_bytes', len(receivedmessage) - rawlen)
             log.debug('compressed data from %s', str(self._id))
         else:
             ''' try zlib compressed data '''
             try:
                 receivedmessage = zlib.decompress(receivedmessage)
-                self._stats.add('rx/packets_compressed', 1)
+                self._stats.add('rx/packets_compressed_zlib', 1)
                 self._stats.add('rx/compression_saved_bytes', len(receivedmessage) - rawlen)
             except zlib.error as ex:
                 pass
