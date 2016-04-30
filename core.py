@@ -9,6 +9,7 @@ that are needed for the whole system:
     WsClients - list of active WebSocket connections
     MsgBus - global message bus for webscoket client live updates
     Hosts - all known controller connections
+    Redis - Redis DB helper
 
 In addition of these instances, it also reads configuration
 file and provides access to the configuration dictionary
@@ -24,6 +25,7 @@ from servicegroups import ServiceGroups
 from wsclients import WsClients
 from msgbus import MsgBus
 from hosts import Hosts
+from storage import Storage
 
 from auth import Auth
 
@@ -44,6 +46,12 @@ class Core(object):
         if configfile:
             self.read_config(configfile)
         self._msgbus = MsgBus()
+        self._storage = Storage(
+            host=self.config().get('storage', 'redishost', fallback='localhost'),
+            port=self.config().get('storage', 'redisport', fallback=6379),
+            db=self.config().get('storage', 'redisdb', fallback=0),
+            password=self.config().get('storage', 'redispass', fallback=None),
+            )
         self._usersessions = UserSessions()
         self._servicegroups = ServiceGroups()
         self._controllers = Controllers()
@@ -105,6 +113,13 @@ class Core(object):
         :returns: Hosts instance
         '''
         return self._hosts
+
+    def storage(self):
+        ''' Get Storage instance
+
+        :returns: Storage instance
+        '''
+        return self._storage
 
     def config(self):
         ''' Get config dictionary
