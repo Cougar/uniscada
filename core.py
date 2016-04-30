@@ -55,7 +55,7 @@ class Core(object):
         self._usersessions = UserSessions(storage=self._storage, key='usersessions')
         self._servicegroups = ServiceGroups(storage=self._storage, key='servicegroups').restore()
         self._controllers = Controllers(storage=self._storage, key='controllers', core=self).restore()
-        self._hosts = Hosts()
+        self._hosts = Hosts(storage=self._storage, key='hosts')
         self._wsclients = WsClients()
         self._auth = Auth(self)
         self._config_auth()
