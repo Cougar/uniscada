@@ -193,7 +193,10 @@ class CookieAuth(object):
             log.error('query error: %s', str(ex))
             self._connect_db()
         finally:
-            cur.close()
+            try:
+                cur.close()
+            except Exception as ex:
+                log.error('close error: %s', str(ex))
 
     def _expire_secrets(self):
         """ Remove expired secret keys from the dictionary """
