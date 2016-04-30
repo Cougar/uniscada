@@ -26,12 +26,11 @@ class Controller(object):
         self._last_sdp = None
         self._last_sdp_ts = None
         self._send_queue = {}
-        self._setup = {}
         self._stats = Stats()
         self._nonce = None
-        self._seq = None
         self._servicegroups = None
         self._msgbus = None
+        self._storage = None
 
     def get_id(self):
         """ Get id of controller
@@ -68,28 +67,54 @@ class Controller(object):
         """
         return self._msgbus
 
+    def set_storage(self, storage):
+        """ Set storage
+
+        :param storage: storage
+        """
+        self._storage = storage
+
     def set_setup(self, setup):
         """ Set setup data
 
         :param setup: setup data
         """
-        self._setup = setup
+        log.info('set_setup(%s, %s)', str(self._id), str(setup))
+        if not self._storage:
+            log.exception('self._storage missing')
+            return 0
+        self._storage.hset_data('controllers/setup', self._id, setup)
 
     def get_setup(self):
         """ Return setup data
 
         :returns: setup data
         """
-        return self._setup
+        if not self._storage:
+            log.exception('self._storage missing')
+            return 0
+        return self._storage.hget_data('controllers/setup', self._id)
+
+    def update_setup(self, data):
+        """ Update setup data
+
+        :param data: setup data
+        """
+        log.info('update_setup(%s, %s)', str(self._id), str(data))
+        setup = self.get_setup()
+        if setup == None:
+            setup = {}
+        setup.update(data)
+        self.set_setup(setup)
 
     def get_secret_key(self):
         """ Get controller secret key used for SHA256 HMAC signature
 
         :returns: secret key
         """
-        if not self._setup:
-            return None
-        return self._setup.get('secret_key', None)
+        setup = self.get_setup()
+        if setup:
+            return setup.get('secret_key', None)
 
     def get_nonce(self):
         """ Get controller nonce used for SHA256 HMAC signature
@@ -113,16 +138,24 @@ class Controller(object):
 
         :returns: sequence num
         """
-        if not self._seq:
-            self._seq = 0
-        return self._seq
+        if not self._storage:
+            log.exception('self._storage missing')
+            return 0
+        seq = self._storage.hget('controllers/seq', self._id)
+        if seq == None:
+            self.set_seq(0)
+            return 0
+        return int(seq)
 
     def set_seq(self, seq):
         """ Set controller packet sequence num
 
         :param seq: sequence num
         """
-        self._seq = seq
+        if not self._storage:
+            log.exception('self._storage missing')
+            return
+        self._storage.hset('controllers/seq', self._id, seq)
 
     def set_host(self, host):
         """ Assign Host instance to the controller
@@ -152,33 +185,34 @@ class Controller(object):
         log.debug('set_statereg(%s, %s, %s, %s)', \
             str(self._id), str(reg), str(val), str(ts))
         self._state[reg] = {'data': val, 'ts': ts}
+        if not self._storage:
+            log.exception('self._storage missing')
+            return
+        self._storage.save_reg(self._id, reg, val, ts)
 
     def get_state_register_list(self):
-        """ Generates (reg, val, ts) duples for all variables known
+        """ Generates (reg, val, ts) tuples for all variables known
         for the controller
 
-        :returns: Generated (reg, val, ts) duple for each register
+        :returns: Generated (reg, val, ts) tuple for each register
         """
-        for reg in self._state.keys():
-            yield (reg, self._state[reg]['data'], self._state[reg]['ts'])
+        if not self._storage:
+            log.exception('self._storage missing')
+            return
+        return self._storage.get_all_reg(self._id)
 
     def get_state_reg(self, reg):
         """ Get reg from the state dictionary of this controller
 
         :param reg: register name
 
-        :returns: register (value, timestamp) duple or
+        :returns: register (value, timestamp) tuple or
         (None, None) if not exist
         """
-        if reg in self._state:
-            log.debug('get_state_reg(%s, %s): (%s, %d)', \
-                str(self._id), str(reg), \
-                str(self._state[reg]['data']), self._state[reg]['ts'])
-            return (self._state[reg]['data'], self._state[reg]['ts'])
-        else:
-            log.debug('get_state_reg(%s, %s): (None, None)', \
-                str(self._id), str(reg))
+        if not self._storage:
+            log.exception('self._storage missing')
             return (None, None)
+        return self._storage.get_reg(self._id, reg)
 
     def get_controller_data_v1(self):
         """ Return controller data in API v1 format
@@ -381,8 +415,9 @@ class Controller(object):
         r = {}
         r['resource'] = '/services/' + self._id
         servicegroup = None
-        if self._setup:
-            servicetable = self._setup.get('servicetable', None)
+        setup = self.get_setup()
+        if setup:
+            servicetable = setup.get('servicetable', None)
             if servicetable:
                 servicegroup = self._servicegroups.get_id(servicetable)
         r['body'] = [ self.get_service_data_v1_last_sdp(servicegroup) ]
@@ -551,8 +586,9 @@ class Controller(object):
         return state
 
     def __str__(self):
+        setup = self.get_setup()
         return(str(self._id) + ': ' +
                'host = ' + str(self._host) +
-               ', setup = ' + str(self._setup) +
+               ', setup = ' + str(setup) +
                ', state = ' + str(self._state) +
                ', send_queue = ' + str(self._send_queue))

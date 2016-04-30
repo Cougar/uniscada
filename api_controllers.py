@@ -100,9 +100,7 @@ class APIcontrollers(APIBase):
         if not self._servicegroups.get_id(data["servicetable"]):
             raise UserWarning('no such servicegroup defined: %s' % \
                 data["servicetable"])
-        setup = controller.get_setup()
-        setup.update(data)
-        controller.set_setup(setup)
+        controller.update_setup(data)
         return {'status': 200}
 
     def _get_controller_or_error(self, fltr):
