@@ -200,8 +200,7 @@ if __name__ == '__main__':
     args.append("--logging=debug")
     tornado.options.parse_command_line(args)
 
-    core = Core()
-    core.read_config(options.configfile)
+    core = Core(configfile=options.configfile)
 
     core.restore_state(options.statefile)
     controllers = core.controllers()

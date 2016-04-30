@@ -36,18 +36,21 @@ __all__ = [
 ]
 
 class Core(object):
-    def __init__(self):
+    def __init__(self, configfile=None):
         ''' Create new Core system instance
         '''
         log.debug('Create a new Core system instance')
-        self._usersessions = UserSessions()
-        self._wsclients = WsClients()
-        self._msgbus = MsgBus()
-        self._controllers = Controllers()
-        self._servicegroups = ServiceGroups()
-        self._hosts = Hosts()
-        self._auth = Auth(self)
         self._config = {}
+        if configfile:
+            self.read_config(configfile)
+        self._msgbus = MsgBus()
+        self._usersessions = UserSessions()
+        self._servicegroups = ServiceGroups()
+        self._controllers = Controllers()
+        self._hosts = Hosts()
+        self._wsclients = WsClients()
+        self._auth = Auth(self)
+        self._config_auth()
 
     def read_config(self, configfile):
         ''' Read configuration file
@@ -56,8 +59,6 @@ class Core(object):
         '''
         self._config = configparser.ConfigParser()
         self._config.read(configfile)
-
-        self._config_auth()
 
     def _config_auth(self):
         config = self.config()
