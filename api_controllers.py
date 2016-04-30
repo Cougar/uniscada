@@ -70,7 +70,8 @@ class APIcontrollers(APIBase):
             if self._controllers.get_id(controller):
                 raise UserWarning('controller %s already exists' % controller)
         for c in data:
-            controller = self._controllers.find_by_id(c.get('controller', None))
+            controllerid = c.get('controller', None)
+            controller = self._controllers.find_by_id(controllerid)
             controller.set_servicegroups(self._core.servicegroups())
             controller.set_msgbus(self._core.msgbus())
             log.info('new controller created: %s', controller)

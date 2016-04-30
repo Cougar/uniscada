@@ -98,8 +98,9 @@ class APIservicegroups(APIBase):
                 raise UserWarning('servicegroup %s already exists' % \
                     servicegroup)
         for sg in data:
+            sgname = sg.get('servicegroup', None)
             servicegroup = self._servicegroups. \
-                find_by_id(sg.get('servicegroup', None))
+                find_by_id(sgname)
             log.info('new servicegroup created: %s', servicegroup)
         return {'status': 201, \
             'headers': [{'Location': self.API_PATH}]}

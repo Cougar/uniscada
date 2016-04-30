@@ -3,7 +3,6 @@
 Message datagram composition and decomposition
 according to the Uniscada Service Description Protocol.
 """
-
 from signedsdp import SignedSDP
 
 import logging
