@@ -52,7 +52,7 @@ class Core(object):
             db=self.config().get('storage', 'redisdb', fallback=0),
             password=self.config().get('storage', 'redispass', fallback=None),
             )
-        self._usersessions = UserSessions()
+        self._usersessions = UserSessions(storage=self._storage, key='usersessions')
         self._servicegroups = ServiceGroups()
         self._controllers = Controllers()
         self._hosts = Hosts()

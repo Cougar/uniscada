@@ -15,5 +15,10 @@ __all__ = [
 class UserSessions(GlobalList):
     ''' List of all known users '''
 
+    def __init__(self, storage=None, key=None):
+        if storage and key:
+            storage.delete(key)
+        super(UserSessions, self).__init__(storage=storage, key=key)
+
     def getMemberClass(self):
         return UserSession
