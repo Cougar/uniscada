@@ -124,10 +124,10 @@ class SDPTests(unittest.TestCase):
 
     def test_add_keyvalue_values_list(self):
         ''' Test setting/getting key:val for List of Values (list) '''
-        self.sdp += ('AAW', [1])
+        self.sdp += ('AAW', [1, 2])
         d = self.sdp.get_data('AAW')
         self.assertTrue(isinstance(d, list))
-        self.assertEqual(d, [1])
+        self.assertEqual(d, [1, 2])
         self.assertEqual(self.sdp.get_data('AAw'), None)
         self.assertEqual(self.sdp.get_data('aaW'), None)
 
@@ -147,10 +147,10 @@ class SDPTests(unittest.TestCase):
 
     def test_add_keyvalue_values(self):
         ''' Test setting/getting key:val for List of Values '''
-        self.sdp += ('AAW', '1')
+        self.sdp += ('AAW', '1 2')
         d = self.sdp.get_data('AAW')
         self.assertTrue(isinstance(d, list))
-        self.assertEqual(d, [1])
+        self.assertEqual(d, [1, 2])
         self.assertEqual(self.sdp.get_data('AAw'), None)
         self.assertEqual(self.sdp.get_data('aaW'), None)
 
@@ -164,6 +164,14 @@ class SDPTests(unittest.TestCase):
         self.assertTrue(isinstance(d, list))
         self.assertEqual(d, [0, None, 35])
 
+        with self.assertRaises(SDPException):
+            self.sdp += ('AAW', [])
+        with self.assertRaises(SDPException):
+            self.sdp += ('AAW', [1])
+        with self.assertRaises(SDPException):
+            self.sdp += ('AAW', '')
+        with self.assertRaises(SDPException):
+            self.sdp += ('AAW', '1')
         with self.assertRaises(SDPException):
             self.sdp += ('AXW', 1)
         with self.assertRaises(SDPException):
@@ -341,7 +349,7 @@ class SDPTests(unittest.TestCase):
         self.sdp += ('ADV', '4')
         self.sdp += ('AEV', '5.5')
         self.sdp += ('AFV', 'abc')
-        self.sdp += ('AGW', '4')
+        self.sdp += ('AGW', '3 4')
         self.sdp += ('AHW', '5 6 75')
         self.sdp += ('AIS', '?')
         self.sdp += ('AJV', '?')
@@ -364,7 +372,7 @@ class SDPTests(unittest.TestCase):
             'ADV:4',
             'AEV:5.5',
             'AFV:abc',
-            'AGW:4',
+            'AGW:3 4',
             'AHW:5 6 75',
             'AIS:?',
             'AJV:?',
@@ -392,7 +400,7 @@ class SDPTests(unittest.TestCase):
         self.sdp += ('ADV', '4')
         self.sdp += ('AEV', '5.5')
         self.sdp += ('AFV', 'abc')
-        self.sdp += ('AGW', '4')
+        self.sdp += ('AGW', '3 4')
         self.sdp += ('AHW', '5 6 75')
         self.sdp += ('AIS', '?')
         self.sdp += ('AJV', '?')
@@ -414,7 +422,7 @@ class SDPTests(unittest.TestCase):
             'ADV:4',
             'AEV:5.5',
             'AFV:abc',
-            'AGW:4',
+            'AGW:3 4',
             'AHW:5 6 75',
             'AIS:?',
             'AJV:?',
@@ -446,7 +454,7 @@ class SDPTests(unittest.TestCase):
             'ADV:4\n' \
             'AEV:5.5\n' \
             'AFV:abc\n' \
-            'AGW:4\n' \
+            'AGW:3 4\n' \
             'AHW:5 6 75\n' \
             'AIS:?\n' \
             'AJV:?\n' \
@@ -495,7 +503,7 @@ class SDPTests(unittest.TestCase):
 
         d = sdp.get_data('AGW')
         self.assertTrue(isinstance(d, list))
-        self.assertEqual(d, [4])
+        self.assertEqual(d, [3, 4])
 
         d = sdp.get_data('AHW')
         self.assertTrue(isinstance(d, list))

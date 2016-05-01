@@ -140,7 +140,11 @@ class SDPItem(object):
             raise SDPException('List of Values _MUST_BE_ string' \
                 'or list of numbers but ' + \
                 str(key) + ' is ' + str(type(val)))
+        if isinstance(val, str) and val.count(' ') < 1:
+            raise SDPException('More than one list item expected: ' + key + ' = "' + val + '"')
         if isinstance(val, list):
+            if (len(val)) < 2:
+                raise SDPException('More than one list item expected: ' + key + ' = ' + str(val))
             val = ' '.join([SDPItem._list_value_to_str(x)
                             for x in val])
         lst = [SDPItem._list_str_to_value(x) for x in val.split(' ')]
