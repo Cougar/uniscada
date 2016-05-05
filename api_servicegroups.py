@@ -1,7 +1,7 @@
 from apibase import APIBase
 from sessionexception import SessionException
 
-from schema import Schema, Optional
+from schema import Schema, Optional, Use
 
 import logging
 log = logging.getLogger(__name__)   # pylint: disable=invalid-name
@@ -21,19 +21,13 @@ class APIservicegroups(APIBase):
         'desc0': str,
         'desc1': str,
         'desc2': str,
-        Optional('freshness'): str,
-        Optional('grp_value'): str,
         'in_unit': str,
-        Optional('max_val'): str,
-        Optional('min_len'): str,
         Optional('minstep'): str,
         Optional('multicfg'): str,
         Optional('multiperf'): str,
         Optional('multivalue'): str,
-        Optional('notify'): str,
         'out_unit': str,
-        'sta_reg': str,
-        Optional('step'): str,
+        'sta_reg': Use(lambda f: f == '' or f[-1] == 'S'),
         'svc_name': str,
         Optional('toggle'): str,
         'val_reg': str,
